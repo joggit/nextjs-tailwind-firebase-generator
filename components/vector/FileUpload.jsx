@@ -56,7 +56,7 @@ export function FileUpload({ onUploadComplete, maxFiles = 10, acceptedTypes = ''
           size: file.size
         }))
 
-        const response = await fetch('/api/vector/upload-simple', {
+        const response = await fetch('/api/vector/upload', {
           method: 'POST',
           body: formData
         })

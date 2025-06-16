@@ -1,6 +1,6 @@
 'use strict';
 
-import VectorEnhancedProjectGenerator from '@/lib/VectorEnhancedProjectGenerator.js';
+import ProjectGenerator from '@/lib/ProjectGenerator.js';
 import { VectorRAGService } from '@/lib/VectorRAGService.js';
 
 // Initialize services
@@ -8,16 +8,25 @@ let vectorRAGService = null;
 let projectGenerator = null;
 
 async function initializeServices() {
-  if (!vectorRAGService) {
-    vectorRAGService = new VectorRAGService();
-    await vectorRAGService.initialize();
-  }
+  try {
+    if (!vectorRAGService) {
+      vectorRAGService = new VectorRAGService();
+      await vectorRAGService.initialize();
+    }
 
-  if (!projectGenerator) {
-    projectGenerator = new VectorEnhancedProjectGenerator(vectorRAGService);
-  }
+    if (!projectGenerator) {
+      projectGenerator = new ProjectGenerator(vectorRAGService);
+    }
 
-  return { vectorRAGService, projectGenerator };
+    return { vectorRAGService, projectGenerator };
+  } catch (error) {
+    console.warn('⚠️ Vector services initialization failed, using fallback mode:', error.message);
+    // Return basic generator without vector enhancement
+    return { 
+      vectorRAGService: null, 
+      projectGenerator: new ProjectGenerator(null) 
+    };
+  }
 }
 
 export async function GET() {
@@ -28,7 +37,7 @@ export async function GET() {
       JSON.stringify({
         status: 'ready',
         message: 'Vector RAG Enhanced Project Generator API is online',
-        vectorStore: vectorRAGService.isInitialized(),
+        vectorStore: vectorRAGService ? vectorRAGService.isInitialized() : false,
         capabilities: [
           'AI-powered website generation',
           'Vector similarity search',
@@ -49,7 +58,7 @@ export async function GET() {
     return new Response(
       JSON.stringify({
         status: 'error',
-        message: 'Failed to initialize vector services',
+        message: 'Failed to initialize services',
         error: error.message,
       }),
       {
@@ -72,8 +81,12 @@ export async function POST(request) {
       template = 'modern',
       customRequirements = '',
       vectorEnhancement = true,
+      targetAudience = '',
+      keyServices = [],
+      businessDescription = ''
     } = body;
 
+    // Validate required fields
     if (!businessName || !industry || !businessType) {
       return new Response(
         JSON.stringify({
@@ -87,22 +100,37 @@ export async function POST(request) {
       );
     }
 
-    const { projectGenerator } = await initializeServices();
+    const { projectGenerator, vectorRAGService } = await initializeServices();
 
-    console.log('🚀 Starting vector-enhanced generation for:', businessName);
+    console.log('🚀 Starting generation for:', businessName);
 
     const generationRequest = {
       businessName,
       industry,
       businessType,
       template,
-      customRequirements,
-      vectorEnhancement,
+      customRequirements: customRequirements || businessDescription,
+      vectorEnhancement: vectorEnhancement && vectorRAGService !== null,
+      targetAudience,
+      keyServices,
+      businessDescription,
       includeAnalytics: true,
       generateSEO: true,
     };
 
-    const generatedProject = await projectGenerator.generateProject(generationRequest);
+    let generatedProject;
+    
+    try {
+      generatedProject = await projectGenerator.generateProject(generationRequest);
+    } catch (genError) {
+      console.error('Generation error:', genError);
+      
+      // Fallback to basic generation
+      console.log('🔄 Falling back to basic generation...');
+      const basicGenerator = new ProjectGenerator(null);
+      generationRequest.vectorEnhancement = false;
+      generatedProject = await basicGenerator.generateProject(generationRequest);
+    }
 
     const endTime = Date.now();
     const processingTime = endTime - startTime;
@@ -119,7 +147,7 @@ export async function POST(request) {
             industry,
             businessType,
             template,
-            vectorEnhanced: vectorEnhancement,
+            vectorEnhanced: generationRequest.vectorEnhancement,
             processingTime: `${processingTime}ms`,
             generatedAt: new Date().toISOString(),
             fileCount: generatedProject.files ? Object.keys(generatedProject.files).length : 0,
@@ -140,159 +168,6 @@ export async function POST(request) {
         error: 'Failed to generate project',
         details: error.message,
         timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-  }
-}
-
-export async function PUT(request) {
-  try {
-    const body = await request.json();
-    const { action, data } = body;
-
-    const { vectorRAGService } = await initializeServices();
-
-    switch (action) {
-      case 'addTemplate':
-        if (!data.templateId || !data.templateData) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'Missing templateId or templateData',
-            }),
-            {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' },
-            }
-          );
-        }
-
-        await vectorRAGService.addTemplate(data.templateId, data.templateData);
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: `Template ${data.templateId} added successfully`,
-          }),
-          {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-
-      case 'addIndustryContext':
-        if (!data.industry || !data.context) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'Missing industry or context data',
-            }),
-            {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' },
-            }
-          );
-        }
-
-        await vectorRAGService.addIndustryContext(data.industry, data.context);
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: `Industry context for ${data.industry} added successfully`,
-          }),
-          {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-
-      case 'rebuildVectorStore':
-        await vectorRAGService.rebuildVectorStore();
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: 'Vector store rebuilt successfully',
-          }),
-          {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-
-      default:
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: `Unknown action: ${action}`,
-          }),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-    }
-  } catch (error) {
-    console.error('PUT request error:', error);
-
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'Failed to process PUT request',
-        details: error.message,
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-  }
-}
-
-export async function DELETE(request) {
-  try {
-    const url = new URL(request.url);
-    const templateId = url.searchParams.get('templateId');
-
-    if (!templateId) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Missing templateId parameter',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    const { vectorRAGService } = await initializeServices();
-    await vectorRAGService.removeTemplate(templateId);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: `Template ${templateId} removed successfully`,
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-  } catch (error) {
-    console.error('DELETE request error:', error);
-
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'Failed to delete template',
-        details: error.message,
       }),
       {
         status: 500,
