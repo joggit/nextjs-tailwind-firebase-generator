@@ -2,25 +2,40 @@
 
 import { useState, useEffect } from 'react'
 import {
-  Brain, Zap, Download, Loader, CheckCircle, AlertCircle, Database, Users, Building,
-  Plus, X, Edit3, Globe, FileText, Phone, Info, Save, FolderOpen, Trash2, Clock,
-  Cloud, Wifi, WifiOff
+  Brain, Zap, Download, Loader, CheckCircle, AlertCircle, Users, Building, Plus, X, Edit3, Globe,
+  FileText, Phone, Info, Trash2, Clock, Cloud, Settings, ChevronRight, ChevronDown, Save, FolderOpen
 } from 'lucide-react'
-import DocumentToVectors from '@/components/vector/DocumentToVectors'
-import { initializeFirebase } from '@/lib/firebase'
-import { addDoc, collection, getDocs, query, orderBy, limit, doc, deleteDoc } from 'firebase/firestore'
+import { initializeApp, getApps } from 'firebase/app'
+import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, query, orderBy, limit, updateDoc } from 'firebase/firestore'
 
+// Firebase initialization function
+function initializeFirebase() {
+  if (getApps().length === 0) {
+    const firebaseConfig = {
+      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+    }
+    return initializeApp(firebaseConfig)
+  }
+  return getApps()[0]
+}
 
-function ProjectGenerator({ systemHealth }) {
+function ProjectGenerator() {
   const [formData, setFormData] = useState({
+    // First Section - Basic Business Information
     businessName: '',
     industry: '',
     businessType: '',
     targetAudience: '',
-    keyServices: [],
     businessDescription: '',
     template: 'modern',
     vectorEnhancement: true,
+
+    // Second Section - Page Configuration
     pages: [
       {
         id: 'home',
@@ -41,34 +56,48 @@ function ProjectGenerator({ systemHealth }) {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
-  const [currentService, setCurrentService] = useState('')
 
-  // Firebase state
-  const [db, setDb] = useState(null)
-  const [vectorRAG, setVectorRAG] = useState(null)
+  // UI State
+  const [activeTab, setActiveTab] = useState('home')
+  const [showPageConfig, setShowPageConfig] = useState(false)
+
+  // Firebase State
   const [savedConfigs, setSavedConfigs] = useState([])
   const [loadingConfigs, setLoadingConfigs] = useState(false)
   const [savingConfig, setSavingConfig] = useState(false)
   const [configName, setConfigName] = useState('')
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [showLoadDialog, setShowLoadDialog] = useState(false)
+  const [db, setDb] = useState(null)
 
+  // Initialize Firebase and load configurations
   useEffect(() => {
-    const dbInstance = initializeFirebase()
-    setDb(dbInstance)
+    const initializeFirebaseAndLoadConfigs = async () => {
+      try {
+        const app = initializeFirebase()
+        const database = getFirestore(app)
+        setDb(database)
+
+        // Load saved configurations
+        await loadSavedConfigurations(database)
+      } catch (error) {
+        console.error('❌ Failed to initialize Firebase:', error)
+        setError('Failed to initialize Firebase. Some features may not work.')
+      }
+    }
+
+    initializeFirebaseAndLoadConfigs()
   }, [])
 
-
-
-  const loadSavedConfigurations = async () => {
-    if (!db) return
+  // Firebase Functions
+  const loadSavedConfigurations = async (database = db) => {
+    if (!database) return
 
     setLoadingConfigs(true)
     try {
-      const configsRef = collection(db, 'website_configurations')
+      const configsRef = collection(database, 'website_configurations')
       const q = query(configsRef, orderBy('updatedAt', 'desc'), limit(10))
       const querySnapshot = await getDocs(q)
-
       const configs = []
       querySnapshot.forEach((doc) => {
         configs.push({
@@ -81,6 +110,7 @@ function ProjectGenerator({ systemHealth }) {
       console.log(`📁 Loaded ${configs.length} saved configurations`)
     } catch (error) {
       console.error('❌ Failed to load configurations:', error)
+      setError('Failed to load saved configurations')
     } finally {
       setLoadingConfigs(false)
     }
@@ -88,7 +118,6 @@ function ProjectGenerator({ systemHealth }) {
 
   const saveConfiguration = async () => {
     if (!db || !configName.trim()) return
-
     setSavingConfig(true)
     try {
       const configData = {
@@ -98,22 +127,15 @@ function ProjectGenerator({ systemHealth }) {
         updatedAt: new Date(),
         version: '1.0'
       }
-
       const docRef = await addDoc(collection(db, 'website_configurations'), configData)
       console.log('✅ Configuration saved with ID:', docRef.id)
-
       // Refresh saved configs
       await loadSavedConfigurations()
-
       setConfigName('')
       setShowSaveDialog(false)
-
       // Show success message
       setError(null)
-      setResult({
-        ...result,
-        message: `Configuration "${configName.trim()}" saved successfully!`
-      })
+      alert(`Configuration "${configName.trim()}" saved successfully!`)
     } catch (error) {
       console.error('❌ Failed to save configuration:', error)
       setError('Failed to save configuration to Firebase')
@@ -127,12 +149,13 @@ function ProjectGenerator({ systemHealth }) {
     if (!config) return
 
     try {
-      // Extract the form data from saved config
+      // Extract the form data from saved config (excluding metadata)
       const { name, createdAt, updatedAt, version, id, ...savedFormData } = config
       setFormData(savedFormData)
       setShowLoadDialog(false)
 
       console.log('✅ Configuration loaded:', name)
+      alert(`Configuration "${name}" loaded successfully!`)
     } catch (error) {
       console.error('❌ Failed to load configuration:', error)
       setError('Failed to load configuration')
@@ -152,7 +175,29 @@ function ProjectGenerator({ systemHealth }) {
     }
   }
 
-  // Page type definitions (same as before)
+  const saveGeneratedWebsite = async (websiteData) => {
+    if (!db) return
+
+    try {
+      const generationRecord = {
+        businessName: formData.businessName,
+        industry: formData.industry,
+        template: formData.template,
+        generatedAt: new Date(),
+        vectorEnhanced: formData.vectorEnhancement,
+        pageCount: formData.pages.filter(p => p.enabled).length,
+        fileCount: websiteData.metadata?.fileCount || 0,
+        processingTime: websiteData.metadata?.processingTime || 'N/A'
+      }
+
+      await addDoc(collection(db, 'generated_websites'), generationRecord)
+      console.log('✅ Website generation recorded in Firebase')
+    } catch (error) {
+      console.warn('⚠️ Failed to save generation record:', error)
+    }
+  }
+
+  // Page type definitions
   const pageTypes = {
     home: {
       label: 'Home Page',
@@ -452,15 +497,6 @@ function ProjectGenerator({ systemHealth }) {
     'Non-profit', 'E-commerce', 'SaaS', 'Consulting', 'Other'
   ]
 
-  const templates = [
-    { id: 'modern', name: 'Modern Business', description: 'Clean, professional design' },
-    { id: 'saas', name: 'SaaS Platform', description: 'Software service focused' },
-    { id: 'ecommerce', name: 'E-commerce', description: 'Online store layout' },
-    { id: 'portfolio', name: 'Portfolio', description: 'Showcase work and projects' },
-    { id: 'corporate', name: 'Corporate', description: 'Enterprise-level design' },
-    { id: 'blog', name: 'Blog Platform', description: 'Content-focused layout' }
-  ]
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -469,24 +505,7 @@ function ProjectGenerator({ systemHealth }) {
     }))
   }
 
-  const addService = () => {
-    if (currentService.trim() && !formData.keyServices.includes(currentService.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        keyServices: [...prev.keyServices, currentService.trim()]
-      }))
-      setCurrentService('')
-    }
-  }
-
-  const removeService = (serviceToRemove) => {
-    setFormData(prev => ({
-      ...prev,
-      keyServices: prev.keyServices.filter(service => service !== serviceToRemove)
-    }))
-  }
-
-  // Page management functions (same as before)
+  // Page management functions
   const addPage = () => {
     const newPage = {
       id: `page_${Date.now()}`,
@@ -507,13 +526,21 @@ function ProjectGenerator({ systemHealth }) {
       ...prev,
       pages: [...prev.pages, newPage]
     }))
+
+    setActiveTab(newPage.id)
   }
 
   const removePage = (pageId) => {
+    const updatedPages = formData.pages.filter(page => page.id !== pageId)
     setFormData(prev => ({
       ...prev,
-      pages: prev.pages.filter(page => page.id !== pageId)
+      pages: updatedPages
     }))
+
+    // Switch to first available tab
+    if (activeTab === pageId && updatedPages.length > 0) {
+      setActiveTab(updatedPages[0].id)
+    }
   }
 
   const updatePage = (pageId, updates) => {
@@ -557,128 +584,101 @@ function ProjectGenerator({ systemHealth }) {
     })
   }
 
-  const renderPageConfig = (page) => {
-    const pageType = pageTypes[page.type]
-    if (!pageType || !pageType.configFields) return null
+  const renderPageConfigField = (page, field) => {
+    const value = page.config[field.key]
 
-    return (
-      <div className="space-y-4 border-l-4 border-blue-200 pl-4 ml-4">
-        {pageType.configFields.map(field => (
-          <div key={field.key}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {field.label}
-            </label>
+    switch (field.type) {
+      case 'text':
+        return (
+          <input
+            type="text"
+            value={value || ''}
+            onChange={(e) => updatePageConfig(page.id, field.key, e.target.value)}
+            placeholder={field.placeholder}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          />
+        )
 
-            {field.type === 'text' && (
-              <input
-                type="text"
-                value={page.config[field.key] || ''}
-                onChange={(e) => updatePageConfig(page.id, field.key, e.target.value)}
-                placeholder={field.placeholder}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              />
-            )}
+      case 'textarea':
+        return (
+          <textarea
+            value={value || ''}
+            onChange={(e) => updatePageConfig(page.id, field.key, e.target.value)}
+            placeholder={field.placeholder}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          />
+        )
 
-            {field.type === 'textarea' && (
-              <textarea
-                value={page.config[field.key] || ''}
-                onChange={(e) => updatePageConfig(page.id, field.key, e.target.value)}
-                placeholder={field.placeholder}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              />
-            )}
+      case 'select':
+        return (
+          <select
+            value={value || field.default}
+            onChange={(e) => updatePageConfig(page.id, field.key, e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          >
+            {field.options.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        )
 
-            {field.type === 'select' && (
-              <select
-                value={page.config[field.key] || field.default}
-                onChange={(e) => updatePageConfig(page.id, field.key, e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              >
-                {field.options.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            )}
+      case 'checkbox':
+        return (
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={value || false}
+              onChange={(e) => updatePageConfig(page.id, field.key, e.target.checked)}
+              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 mr-2"
+            />
+            <span className="text-sm text-gray-700">Enable this feature</span>
+          </label>
+        )
 
-            {field.type === 'checkbox' && (
-              <label className="flex items-center">
+      case 'multiselect':
+        return (
+          <div className="space-y-2">
+            {field.options.map(option => (
+              <label key={option.value} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={page.config[field.key] || false}
-                  onChange={(e) => updatePageConfig(page.id, field.key, e.target.checked)}
+                  checked={(value || []).includes(option.value)}
+                  onChange={(e) => {
+                    const currentValues = value || []
+                    const newValues = e.target.checked
+                      ? [...currentValues, option.value]
+                      : currentValues.filter(v => v !== option.value)
+                    updatePageConfig(page.id, field.key, newValues)
+                  }}
                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 mr-2"
                 />
-                <span className="text-sm text-gray-700">Enable this feature</span>
+                <span className="text-sm text-gray-700">{option.label}</span>
               </label>
-            )}
-
-            {field.type === 'multiselect' && (
-              <div className="space-y-2">
-                {field.options.map(option => (
-                  <label key={option.value} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={(page.config[field.key] || []).includes(option.value)}
-                      onChange={(e) => {
-                        const currentValues = page.config[field.key] || []
-                        const newValues = e.target.checked
-                          ? [...currentValues, option.value]
-                          : currentValues.filter(v => v !== option.value)
-                        updatePageConfig(page.id, field.key, newValues)
-                      }}
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 mr-2"
-                    />
-                    <span className="text-sm text-gray-700">{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
-    )
+        )
+
+      default:
+        return null
+    }
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     setLoading(true)
     setError(null)
     setResult(null)
 
     try {
-      // If vectorRAG is available, use it to enhance the request
-      let enhancedData = { ...formData }
-
-      if (vectorRAG && formData.vectorEnhancement) {
-        console.log('🧠 Enhancing with Vector RAG...')
-        try {
-          // Store company data in vector database
-          await vectorRAG.storeCompanyData(formData)
-
-          // Find similar companies for context
-          const similarCompanies = await vectorRAG.findSimilarCompanies(formData, 3)
-          console.log(`🔍 Found ${similarCompanies.length} similar companies`)
-
-          enhancedData.vectorContext = {
-            similarCompanies,
-            industryAnalysis: true,
-            vectorEnhanced: true
-          }
-        } catch (vectorError) {
-          console.warn('⚠️ Vector enhancement failed, continuing with standard generation:', vectorError)
-        }
-      }
-
-      const response = await fetch('/api/generate', {
+      const response = await fetch('/api/generateEcommerce', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...enhancedData,
+          ...formData,
           customRequirements: formData.businessDescription,
           pages: formData.pages.filter(page => page.enabled)
         }),
@@ -689,21 +689,8 @@ function ProjectGenerator({ systemHealth }) {
       if (data.success) {
         setResult(data.data)
 
-        // Optionally save the successful generation to Firebase
-        if (db && formData.businessName) {
-          try {
-            await addDoc(collection(db, 'generated_websites'), {
-              businessName: formData.businessName,
-              industry: formData.industry,
-              template: formData.template,
-              generatedAt: new Date(),
-              vectorEnhanced: formData.vectorEnhancement,
-              pageCount: formData.pages.filter(p => p.enabled).length
-            })
-          } catch (saveError) {
-            console.warn('Failed to save generation record:', saveError)
-          }
-        }
+        // Save generation record to Firebase
+        await saveGeneratedWebsite(data.data)
       } else {
         setError(data.error || 'Failed to generate project')
       }
@@ -744,13 +731,13 @@ function ProjectGenerator({ systemHealth }) {
     }
   }
 
-  const showHealthWarning = systemHealth && systemHealth.status !== 'healthy'
+  const isBasicInfoComplete = formData.businessName && formData.industry && formData.businessType
+  const activePage = formData.pages.find(page => page.id === activeTab)
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-7xl mx-auto">
 
-
-      {/* Save Dialog */}
+      {/* Save Configuration Dialog */}
       {showSaveDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
@@ -782,7 +769,7 @@ function ProjectGenerator({ systemHealth }) {
         </div>
       )}
 
-      {/* Load Dialog */}
+      {/* Load Configuration Dialog */}
       {showLoadDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
@@ -843,42 +830,47 @@ function ProjectGenerator({ systemHealth }) {
         </div>
       )}
 
-      {/* Vector Enhancement Badge */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 mb-8 text-white">
+      {/* Save/Load Controls */}
+      <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-200 mb-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Brain className="w-8 h-8" />
-            <div>
-              <h3 className="font-bold text-lg">Vector RAG Enhanced</h3>
-              <p className="text-blue-100">AI-powered website generation with industry intelligence</p>
-            </div>
+          <div>
+            <h3 className="font-semibold text-gray-900">Configuration Management</h3>
+            <p className="text-sm text-gray-600">Save your current settings or load a previous configuration</p>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-center">
-              <Database className="w-6 h-6 mx-auto mb-1" />
-              <div className="text-xs">Vector DB</div>
-            </div>
-            <div className="text-center">
-              <Zap className="w-6 h-6 mx-auto mb-1" />
-              <div className="text-xs">AI Content</div>
-            </div>
-            <div className="text-center">
-              <Users className="w-6 h-6 mx-auto mb-1" />
-              <div className="text-xs">Industry Match</div>
-            </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowLoadDialog(true)}
+              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <FolderOpen className="w-4 h-4" />
+              <span>Load</span>
+            </button>
+            <button
+              onClick={() => setShowSaveDialog(true)}
+              disabled={!isBasicInfoComplete}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Save className="w-4 h-4" />
+              <span>Save</span>
+            </button>
           </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Business Information */}
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <Building className="w-5 h-5 mr-2 text-blue-600" />
-            Business Information
-          </h3>
+      <div className="space-y-8">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* SECTION 1: BASIC BUSINESS INFORMATION (Required) */}
+        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+          <div className="flex items-center mb-6">
+            <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full mr-3 font-bold">
+              1
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Basic Business Information</h2>
+            <span className="ml-3 text-sm bg-red-100 text-red-700 px-2 py-1 rounded-full">Required</span>
+          </div>
+
+          {/* Business Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-2">
                 Business Name *
@@ -949,7 +941,7 @@ function ProjectGenerator({ systemHealth }) {
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mb-6">
             <label htmlFor="businessDescription" className="block text-sm font-medium text-gray-700 mb-2">
               Business Description
             </label>
@@ -963,221 +955,280 @@ function ProjectGenerator({ systemHealth }) {
               placeholder="Describe your business, services, and what makes you unique..."
             />
           </div>
+
         </div>
 
-        {/* Services */}
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Key Services</h3>
-
-          <div className="flex gap-2 mb-4">
-            <input
-              type="text"
-              value={currentService}
-              onChange={(e) => setCurrentService(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addService())}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter a service (e.g., Web Development, Consulting)"
-            />
+        {/* SECTION 2: PAGE CONFIGURATION (Optional) */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200">
+          <div className="p-6 border-b border-gray-200">
             <button
               type="button"
-              onClick={addService}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={() => setShowPageConfig(!showPageConfig)}
+              className="flex items-center justify-between w-full text-left"
             >
-              Add
+              <div className="flex items-center">
+                <div className="flex items-center justify-center w-8 h-8 bg-gray-400 text-white rounded-full mr-3 font-bold">
+                  2
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Page Configuration</h2>
+                <span className="ml-3 text-sm bg-green-100 text-green-700 px-2 py-1 rounded-full">Optional</span>
+              </div>
+              {showPageConfig ? (
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              )}
             </button>
+
+            <p className="text-gray-600 mt-2 ml-11">
+              {showPageConfig
+                ? 'Customize individual pages or skip to use AI-generated defaults'
+                : 'Click to expand and customize individual pages (optional)'
+              }
+            </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {formData.keyServices.map((service, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-              >
-                {service}
+          {showPageConfig && (
+            <div className="p-6">
+              {/* Page Tabs */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-2 overflow-x-auto">
+                  {formData.pages.map((page) => {
+                    const PageIcon = pageTypes[page.type]?.icon || Info
+                    return (
+                      <button
+                        key={page.id}
+                        type="button"
+                        onClick={() => setActiveTab(page.id)}
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all whitespace-nowrap ${activeTab === page.id
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          }`}
+                      >
+                        <PageIcon className="w-4 h-4" />
+                        <span>{page.name}</span>
+                        {page.enabled && (
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => removeService(service)}
-                  className="ml-2 text-blue-600 hover:text-blue-800"
+                  onClick={addPage}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  ×
+                  <Plus className="w-4 h-4" />
+                  <span>Add Page</span>
                 </button>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Page Configuration */}
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900">Page Configuration</h3>
-            <button
-              type="button"
-              onClick={addPage}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Page</span>
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            {formData.pages.map((page, index) => (
-              <div key={page.id} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={page.enabled}
-                        onChange={(e) => updatePage(page.id, { enabled: e.target.checked })}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 mr-2"
-                      />
-                      <span className="font-medium text-gray-900">Enable Page</span>
-                    </label>
-                  </div>
-
-                  {formData.pages.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removePage(page.id)}
-                      className="text-red-600 hover:text-red-700 p-1"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Page Name
-                    </label>
-                    <input
-                      type="text"
-                      value={page.name}
-                      onChange={(e) => updatePage(page.id, { name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Page name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Page Type
-                    </label>
-                    <select
-                      value={page.type}
-                      onChange={(e) => changePageType(page.id, e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      {Object.entries(pageTypes).map(([key, type]) => (
-                        <option key={key} value={key}>
-                          {type.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex items-end">
-                    <div className="text-sm text-gray-600">
-                      {pageTypes[page.type]?.description}
-                    </div>
-                  </div>
-                </div>
-
-                {page.enabled && renderPageConfig(page)}
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Template Selection */}
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Template Selection</h3>
+              {/* Active Page Configuration */}
+              {activePage && (
+                <div className="border border-gray-200 rounded-lg p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-4">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={activePage.enabled}
+                          onChange={(e) => updatePage(activePage.id, { enabled: e.target.checked })}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 mr-2"
+                        />
+                        <span className="font-medium text-gray-900">Enable This Page</span>
+                      </label>
+                    </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map((template) => (
-              <label
-                key={template.id}
-                className={`relative p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${formData.template === template.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-                  }`}
-              >
-                <input
-                  type="radio"
-                  name="template"
-                  value={template.id}
-                  checked={formData.template === template.id}
-                  onChange={handleInputChange}
-                  className="sr-only"
-                />
-                <div className="flex items-start">
-                  <div className={`flex-shrink-0 w-4 h-4 rounded-full border-2 mr-3 mt-0.5 ${formData.template === template.id
-                    ? 'border-blue-500 bg-blue-500'
-                    : 'border-gray-300'
-                    }`}>
-                    {formData.template === template.id && (
-                      <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                    {formData.pages.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removePage(activePage.id)}
+                        className="flex items-center space-x-1 text-red-600 hover:text-red-700 p-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Remove Page</span>
+                      </button>
                     )}
                   </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">{template.name}</h4>
-                    <p className="text-sm text-gray-600">{template.description}</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Page Name
+                      </label>
+                      <input
+                        type="text"
+                        value={activePage.name}
+                        onChange={(e) => updatePage(activePage.id, { name: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Page name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Page Type
+                      </label>
+                      <select
+                        value={activePage.type}
+                        onChange={(e) => changePageType(activePage.id, e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        {Object.entries(pageTypes).map(([key, type]) => (
+                          <option key={key} value={key}>
+                            {type.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex items-end">
+                      <p className="text-sm text-gray-600">
+                        {pageTypes[activePage.type]?.description}
+                      </p>
+                    </div>
                   </div>
+
+                  {/* Page-specific Configuration */}
+                  {activePage.enabled && pageTypes[activePage.type]?.configFields && (
+                    <div className="space-y-6 border-t border-gray-200 pt-6">
+                      <h4 className="font-semibold text-gray-900 flex items-center">
+                        <Settings className="w-4 h-4 mr-2 text-gray-600" />
+                        Page Configuration
+                      </h4>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {pageTypes[activePage.type].configFields.map(field => (
+                          <div key={field.key}>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              {field.label}
+                            </label>
+                            {renderPageConfigField(activePage, field)}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Document Upload */}
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+          <div className="flex items-center mb-6">
+            <div className="flex items-center justify-center w-8 h-8 bg-gray-400 text-white rounded-full mr-3 font-bold">
+              3
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Document Upload</h2>
+            <span className="ml-3 text-sm bg-green-100 text-green-700 px-2 py-1 rounded-full">Optional</span>
+          </div>
+
+          <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-500 transition-colors bg-gradient-to-br from-blue-50 to-purple-50">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                <FileText className="w-8 h-8 text-blue-600" />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Upload Business Documents
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Upload documents to enhance AI content generation (optional)
+                </p>
+                <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
+                  <span className="flex items-center">
+                    <Brain className="w-4 h-4 mr-1 text-blue-500" />
+                    AI Processing
+                  </span>
+                  <span className="flex items-center">
+                    <Settings className="w-4 h-4 mr-1 text-purple-500" />
+                    Vector Storage
+                  </span>
+                </div>
+              </div>
+
+              <input
+                type="file"
+                multiple
+                accept=".txt,.md,.pdf,.doc,.docx"
+                className="hidden"
+                id="document-upload"
+              />
+
+              <label
+                htmlFor="document-upload"
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+              >
+                Select Documents
               </label>
-            ))}
+
+              <p className="text-xs text-gray-500">
+                Supports: PDF, Word documents, text files (Max 10MB each)
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Vector Enhancement Options */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-200">
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-            <Brain className="w-5 h-5 mr-2 text-blue-600" />
-            Vector AI Enhancement
-          </h3>
-
-          <label className="flex items-center space-x-3">
+        {/* Vector Enhancement */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200">
+          <label className="flex items-start space-x-3">
             <input
               type="checkbox"
               name="vectorEnhancement"
               checked={formData.vectorEnhancement}
               onChange={handleInputChange}
-              className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+              className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 mt-1"
             />
             <div>
-              <span className="font-medium text-gray-900">Enable Vector RAG Intelligence</span>
-              <p className="text-sm text-gray-600">
+              <div className="flex items-center">
+                <Brain className="w-5 h-5 mr-2 text-blue-600" />
+                <span className="font-medium text-gray-900">Enable Vector RAG Intelligence</span>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
                 Use AI to analyze similar companies and generate industry-specific content
               </p>
             </div>
           </label>
         </div>
 
-        <DocumentToVectors className="mt-12" />
-
-        {/* Submit Button */}
+        {/* Generate Button */}
         <div className="text-center">
-          <button
-            type="submit"
-            disabled={loading || !formData.businessName || !formData.industry || !formData.businessType}
-            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
-                <Loader className="w-5 h-5 mr-2 animate-spin" />
-                Generating with AI...
-              </>
-            ) : (
-              <>
-                <Brain className="w-5 h-5 mr-2" />
-                Generate Vector-Enhanced Website
-              </>
-            )}
-          </button>
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Generate</h3>
+              <p className="text-gray-600">
+                {isBasicInfoComplete
+                  ? 'Your basic information is complete. Click generate to create your website!'
+                  : 'Please complete the required business information first.'
+                }
+              </p>
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={loading || !isBasicInfoComplete}
+              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <Loader className="w-5 h-5 mr-2 animate-spin" />
+                  Generating with AI...
+                </>
+              ) : (
+                <>
+                  <Brain className="w-5 h-5 mr-2" />
+                  Generate Website
+                </>
+              )}
+            </button>
+          </div>
         </div>
-      </form>
+      </div>
 
       {/* Results */}
       {error && (

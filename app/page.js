@@ -1,13 +1,8 @@
 'use client'
-
-import { useState, useEffect } from 'react'
-import ProjectGenerator from '@/components/ProjectGenerator'
-import { Brain, Zap, Database, Globe, AlertCircle, CheckCircle } from 'lucide-react'
+import ProjectGenerator from '@/components/generator/ProjectGenerator'
+import {  Zap, Database, Globe,  } from 'lucide-react'
 
 export default function HomePage() {
-  const [isLoading, setIsLoading] = useState(true)
-
-
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
 
@@ -17,30 +12,8 @@ export default function HomePage() {
           <div className="flex items-center justify-center mb-6">
           </div>
           <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Vector RAG Generator
+          Responsive Next Js,Firebase, Tailwind Application Generator
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Transform your business vision into stunning websites using cutting-edge AI technology.
-            Our Vector RAG system delivers contextually aware, industry-specific websites in seconds.
-          </p>
-          <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>Vector AI Enhanced</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              <span>RAG Technology</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-              <span>Industry Optimized</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-              <span>Instant Generation</span>
-            </div>
-          </div>
         </div>
         {/* Main Generator Component */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
@@ -126,7 +99,6 @@ export default function HomePage() {
           <p className="mb-4">
             Built with ❤️ using Vector RAG technology • Generate unlimited websites with AI precision
           </p>
-         
         </footer>
       </div>
     </main>

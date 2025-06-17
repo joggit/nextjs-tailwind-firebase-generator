@@ -145,9 +145,13 @@ export async function POST(request) {
     console.log(`🏁 Generation completed in ${processingTime}ms`);
     console.log(`📊 Generated ${generatedProject?.files ? Object.keys(generatedProject.files).length : 0} files`);
 
-    // Follow the same response structure as the working route
-    return new Response(
-      JSON.stringify({
+    // Try to create a response with files first, but with safety checks
+    console.log('🔍 Attempting to include files in response...');
+    
+    let responseData;
+    try {
+      // First, try to send the complete project
+      responseData = {
         success: true,
         data: {
           project: generatedProject,
@@ -167,12 +171,80 @@ export async function POST(request) {
             }
           },
         },
-      }),
+      };
+
+      // Test if this can be serialized
+      const testSerialization = JSON.stringify(responseData);
+      const sizeInMB = (testSerialization.length / (1024 * 1024)).toFixed(2);
+      console.log(`✅ Full response serializable: ${sizeInMB}MB`);
+      
+      // If too large (>4MB), fall back to temporary storage approach
+      if (testSerialization.length > 4 * 1024 * 1024) {
+        throw new Error('Response too large for JSON transport');
+      }
+
+    } catch (serializationError) {
+      console.log(`⚠️ Full response failed (${serializationError.message}), using temporary storage...`);
+      
+      // Store the full project in memory/global variable for download endpoint
+      if (typeof global !== 'undefined') {
+        global.tempProjects = global.tempProjects || {};
+        global.tempProjects[generatedProject.id] = generatedProject;
+        
+        // Clean up after 15 minutes
+        setTimeout(() => {
+          if (global.tempProjects && global.tempProjects[generatedProject.id]) {
+            delete global.tempProjects[generatedProject.id];
+            console.log(`🗑️ Cleaned up temporary project: ${generatedProject.id}`);
+          }
+        }, 15 * 60 * 1000);
+      }
+
+      // Create lightweight response without files
+      responseData = {
+        success: true,
+        data: {
+          project: {
+            id: generatedProject.id,
+            name: generatedProject.name,
+            type: generatedProject.type,
+            config: generatedProject.config,
+            template: generatedProject.template,
+            vectorEnhanced: generatedProject.vectorEnhanced,
+            generationMetadata: generatedProject.generationMetadata,
+            // Include a flag to indicate files are in temporary storage
+            _filesInTempStorage: true,
+            _tempStorageId: generatedProject.id
+          },
+          metadata: {
+            businessName: generationConfig.businessName,
+            industry: generationConfig.industry,
+            businessType: generationConfig.businessType,
+            projectType: generationConfig.projectType,
+            processingTime: `${processingTime}ms`,
+            generatedAt: new Date().toISOString(),
+            fileCount: generatedProject?.files ? Object.keys(generatedProject.files).length : 0,
+            ecommerceEnabled: generationConfig.enableEcommerce,
+            featuresEnabled: {
+              checkout: generationConfig.enableCheckout,
+              userAccounts: generationConfig.enableUserAccounts,
+              wishlist: generationConfig.enableWishlist
+            }
+          },
+        },
+      };
+    }
+
+    console.log('📤 Sending lightweight response...');
+
+    return new Response(
+      JSON.stringify(responseData),
       {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }
     );
+
   } catch (error) {
     console.error('🔥 Ecommerce generation error:', error);
 

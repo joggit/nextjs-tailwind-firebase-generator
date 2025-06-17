@@ -1,239 +1,160 @@
-// Fixed Download API - app/api/download/route.js
-import JSZip from 'jszip'
+// Download Route for Generated Projects
+// File: app/api/download/route.js
+
+import JSZip from 'jszip';
 
 export async function POST(request) {
   try {
-    console.log('📦 Starting download process...')
-    
-    // Get the project data from request body
-    const { project } = await request.json()
-    
-    if (!project) {
-      console.error('❌ No project data provided')
-      return new Response(JSON.stringify({ 
-        error: 'No project data provided' 
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      })
+    const body = await request.json();
+    const { project } = body;
+
+    console.log('📦 Processing download request...');
+
+    let projectData = null;
+
+    // Try to get project from temporary storage first
+    if (project?.id && typeof global !== 'undefined' && global.tempProjects) {
+      projectData = global.tempProjects[project.id];
+      console.log(`🔍 Found project in temporary storage: ${project.id}`);
     }
 
-    if (!project.files || Object.keys(project.files).length === 0) {
-      console.error('❌ No project files found')
-      return new Response(JSON.stringify({ 
-        error: 'No project files found' 
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      })
+    // Fall back to the project data passed in the request
+    if (!projectData) {
+      projectData = project;
+      console.log('📄 Using project data from request');
     }
 
-    console.log(`📁 Processing ${Object.keys(project.files).length} files...`)
+    if (!projectData || !projectData.files) {
+      return new Response(
+        JSON.stringify({
+          error: 'No project data found. Please regenerate the project.',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    console.log(`📊 Creating ZIP with ${Object.keys(projectData.files).length} files...`);
 
     // Create ZIP file
-    const zip = new JSZip()
+    const zip = new JSZip();
 
-    // Add all project files to ZIP
-    Object.entries(project.files).forEach(([filePath, content]) => {
-      // Normalize file path
-      const normalizedPath = filePath.replace(/^\/+/, '') // Remove leading slashes
-      zip.file(normalizedPath, content)
-      console.log(`✅ Added: ${normalizedPath}`)
-    })
-
-    // Add project metadata
-    const projectInfo = {
-      name: project.name,
-      template: project.template,
-      generatedAt: new Date().toISOString(),
-      vectorEnhanced: project.vectorEnhanced || false,
-      fileCount: Object.keys(project.files).length,
-      generationMetadata: project.generationMetadata || {}
+    // Add all files to ZIP
+    for (const [filePath, content] of Object.entries(projectData.files)) {
+      // Ensure we have valid content
+      const fileContent = typeof content === 'string' ? content : String(content || '');
+      
+      // Add file to ZIP
+      zip.file(filePath, fileContent);
     }
 
-    zip.file('PROJECT_INFO.json', JSON.stringify(projectInfo, null, 2))
+    // Add a README.md with project information
+    const readme = `# ${projectData.name || 'Generated Project'}
 
-    // Add installation guide
-    const installationGuide = `# ${project.name || 'Generated Project'} - Installation Guide
-
-## 🚀 Quick Start
-
-1. **Extract this ZIP** to your desired directory
-2. **Open terminal** in the extracted folder
-3. **Install dependencies:**
-   \`\`\`bash
-   npm install
-   \`\`\`
-4. **Set up environment variables:**
-   \`\`\`bash
-   cp .env.local.example .env.local
-   \`\`\`
-   Add your API keys to \`.env.local\`
-
-5. **Start development server:**
-   \`\`\`bash
-   npm run dev
-   \`\`\`
-6. **Open your browser:** http://localhost:3000
-
-## 📊 Project Details
-
-- **Name:** ${project.name || 'Generated Project'}
-- **Template:** ${project.template || 'modern'}
-- **Generated:** ${new Date().toISOString()}
-- **Files:** ${Object.keys(project.files).length}
-- **Vector Enhanced:** ${project.vectorEnhanced ? '✅ Yes' : '❌ No'}
-
-## 🛠️ Available Scripts
-
-- \`npm run dev\` - Start development server
-- \`npm run build\` - Build for production  
-- \`npm run start\` - Start production server
-- \`npm run lint\` - Run ESLint
-
-## 📁 Project Structure
-
-\`\`\`
-${project.name || 'project'}/
-├── app/                 # Next.js App Router
-├── src/components/      # React components
-├── lib/                 # Utility libraries
-├── package.json
-└── README.md
-\`\`\`
-
-## 🎯 Next Steps
-
-1. **Customize Content:** Edit components and pages
-2. **Update Styling:** Modify Tailwind config and CSS
-3. **Add Features:** Extend with your functionality
-4. **Deploy:** Use Vercel, Netlify, or your platform
-
-${project.vectorEnhanced ? `
-## 🧠 Vector Enhancement Features
-
-This project includes AI-enhanced features:
-- Smart content generation
-- Industry-specific recommendations  
-- Vector intelligence integration
-- Contextual components
-
-Visit \`/insights\` for AI-powered analysis.
-` : ''}
-
-## 📞 Need Help?
-
-- Check README.md for detailed docs
-- Review component files for examples
-- Explore the generated code structure
-
----
-
-**Generated by Vector-Enhanced Project Generator**  
-*AI-powered website generation with industry intelligence*
-
-Happy coding! 🚀`
-
-    zip.file('INSTALLATION.md', installationGuide)
-
-    // Add README if not already present
-    if (!project.files['README.md']) {
-      const readme = `# ${project.name || 'Generated Project'}
-
-${project.config?.businessDescription || 'An AI-enhanced website generated with vector intelligence.'}
-
-## Features
-
-${project.vectorEnhanced ? '- 🧠 AI-enhanced content generation' : ''}
-${project.vectorEnhanced ? '- 📊 Vector intelligence integration' : ''}
-- ⚡ Next.js 14 with App Router
-- 🎨 Tailwind CSS styling
-- 📱 Fully responsive design
-- 🔧 Modern development tools
+## Project Information
+- **Type**: ${projectData.type || 'Ecommerce Website'}
+- **Generated**: ${new Date().toISOString()}
+- **Files**: ${Object.keys(projectData.files).length}
 
 ## Getting Started
 
-See INSTALLATION.md for detailed setup instructions.
+1. Extract this ZIP file to your desired location
+2. Open a terminal in the project directory
+3. Install dependencies:
+   \`\`\`bash
+   npm install
+   \`\`\`
+4. Start the development server:
+   \`\`\`bash
+   npm run dev
+   \`\`\`
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-\`\`\`bash
-npm install
-npm run dev
-\`\`\`
+## Project Structure
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+This is a Next.js project with the following key directories:
 
----
+- \`app/\` - App Router pages and layouts
+- \`components/\` - Reusable React components
+- \`lib/\` - Utility functions and configurations
+- \`public/\` - Static assets
 
-Generated with Vector-Enhanced Project Generator`
+## Features
 
-      zip.file('README.md', readme)
+${projectData.config?.enableEcommerce ? '- ✅ E-commerce functionality' : ''}
+${projectData.config?.enableCheckout ? '- ✅ Shopping cart and checkout' : ''}
+${projectData.config?.enableUserAccounts ? '- ✅ User account management' : ''}
+${projectData.config?.enableWishlist ? '- ✅ Wishlist functionality' : ''}
+
+## Customization
+
+This project was generated with AI assistance. Feel free to modify and customize it according to your needs.
+
+## Support
+
+For questions about this generated project, please refer to the Next.js documentation:
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://reactjs.org/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+`;
+
+    zip.file('README.md', readme);
+
+    // Generate ZIP file
+    console.log('🔄 Generating ZIP file...');
+    const zipData = await zip.generateAsync({
+      type: 'nodebuffer',
+      compression: 'DEFLATE',
+      compressionOptions: {
+        level: 6
+      }
+    });
+
+    console.log(`✅ ZIP file generated (${(zipData.length / 1024 / 1024).toFixed(2)}MB)`);
+
+    // Clean up temporary storage
+    if (projectData.id && typeof global !== 'undefined' && global.tempProjects) {
+      delete global.tempProjects[projectData.id];
+      console.log(`🗑️ Cleaned up temporary project: ${projectData.id}`);
     }
 
-    console.log('🔄 Generating ZIP file...')
-
-    // Generate ZIP buffer with compression
-    const zipBuffer = await zip.generateAsync({
-      type: 'arraybuffer',
-      compression: 'DEFLATE',
-      compressionOptions: { level: 6 },
-      streamFiles: true
-    })
-
-    // Convert ArrayBuffer to Buffer for Next.js
-    const buffer = Buffer.from(zipBuffer)
-
-    // Create safe filename
-    const safeProjectName = (project.name || 'generated-project')
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-
-    const fileName = `${safeProjectName}-${Date.now()}.zip`
-    const fileSizeMB = (buffer.length / (1024 * 1024)).toFixed(2)
-
-    console.log(`✅ ZIP created: ${fileName} (${fileSizeMB}MB)`)
-
     // Return ZIP file
-    return new Response(buffer, {
+    return new Response(zipData, {
       status: 200,
       headers: {
         'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
-        'Content-Length': buffer.length.toString(),
-        'Cache-Control': 'no-cache',
-        'X-File-Name': fileName,
-        'X-File-Size': buffer.length.toString()
-      }
-    })
+        'Content-Disposition': `attachment; filename="${(projectData.name || 'website').replace(/[^a-zA-Z0-9]/g, '_')}.zip"`,
+        'Content-Length': zipData.length.toString(),
+      },
+    });
 
   } catch (error) {
-    console.error('❌ Download error:', error)
-    
-    return new Response(JSON.stringify({
-      error: 'Download failed',
-      details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    console.error('❌ Download failed:', error);
+
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to create download',
+        details: error.message,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
 
-// Health check endpoint
 export async function GET() {
-  return new Response(JSON.stringify({
-    status: 'healthy',
-    message: 'Download API is ready',
-    timestamp: new Date().toISOString(),
-    features: {
-      jszip: 'available',
-      compression: 'enabled',
-      metadata: 'included'
+  return new Response(
+    JSON.stringify({
+      message: 'Download endpoint - Use POST with project data',
+      usage: 'POST /api/download with { project: { ... } }',
+    }),
+    {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
     }
-  }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' }
-  })
+  );
 }
