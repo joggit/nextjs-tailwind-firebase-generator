@@ -1,0 +1,55 @@
+'use client'
+
+import Link from 'next/link'
+import { Star, ShoppingCart } from 'lucide-react'
+import Button from '@/components/ui/Button'
+
+function ProductCard({ product }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+      <Link href={`/product/${product.id}`}>
+        <div className="aspect-square bg-gray-100 overflow-hidden cursor-pointer">
+          <img
+            src={product.image || '/placeholder-product.jpg'}
+            alt={product.name}
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+      </Link>
+      
+      <div className="p-4">
+        <h3 className="font-semibold text-gray-900 hover:text-blue-600">
+          {product.name}
+        </h3>
+        
+        <div className="flex items-center mt-2 mb-2">
+          <div className="flex items-center">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`w-4 h-4 ${
+                  i < Math.floor(product.rating) 
+                    ? 'text-yellow-400 fill-current' 
+                    : 'text-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-lg font-bold text-gray-900">
+            ${product.price}
+          </span>
+        </div>
+        
+        <Button size="sm" className="w-full">
+          <ShoppingCart className="w-4 h-4 mr-1" />
+          Add to Cart
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default ProductCard;

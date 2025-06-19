@@ -1,0 +1,350 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { 
+  Star,
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube,
+  Linkedin,
+  Send,
+  Shield,
+  Truck,
+  RotateCcw,
+  CreditCard,
+  Smartphone,
+  Clock,
+  Award,
+  Users,
+  Globe
+} from 'lucide-react'
+import Button from '@/components/ui/Button'
+
+function EcommerceFooter() {
+  const [email, setEmail] = useState('')
+  const [isSubscribed, setIsSubscribed] = useState(false)
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault()
+    if (email.trim()) {
+      // Handle newsletter signup - replace with your logic
+      console.log('Newsletter signup:', email)
+      setIsSubscribed(true)
+      setEmail('')
+      setTimeout(() => setIsSubscribed(false), 3000)
+    }
+  }
+
+  const quickLinks = [
+    { name: 'Search', href: '/search' },
+    { name: 'New Arrivals', href: '/new-arrivals' },
+    { name: 'Best Sellers', href: '/best-sellers' },
+    { name: 'Sale', href: '/sale' },
+    { name: 'Gift Cards', href: '/gift-cards' },
+    { name: 'Size Guide', href: '/size-guide' }
+  ]
+
+  const customerService = [
+    { name: 'Contact Us', href: '/contact' },
+    { name: 'FAQ', href: '/faq' },
+    { name: 'Shipping Info', href: '/shipping' },
+    { name: 'Returns & Exchanges', href: '/returns' },
+    { name: 'Track Your Order', href: '/track-order' },
+    { name: 'Product Care', href: '/product-care' }
+  ]
+
+  const company = [
+    { name: 'About Us', href: '/about' },
+    { name: 'Careers', href: '/careers' },
+    { name: 'Press', href: '/press' },
+    { name: 'Sustainability', href: '/sustainability' },
+    { name: 'Affiliate Program', href: '/affiliates' },
+    { name: 'Store Locator', href: '/stores' }
+  ]
+
+  const legal = [
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Terms of Service', href: '/terms' },
+    { name: 'Cookie Policy', href: '/cookies' },
+    { name: 'Accessibility', href: '/accessibility' }
+  ]
+
+  const socialLinks = [
+    { name: 'Facebook', href: '#', icon: Facebook },
+    { name: 'Twitter', href: '#', icon: Twitter },
+    { name: 'Instagram', href: '#', icon: Instagram },
+    { name: 'YouTube', href: '#', icon: Youtube },
+    { name: 'LinkedIn', href: '#', icon: Linkedin }
+  ]
+
+  const features = [
+    {
+      icon: Truck,
+      title: 'Free Shipping',
+      description: 'On orders over $50'
+    },
+    {
+      icon: RotateCcw,
+      title: 'Easy Returns',
+      description: '30-day return policy'
+    },
+    {
+      icon: Shield,
+      title: 'Secure Payment',
+      description: '100% secure checkout'
+    },
+    {
+      icon: Award,
+      title: 'Quality Guarantee',
+      description: 'Premium products only'
+    }
+  ]
+
+  const currentYear = new Date().getFullYear()
+
+  return (
+    <footer className="bg-gray-900 text-white">
+      {/* Features Section */}
+      <div className="border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, index) => (
+              <div key={index} className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                  <feature.icon className="w-8 h-8 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white">{feature.title}</h3>
+                  <p className="text-sm text-gray-400">{feature.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Footer Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+          
+          {/* Company Info */}
+          <div className="lg:col-span-2">
+            <Link href="/" className="flex items-center space-x-2 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Star className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold text-white">StoreNAME</span>
+                <span className="text-xs text-gray-400">Quality Products</span>
+              </div>
+            </Link>
+            
+            <p className="text-gray-400 text-sm leading-relaxed mb-6">
+              Your trusted partner for quality products. We've been serving customers 
+              worldwide with premium products and exceptional service since 2020.
+            </p>
+
+            {/* Contact Info */}
+            <div className="space-y-2 mb-6">
+              <div className="flex items-center space-x-2 text-sm text-gray-400">
+                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <span>123 Commerce Street, Business City, BC 12345</span>
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-400">
+                <Phone className="w-4 h-4 flex-shrink-0" />
+                <span>(555) 123-4567</span>
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-400">
+                <Mail className="w-4 h-4 flex-shrink-0" />
+                <span>support@storename.com</span>
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-400">
+                <Clock className="w-4 h-4 flex-shrink-0" />
+                <span>Mon-Fri: 9AM-6PM EST</span>
+              </div>
+            </div>
+
+            {/* Social Links */}
+            <div className="flex space-x-3">
+              {socialLinks.map((social) => (
+                <Link
+                  key={social.name}
+                  href={social.href}
+                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors duration-200"
+                  aria-label={social.name}
+                >
+                  <social.icon className="w-4 h-4" />
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
+            <ul className="space-y-2">
+              {quickLinks.map((link) => (
+                <li key={link.name}>
+                  <Link 
+                    href={link.href}
+                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Customer Service */}
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-4">Customer Service</h3>
+            <ul className="space-y-2">
+              {customerService.map((link) => (
+                <li key={link.name}>
+                  <Link 
+                    href={link.href}
+                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-4">Company</h3>
+            <ul className="space-y-2">
+              {company.map((link) => (
+                <li key={link.name}>
+                  <Link 
+                    href={link.href}
+                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Newsletter Signup */}
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-4">Stay Updated</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Subscribe to get special offers, free giveaways, and updates.
+            </p>
+            
+            <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  required
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-sm"
+                size="sm"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Subscribe
+              </Button>
+            </form>
+
+            {isSubscribed && (
+              <div className="mt-2 text-green-400 text-sm">
+                ✓ Thanks for subscribing!
+              </div>
+            )}
+
+            {/* Trust Badges */}
+            <div className="mt-6">
+              <h4 className="text-sm font-semibold text-white mb-3">We Accept</h4>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="w-8 h-6 bg-gray-700 rounded flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="w-8 h-6 bg-gray-700 rounded flex items-center justify-center">
+                  <Smartphone className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="w-8 h-6 bg-gray-700 rounded flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-gray-400" />
+                </div>
+              </div>
+              
+              <div className="mt-3 flex items-center space-x-2">
+                <Shield className="w-4 h-4 text-green-400" />
+                <span className="text-xs text-gray-400">SSL Secured</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="text-center md:text-left">
+              <p className="text-gray-400 text-sm">
+                © {currentYear} StoreNAME. All rights reserved.
+              </p>
+              <div className="flex items-center justify-center md:justify-start space-x-1 mt-1">
+                <Users className="w-3 h-3 text-gray-500" />
+                <span className="text-xs text-gray-500">
+                  Trusted by 50,000+ customers worldwide
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs">
+              {legal.map((link, index) => (
+                <div key={link.name} className="flex items-center">
+                  <Link 
+                    href={link.href}
+                    className="text-gray-400 hover:text-white transition-colors duration-200"
+                  >
+                    {link.name}
+                  </Link>
+                  {index < legal.length - 1 && (
+                    <span className="text-gray-600 mx-2">|</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Globe className="w-4 h-4 text-gray-400" />
+              <select className="bg-gray-800 text-gray-400 text-xs border border-gray-700 rounded px-2 py-1">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+              </select>
+              <select className="bg-gray-800 text-gray-400 text-xs border border-gray-700 rounded px-2 py-1">
+                <option value="usd">USD $</option>
+                <option value="eur">EUR €</option>
+                <option value="gbp">GBP £</option>
+                <option value="cad">CAD $</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+export default EcommerceFooter

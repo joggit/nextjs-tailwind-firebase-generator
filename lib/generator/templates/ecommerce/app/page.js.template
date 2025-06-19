@@ -1,0 +1,313 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import  Header from '@/components/  Header'
+import { 
+  ShoppingCart, 
+  Star, 
+  Truck, 
+  Shield, 
+  RefreshCw, 
+  ArrowRight,
+  Heart,
+  Eye
+} from 'lucide-react'
+
+export default function HomePage() {
+  const router = useRouter()
+  const [cartCount, setCartCount] = useState(0)
+
+  // Sample product data
+  const featuredProducts = [
+    {
+      id: 1,
+      name: "Wireless Headphones",
+      price: 99.99,
+      originalPrice: 129.99,
+      image: "/placeholder-product1.jpg",
+      rating: 4.5,
+      reviews: 123
+    },
+    {
+      id: 2,
+      name: "Smart Watch",
+      price: 249.99,
+      image: "/placeholder-product2.jpg",
+      rating: 4.8,
+      reviews: 89
+    },
+    {
+      id: 3,
+      name: "Laptop Bag",
+      price: 59.99,
+      originalPrice: 79.99,
+      image: "/placeholder-product3.jpg",
+      rating: 4.3,
+      reviews: 45
+    },
+    {
+      id: 4,
+      name: "Bluetooth Speaker",
+      price: 79.99,
+      image: "/placeholder-product4.jpg",
+      rating: 4.6,
+      reviews: 67
+    }
+  ]
+
+  const categories = [
+    { name: "Electronics", image: "/category-electronics.jpg", href: "/shop/electronics" },
+    { name: "Fashion", image: "/category-fashion.jpg", href: "/shop/fashion" },
+    { name: "Home & Garden", image: "/category-home.jpg", href: "/shop/home" },
+    { name: "Sports", image: "/category-sports.jpg", href: "/shop/sports" }
+  ]
+
+  const handleCartClick = () => {
+    router.push('/cart')
+  }
+
+  const handleSearch = (searchTerm) => {
+    router.push(`/search?q=${encodeURIComponent(searchTerm)}`)
+  }
+
+  const addToCart = (product) => {
+    setCartCount(prev => prev + 1)
+    // Here you would typically add to your cart state/context
+    console.log('Added to cart:', product)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      < Header
+        businessName="ShopEasy"
+        cartItemCount={cartCount}
+        onCartClick={handleCartClick}
+        onSearchSubmit={handleSearch}
+      />
+
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              Shop Smart, Shop Easy
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-blue-100">
+              Discover amazing products at unbeatable prices
+            </p>
+            <button 
+              onClick={() => router.push('/shop')}
+              className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors inline-flex items-center"
+            >
+              Shop Now
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Indicators */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="flex flex-col items-center">
+              <Truck className="w-12 h-12 text-blue-600 mb-4" />
+              <h3 className="font-semibold text-lg mb-2">Free Shipping</h3>
+              <p className="text-gray-600">Free shipping on orders over $50</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <Shield className="w-12 h-12 text-blue-600 mb-4" />
+              <h3 className="font-semibold text-lg mb-2">Secure Payment</h3>
+              <p className="text-gray-600">Your payment information is safe</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <RefreshCw className="w-12 h-12 text-blue-600 mb-4" />
+              <h3 className="font-semibold text-lg mb-2">Easy Returns</h3>
+              <p className="text-gray-600">30-day return policy</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Products */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Products</h2>
+            <p className="text-gray-600">Check out our most popular items</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredProducts.map((product) => (
+              <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow group">
+                <div className="relative">
+                  <div className="aspect-square bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400">Product Image</span>
+                  </div>
+                  
+                  {/* Product overlay actions */}
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-50 mb-2 block">
+                      <Heart className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-50 block">
+                      <Eye className="w-4 h-4 text-gray-600" />
+                    </button>
+                  </div>
+
+                  {/* Sale badge */}
+                  {product.originalPrice && (
+                    <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
+                      Sale
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
+                  
+                  {/* Rating */}
+                  <div className="flex items-center mb-2">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < Math.floor(product.rating)
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-600 ml-2">({product.reviews})</span>
+                  </div>
+
+                  {/* Price */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <span className="text-lg font-bold text-gray-900">${product.price}</span>
+                      {product.originalPrice && (
+                        <span className="text-sm text-gray-500 line-through ml-2">
+                          ${product.originalPrice}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Add to cart button */}
+                  <button
+                    onClick={() => addToCart(product)}
+                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <button 
+              onClick={() => router.push('/shop')}
+              className="bg-gray-900 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              View All Products
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Shop by Category</h2>
+            <p className="text-gray-600">Explore our wide range of products</p>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((category) => (
+              <button
+                key={category.name}
+                onClick={() => router.push(category.href)}
+                className="group text-center hover:shadow-lg transition-shadow"
+              >
+                <div className="aspect-square bg-gray-200 rounded-lg mb-4 flex items-center justify-center group-hover:bg-gray-300 transition-colors">
+                  <span className="text-gray-500">Category Image</span>
+                </div>
+                <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {category.name}
+                </h3>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter */}
+      <section className="py-16 bg-gray-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
+          <p className="text-gray-300 mb-8">Get the latest offers and product updates</p>
+          
+          <div className="max-w-md mx-auto flex">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="flex-1 px-4 py-3 rounded-l-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button className="bg-blue-600 px-6 py-3 rounded-r-lg hover:bg-blue-700 transition-colors">
+              Subscribe
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-white py-12 border-t">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="font-bold text-lg mb-4">ShopEasy</h3>
+              <p className="text-gray-600">Your trusted online shopping destination.</p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-gray-600">
+                <li><a href="/about" className="hover:text-blue-600">About Us</a></li>
+                <li><a href="/contact" className="hover:text-blue-600">Contact</a></li>
+                <li><a href="/shipping" className="hover:text-blue-600">Shipping Info</a></li>
+                <li><a href="/returns" className="hover:text-blue-600">Returns</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Categories</h4>
+              <ul className="space-y-2 text-gray-600">
+                <li><a href="/shop/electronics" className="hover:text-blue-600">Electronics</a></li>
+                <li><a href="/shop/fashion" className="hover:text-blue-600">Fashion</a></li>
+                <li><a href="/shop/home" className="hover:text-blue-600">Home & Garden</a></li>
+                <li><a href="/shop/sports" className="hover:text-blue-600">Sports</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Customer Service</h4>
+              <ul className="space-y-2 text-gray-600">
+                <li>📞 (555) 123-4567</li>
+                <li>✉️ support@shopeasy.com</li>
+                <li>⏰ Mon-Fri 9AM-6PM</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t mt-8 pt-8 text-center text-gray-600">
+            <p>&copy; 2024 ShopEasy. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}

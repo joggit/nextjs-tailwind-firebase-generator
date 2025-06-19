@@ -3,7 +3,7 @@
 
 'use strict';
 
-import ProjectTemplateGeneratorWithEcommerce from '@/lib/generator/ecommerce/ProjectTemplateGeneratorWithEcommerce.js';
+import ProjectTemplateGeneratorWithEcommerce from '@/lib/generator/TemplateGenerator.js';
 
 // Initialize services
 let ecommerceGenerator = null;
