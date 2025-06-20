@@ -3,7 +3,7 @@
 
 'use strict';
 
-import ProjectTemplateGeneratorWithEcommerce from '@/lib/generator/TemplateGenerator.js';
+import TemplateGenerator from '@/lib/generator/TemplateGenerator.js';
 
 // Initialize services
 let ecommerceGenerator = null;
@@ -11,7 +11,7 @@ let ecommerceGenerator = null;
 async function initializeServices() {
   try {
     if (!ecommerceGenerator) {
-      ecommerceGenerator = new ProjectTemplateGeneratorWithEcommerce();
+      ecommerceGenerator = new TemplateGenerator();
     }
 
     return { ecommerceGenerator };

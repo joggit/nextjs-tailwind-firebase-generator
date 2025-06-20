@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import {
   Brain, Zap, Download, Loader, CheckCircle, AlertCircle, Users, Building, Plus, X, Edit3, Globe,
-  FileText, Phone, Info, Trash2, Clock, Cloud, Settings, ChevronRight, ChevronDown, Save, FolderOpen
+  FileText, Phone, Info, Trash2, Clock, Cloud, Settings, ChevronRight, ChevronDown, Save, FolderOpen,
+  ShoppingCart, Store
 } from 'lucide-react'
 import { initializeApp, getApps } from 'firebase/app'
 import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, query, orderBy, limit, updateDoc } from 'firebase/firestore'
@@ -26,6 +27,9 @@ function initializeFirebase() {
 
 function ProjectGenerator() {
   const [formData, setFormData] = useState({
+    // Project Type Selection
+    projectType: '', // 'basic' or 'ecommerce'
+    
     // First Section - Basic Business Information
     businessName: '',
     industry: '',
@@ -34,6 +38,12 @@ function ProjectGenerator() {
     businessDescription: '',
     template: 'modern',
     vectorEnhancement: true,
+
+    // Ecommerce-specific options
+    enableCheckout: true,
+    enableUserAccounts: true,
+    enableWishlist: true,
+    enableInventoryTracking: true,
 
     // Second Section - Page Configuration
     pages: [
@@ -88,6 +98,69 @@ function ProjectGenerator() {
 
     initializeFirebaseAndLoadConfigs()
   }, [])
+
+  // Update pages when project type changes
+  useEffect(() => {
+    if (formData.projectType === 'ecommerce') {
+      // Add ecommerce-specific pages
+      const ecommercePages = [
+        {
+          id: 'home',
+          name: 'Home',
+          type: 'home',
+          enabled: true,
+          config: {
+            heroStyle: 'gradient',
+            heroContent: '',
+            showStats: true,
+            showTestimonials: true,
+            ctaText: 'Shop Now'
+          }
+        },
+        {
+          id: 'shop',
+          name: 'Shop',
+          type: 'shop',
+          enabled: true,
+          config: {}
+        },
+        {
+          id: 'cart',
+          name: 'Shopping Cart',
+          type: 'cart',
+          enabled: true,
+          config: {}
+        }
+      ]
+      
+      setFormData(prev => ({
+        ...prev,
+        pages: ecommercePages
+      }))
+    } else if (formData.projectType === 'basic') {
+      // Reset to basic pages
+      const basicPages = [
+        {
+          id: 'home',
+          name: 'Home',
+          type: 'home',
+          enabled: true,
+          config: {
+            heroStyle: 'gradient',
+            heroContent: '',
+            showStats: true,
+            showTestimonials: true,
+            ctaText: 'Get Started'
+          }
+        }
+      ]
+      
+      setFormData(prev => ({
+        ...prev,
+        pages: basicPages
+      }))
+    }
+  }, [formData.projectType])
 
   // Firebase Functions
   const loadSavedConfigurations = async (database = db) => {
@@ -183,6 +256,7 @@ function ProjectGenerator() {
         businessName: formData.businessName,
         industry: formData.industry,
         template: formData.template,
+        projectType: formData.projectType,
         generatedAt: new Date(),
         vectorEnhanced: formData.vectorEnhancement,
         pageCount: formData.pages.filter(p => p.enabled).length,
@@ -241,6 +315,55 @@ function ProjectGenerator() {
           type: 'text',
           placeholder: 'Get Started',
           default: 'Get Started'
+        }
+      ]
+    },
+    shop: {
+      label: 'Shop/Products',
+      icon: Store,
+      description: 'Product catalog and shopping interface',
+      configFields: [
+        {
+          key: 'productsPerPage',
+          label: 'Products Per Page',
+          type: 'select',
+          options: [
+            { value: '12', label: '12 products' },
+            { value: '24', label: '24 products' },
+            { value: '48', label: '48 products' }
+          ],
+          default: '24'
+        },
+        {
+          key: 'enableFilters',
+          label: 'Enable Product Filters',
+          type: 'checkbox',
+          default: true
+        },
+        {
+          key: 'enableSearch',
+          label: 'Enable Product Search',
+          type: 'checkbox',
+          default: true
+        }
+      ]
+    },
+    cart: {
+      label: 'Shopping Cart',
+      icon: ShoppingCart,
+      description: 'Shopping cart and checkout process',
+      configFields: [
+        {
+          key: 'enableGuestCheckout',
+          label: 'Allow Guest Checkout',
+          type: 'checkbox',
+          default: true
+        },
+        {
+          key: 'enableCoupons',
+          label: 'Enable Coupon Codes',
+          type: 'checkbox',
+          default: true
         }
       ]
     },
@@ -667,39 +790,50 @@ function ProjectGenerator() {
   }
 
   const handleSubmit = async () => {
-    setLoading(true)
-    setError(null)
-    setResult(null)
+  setLoading(true)
+  setError(null)
+  setResult(null)
 
-    try {
-      const response = await fetch('/api/generateEcommerce', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          customRequirements: formData.businessDescription,
-          pages: formData.pages.filter(page => page.enabled)
-        }),
-      })
+  try {
+    // Use single API endpoint but pass project type information
+    const apiEndpoint = '/api/generate'
+    
+    const response = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...formData,
+        customRequirements: formData.businessDescription,
+        pages: formData.pages.filter(page => page.enabled),
+        // Explicitly pass project type and ecommerce flags
+        projectType: formData.projectType, // 'basic' or 'ecommerce'
+        isEcommerce: formData.projectType === 'ecommerce',
+        // Ecommerce-specific options (only relevant if projectType is 'ecommerce')
+        enableEcommerce: formData.projectType === 'ecommerce',
+        enableCheckout: formData.enableCheckout,
+        enableUserAccounts: formData.enableUserAccounts,
+        enableWishlist: formData.enableWishlist,
+        enableInventoryTracking: formData.enableInventoryTracking,
+      }),
+    })
 
-      const data = await response.json()
+    const data = await response.json()
 
-      if (data.success) {
-        setResult(data.data)
-
-        // Save generation record to Firebase
-        await saveGeneratedWebsite(data.data)
-      } else {
-        setError(data.error || 'Failed to generate project')
-      }
-    } catch (err) {
-      setError(`Generation failed: ${err.message}`)
-    } finally {
-      setLoading(false)
+    if (data.success) {
+      setResult(data.data)
+      // Save generation record to Firebase
+      await saveGeneratedWebsite(data.data)
+    } else {
+      setError(data.error || 'Failed to generate project')
     }
+  } catch (err) {
+    setError(`Generation failed: ${err.message}`)
+  } finally {
+    setLoading(false)
   }
+}
 
   const downloadProject = async () => {
     if (!result) return
@@ -731,7 +865,7 @@ function ProjectGenerator() {
     }
   }
 
-  const isBasicInfoComplete = formData.businessName && formData.industry && formData.businessType
+  const isBasicInfoComplete = formData.projectType && formData.businessName && formData.industry && formData.businessType
   const activePage = formData.pages.find(page => page.id === activeTab)
 
   return (
@@ -792,7 +926,7 @@ function ProjectGenerator() {
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-900">{config.name}</h4>
                       <div className="text-sm text-gray-600">
-                        {config.businessName} • {config.industry} • {config.pages?.filter(p => p.enabled).length || 0} pages
+                        {config.businessName} • {config.industry} • {config.projectType} • {config.pages?.filter(p => p.enabled).length || 0} pages
                       </div>
                       <div className="text-xs text-gray-500 flex items-center mt-1">
                         <Clock className="w-3 h-3 mr-1" />
@@ -858,6 +992,85 @@ function ProjectGenerator() {
       </div>
 
       <div className="space-y-8">
+
+        {/* SECTION 0: PROJECT TYPE SELECTION */}
+        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+          <div className="flex items-center mb-6">
+            <div className="flex items-center justify-center w-8 h-8 bg-purple-600 text-white rounded-full mr-3 font-bold">
+              0
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Choose Your Project Type</h2>
+            <span className="ml-3 text-sm bg-red-100 text-red-700 px-2 py-1 rounded-full">Required</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Basic Website Option */}
+            <div 
+              className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
+                formData.projectType === 'basic' 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+              onClick={() => setFormData(prev => ({ ...prev, projectType: 'basic' }))}
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                  <Globe className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Basic Website</h3>
+                  <p className="text-sm text-gray-600">Standard business website</p>
+                </div>
+              </div>
+              <ul className="text-sm text-gray-600 space-y-2">
+                <li>• Home, About, Services, Contact pages</li>
+                <li>• Contact forms and business info</li>
+                <li>• Portfolio and testimonials</li>
+                <li>• SEO optimized</li>
+                <li>• Mobile responsive</li>
+              </ul>
+              {formData.projectType === 'basic' && (
+                <div className="mt-4 flex items-center text-blue-600">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  <span className="text-sm font-medium">Selected</span>
+                </div>
+              )}
+            </div>
+
+            {/* Ecommerce Option */}
+            <div 
+              className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
+                formData.projectType === 'ecommerce' 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+              onClick={() => setFormData(prev => ({ ...prev, projectType: 'ecommerce' }))}
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                  <ShoppingCart className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">E-commerce Store</h3>
+                  <p className="text-sm text-gray-600">Full online store</p>
+                </div>
+              </div>
+              <ul className="text-sm text-gray-600 space-y-2">
+                <li>• Product catalog and search</li>
+                <li>• Shopping cart and checkout</li>
+                <li>• User accounts and wishlist</li>
+                <li>• Payment integration ready</li>
+                <li>• Inventory management</li>
+              </ul>
+              {formData.projectType === 'ecommerce' && (
+                <div className="mt-4 flex items-center text-blue-600">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  <span className="text-sm font-medium">Selected</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* SECTION 1: BASIC BUSINESS INFORMATION (Required) */}
         <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
@@ -956,6 +1169,57 @@ function ProjectGenerator() {
             />
           </div>
 
+          {/* Ecommerce-specific options */}
+          {formData.projectType === 'ecommerce' && (
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <ShoppingCart className="w-5 h-5 mr-2 text-green-600" />
+                E-commerce Features
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    name="enableCheckout"
+                    checked={formData.enableCheckout}
+                    onChange={handleInputChange}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Enable Checkout Process</span>
+                </label>
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    name="enableUserAccounts"
+                    checked={formData.enableUserAccounts}
+                    onChange={handleInputChange}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Enable User Accounts</span>
+                </label>
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    name="enableWishlist"
+                    checked={formData.enableWishlist}
+                    onChange={handleInputChange}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Enable Wishlist</span>
+                </label>
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    name="enableInventoryTracking"
+                    checked={formData.enableInventoryTracking}
+                    onChange={handleInputChange}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Inventory Tracking</span>
+                </label>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* SECTION 2: PAGE CONFIGURATION (Optional) */}
@@ -1203,8 +1467,8 @@ function ProjectGenerator() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Generate</h3>
               <p className="text-gray-600">
                 {isBasicInfoComplete
-                  ? 'Your basic information is complete. Click generate to create your website!'
-                  : 'Please complete the required business information first.'
+                  ? `Your ${formData.projectType} project is ready! Click generate to create your website.`
+                  : 'Please complete the required information first.'
                 }
               </p>
             </div>
@@ -1217,12 +1481,12 @@ function ProjectGenerator() {
               {loading ? (
                 <>
                   <Loader className="w-5 h-5 mr-2 animate-spin" />
-                  Generating with AI...
+                  Generating {formData.projectType} site...
                 </>
               ) : (
                 <>
                   <Brain className="w-5 h-5 mr-2" />
-                  Generate Website
+                  Generate {formData.projectType === 'ecommerce' ? 'E-commerce Store' : 'Website'}
                 </>
               )}
             </button>
@@ -1246,7 +1510,9 @@ function ProjectGenerator() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
               <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-              <span className="font-medium text-green-800">Website Generated Successfully!</span>
+              <span className="font-medium text-green-800">
+                {formData.projectType === 'ecommerce' ? 'E-commerce Store' : 'Website'} Generated Successfully!
+              </span>
             </div>
             <button
               onClick={downloadProject}
@@ -1257,7 +1523,11 @@ function ProjectGenerator() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div className="bg-white p-4 rounded-lg">
+              <div className="font-medium text-gray-900">Project Type</div>
+              <div className="text-gray-600 capitalize">{formData.projectType}</div>
+            </div>
             <div className="bg-white p-4 rounded-lg">
               <div className="font-medium text-gray-900">Files Generated</div>
               <div className="text-gray-600">{result.metadata?.fileCount || 0} files</div>
