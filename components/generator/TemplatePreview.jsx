@@ -1,5 +1,5 @@
-// Template Preview Component
-// File: src/components/generator/TemplatePreview.jsx
+// Template Preview Component - Fixed
+// File: components/generator/TemplatePreview.jsx
 
 'use client'
 
@@ -7,13 +7,28 @@ import { motion } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Wand2 } from 'lucide-react'
 
 export default function TemplatePreview({ config, onGenerate, onPrev }) {
+  // Safely get styling properties with defaults
+  const getStyle = (path, defaultValue) => {
+    try {
+      return path.split('.').reduce((obj, key) => obj?.[key], config) || defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  };
+
+  const theme = getStyle('styling.theme', 'light');
+  const primaryColor = getStyle('styling.primaryColor', '#3B82F6');
+  const features = config?.features || [];
+  const template = config?.template || 'modern';
+  const name = config?.name || config?.businessName || 'Your Application';
+
   const getPreviewData = () => {
     const baseData = {
-      title: config.name || 'Your Application',
+      title: name,
       description: 'Generated with AI-powered Next.js generator'
     }
 
-    switch (config.template) {
+    switch (template) {
       case 'ecommerce':
         return {
           ...baseData,
@@ -98,14 +113,14 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
             animate={{ opacity: 1, y: 0 }}
             className="h-full flex flex-col"
             style={{
-              background: config.styling.theme === 'dark' 
+              background: theme === 'dark' 
                 ? 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)'
                 : 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)'
             }}
           >
             {/* Header */}
             <div className={`px-8 py-4 border-b ${
-              config.styling.theme === 'dark' 
+              theme === 'dark' 
                 ? 'border-gray-700 bg-gray-800' 
                 : 'border-gray-200 bg-white'
             }`}>
@@ -113,14 +128,14 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
                 <div className="flex items-center space-x-2">
                   <div 
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-                    style={{ backgroundColor: config.styling.primaryColor }}
+                    style={{ backgroundColor: primaryColor }}
                   >
-                    {config.name?.[0]?.toUpperCase() || 'A'}
+                    {name?.[0]?.toUpperCase() || 'A'}
                   </div>
                   <span className={`font-bold ${
-                    config.styling.theme === 'dark' ? 'text-white' : 'text-gray-900'
+                    theme === 'dark' ? 'text-white' : 'text-gray-900'
                   }`}>
-                    {config.name || 'Your App'}
+                    {name || 'Your App'}
                   </span>
                 </div>
                 <nav className="hidden md:flex space-x-6">
@@ -128,7 +143,7 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
                     <span 
                       key={section}
                       className={`text-sm ${
-                        config.styling.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
                       }`}
                     >
                       {section}
@@ -142,18 +157,18 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
             <div className="flex-1 flex items-center justify-center px-8">
               <div className="text-center max-w-2xl">
                 <h1 className={`text-4xl font-bold mb-4 ${
-                  config.styling.theme === 'dark' ? 'text-white' : 'text-gray-900'
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
                 }`}>
                   {preview.hero}
                 </h1>
                 <p className={`text-lg mb-8 ${
-                  config.styling.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
                 }`}>
                   {preview.description}
                 </p>
                 <button
                   className="px-6 py-3 text-white rounded-lg font-medium"
-                  style={{ backgroundColor: config.styling.primaryColor }}
+                  style={{ backgroundColor: primaryColor }}
                 >
                   {preview.cta}
                 </button>
@@ -161,32 +176,32 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
             </div>
 
             {/* Features Bar */}
-            {config.features.length > 0 && (
+            {features.length > 0 && (
               <div className={`px-8 py-4 border-t ${
-                config.styling.theme === 'dark' 
+                theme === 'dark' 
                   ? 'border-gray-700 bg-gray-800' 
                   : 'border-gray-200 bg-gray-50'
               }`}>
                 <div className="flex flex-wrap gap-2">
-                  {config.features.slice(0, 4).map((feature) => (
+                  {features.slice(0, 4).map((feature) => (
                     <span
                       key={feature}
                       className="px-3 py-1 text-xs rounded-full"
                       style={{ 
-                        backgroundColor: config.styling.primaryColor + '20',
-                        color: config.styling.primaryColor
+                        backgroundColor: primaryColor + '20',
+                        color: primaryColor
                       }}
                     >
                       {feature}
                     </span>
                   ))}
-                  {config.features.length > 4 && (
+                  {features.length > 4 && (
                     <span className={`px-3 py-1 text-xs rounded-full ${
-                      config.styling.theme === 'dark' 
+                      theme === 'dark' 
                         ? 'bg-gray-700 text-gray-300' 
                         : 'bg-gray-200 text-gray-600'
                     }`}>
-                      +{config.features.length - 4} more
+                      +{features.length - 4} more
                     </span>
                   )}
                 </div>
@@ -204,19 +219,19 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
             <span className="font-medium text-gray-700">Template:</span>
-            <span className="ml-2 capitalize">{config.template}</span>
+            <span className="ml-2 capitalize">{template}</span>
           </div>
           <div>
             <span className="font-medium text-gray-700">Theme:</span>
-            <span className="ml-2 capitalize">{config.styling.theme}</span>
+            <span className="ml-2 capitalize">{theme}</span>
           </div>
           <div>
             <span className="font-medium text-gray-700">Features:</span>
-            <span className="ml-2">{config.features.length} selected</span>
+            <span className="ml-2">{features.length} selected</span>
           </div>
           <div>
             <span className="font-medium text-gray-700">AI Content:</span>
-            <span className="ml-2">{config.content.useAI ? 'Enabled' : 'Disabled'}</span>
+            <span className="ml-2">{getStyle('content.useAI', false) ? 'Enabled' : 'Disabled'}</span>
           </div>
         </div>
       </div>

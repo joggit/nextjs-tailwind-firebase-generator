@@ -1,41 +1,50 @@
-// API Route for Ecommerce Project Generation
-// File: app/api/generateEcommerce/route.js
+// Updated API Route with Design System Support
+// File: app/api/generate/route.js
 
 'use strict';
 
-import TemplateGenerator from '@/lib/generator/TemplateGenerator.js';
+import { DesignIntegratedGenerator } from '@/lib/generator/design/DesignIntegration.js';
 
 // Initialize services
-let ecommerceGenerator = null;
+let designGenerator = null;
 
 async function initializeServices() {
   try {
-    if (!ecommerceGenerator) {
-      ecommerceGenerator = new TemplateGenerator();
+    if (!designGenerator) {
+      designGenerator = new DesignIntegratedGenerator();
     }
 
-    return { ecommerceGenerator };
+    return { designGenerator };
   } catch (error) {
-    console.warn('⚠️ Ecommerce generator initialization failed:', error.message);
+    console.warn('⚠️ Design generator initialization failed:', error.message);
     throw error;
   }
 }
 
 export async function GET() {
   try {
-    const { ecommerceGenerator } = await initializeServices();
+    const { designGenerator } = await initializeServices();
 
     return new Response(
       JSON.stringify({
         status: 'ready',
-        message: 'Ecommerce Project Generator API is online',
+        message: 'Design-Enhanced Website Generator API is online',
         capabilities: [
-          'Ecommerce website generation',
-          'Shopping cart functionality',
-          'Product management',
-          'Checkout process',
-          'User account system',
-          'Payment integration ready'
+          'Multi-theme design system',
+          'Responsive layouts',
+          'Custom hero styles',
+          'AI-powered content generation',
+          'Professional component library',
+          'Modern web technologies',
+          'Vector RAG enhancement',
+          'SEO optimization'
+        ],
+        supportedThemes: [
+          'modern', 'classic', 'minimalist', 
+          'bold', 'corporate', 'creative'
+        ],
+        supportedLayouts: [
+          'standard', 'magazine', 'landing', 'portfolio'
         ],
         timestamp: new Date().toISOString(),
       }),
@@ -50,7 +59,7 @@ export async function GET() {
     return new Response(
       JSON.stringify({
         status: 'error',
-        message: 'Failed to initialize ecommerce generator',
+        message: 'Failed to initialize design generator',
         error: error.message,
       }),
       {
@@ -71,13 +80,22 @@ export async function POST(request) {
       name,
       industry,
       businessType,
-      projectType,
+      targetAudience,
       businessDescription = '',
       pages = [],
-      enableEcommerce = true,
-      enableCheckout = true,
-      enableUserAccounts = true,
-      enableWishlist = true,
+      features = [],
+      
+      // Design Configuration
+      design = {},
+      designConfig = {},
+      
+      // Enhanced Features
+      vectorEnhancement = true,
+      enableAnalytics = true,
+      enableSEO = true,
+      
+      // Legacy support
+      template = 'modern',
       customRequirements = ''
     } = body;
 
@@ -95,48 +113,83 @@ export async function POST(request) {
       );
     }
 
-    const { ecommerceGenerator } = await initializeServices();
+    const { designGenerator } = await initializeServices();
 
     const projectName = businessName || name;
-    console.log('🚀 Starting ecommerce generation for:', projectName);
+    console.log('🎨 Starting design-enhanced generation for:', projectName);
 
-    // Prepare configuration following the same pattern
+    // Merge design configurations (prioritize designConfig over design)
+    const finalDesignConfig = {
+      theme: designConfig.theme || design.theme || template || 'modern',
+      layout: designConfig.layout || design.layout || 'standard',
+      heroStyle: designConfig.heroStyle || design.heroStyle || 'centered',
+      customizations: {
+        ...design.customizations,
+        ...designConfig.customizations
+      }
+    };
+
+    // Prepare comprehensive configuration
     const generationConfig = {
-      projectId: `project_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      // Basic Info
+      projectId: `design_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       businessName: projectName,
       name: projectName,
-      industry: industry || 'retail',
-      businessType: businessType || 'ecommerce',
-      projectType: projectType || 'ecommerce',
-      businessDescription: businessDescription || `${projectName} - Quality products and services`,
-      pages: pages.length > 0 ? pages : [],
-      enableEcommerce,
-      enableCheckout,
-      enableUserAccounts,
-      enableWishlist,
-      customRequirements: customRequirements || businessDescription,
-      includeAnalytics: true,
-      generateSEO: true
+      industry: industry || 'business',
+      businessType: businessType || 'company',
+      targetAudience: targetAudience || 'customers',
+      businessDescription: businessDescription || customRequirements || `${projectName} - Professional services`,
+      
+      // Design Configuration
+      design: finalDesignConfig,
+      
+      // Page Configuration
+      pages: pages.length > 0 ? pages : [
+        { id: 'home', name: 'Home', type: 'home', enabled: true, config: {} },
+        { id: 'about', name: 'About', type: 'about', enabled: true, config: {} },
+        { id: 'services', name: 'Services', type: 'services', enabled: true, config: {} },
+        { id: 'contact', name: 'Contact', type: 'contact', enabled: true, config: {} }
+      ],
+      
+      // Features
+      features: features.length > 0 ? features : [
+        'Responsive Design',
+        'SEO Optimized',
+        'Modern UI/UX',
+        'Cross-browser Compatible'
+      ],
+      
+      // Enhanced Options
+      vectorEnhancement,
+      enableAnalytics,
+      enableSEO,
+      
+      // Generation Metadata
+      generationType: 'design-enhanced',
+      apiVersion: '2.0',
+      includeDesignSystem: true
     };
 
     console.log('📝 Generation config:', {
       businessName: generationConfig.businessName,
-      projectType: generationConfig.projectType,
-      businessType: generationConfig.businessType,
+      designTheme: finalDesignConfig.theme,
+      layout: finalDesignConfig.layout,
+      heroStyle: finalDesignConfig.heroStyle,
       industry: generationConfig.industry,
+      businessType: generationConfig.businessType,
       enabledPages: generationConfig.pages?.filter(p => p.enabled)?.length || 0,
-      enableEcommerce: generationConfig.enableEcommerce
+      vectorEnhancement: generationConfig.vectorEnhancement
     });
 
     let generatedProject;
     
     try {
-      console.log('🎯 Generating ecommerce project...');
-      generatedProject = await ecommerceGenerator.generateProject(generationConfig);
-      console.log('✅ Ecommerce generation completed successfully');
+      console.log('🎯 Generating design-enhanced project...');
+      generatedProject = await designGenerator.generateProject(generationConfig);
+      console.log('✅ Design-enhanced generation completed successfully');
     } catch (genError) {
-      console.error('❌ Ecommerce generation error:', genError);
-      throw new Error(`Ecommerce generation failed: ${genError.message}`);
+      console.error('❌ Design generation error:', genError);
+      throw new Error(`Design-enhanced generation failed: ${genError.message}`);
     }
 
     const endTime = Date.now();
@@ -145,43 +198,128 @@ export async function POST(request) {
     console.log(`🏁 Generation completed in ${processingTime}ms`);
     console.log(`📊 Generated ${generatedProject?.files ? Object.keys(generatedProject.files).length : 0} files`);
 
-    // Follow the same response structure as the working route
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: {
-          project: generatedProject,
-          metadata: {
-            businessName: generationConfig.businessName,
-            industry: generationConfig.industry,
-            businessType: generationConfig.businessType,
-            projectType: generationConfig.projectType,
-            processingTime: `${processingTime}ms`,
-            generatedAt: new Date().toISOString(),
-            fileCount: generatedProject?.files ? Object.keys(generatedProject.files).length : 0,
-            ecommerceEnabled: generationConfig.enableEcommerce,
-            featuresEnabled: {
-              checkout: generationConfig.enableCheckout,
-              userAccounts: generationConfig.enableUserAccounts,
-              wishlist: generationConfig.enableWishlist
-            }
+    // Create response with enhanced metadata
+    const responseData = {
+      success: true,
+      data: {
+        project: generatedProject,
+        metadata: {
+          businessName: generationConfig.businessName,
+          industry: generationConfig.industry,
+          businessType: generationConfig.businessType,
+          processingTime: `${processingTime}ms`,
+          generatedAt: new Date().toISOString(),
+          fileCount: generatedProject?.files ? Object.keys(generatedProject.files).length : 0,
+          
+          // Design Metadata
+          designSystem: {
+            theme: finalDesignConfig.theme,
+            layout: finalDesignConfig.layout,
+            heroStyle: finalDesignConfig.heroStyle,
+            customizations: Object.keys(finalDesignConfig.customizations).length
           },
+          
+          // Feature Metadata
+          featuresEnabled: {
+            vectorEnhancement: generationConfig.vectorEnhancement,
+            analytics: generationConfig.enableAnalytics,
+            seo: generationConfig.enableSEO,
+            designSystem: true,
+            responsiveDesign: true
+          },
+          
+          // Page Metadata
+          pages: {
+            total: generationConfig.pages.length,
+            enabled: generationConfig.pages.filter(p => p.enabled).length,
+            types: [...new Set(generationConfig.pages.filter(p => p.enabled).map(p => p.type))]
+          },
+          
+          // Technical Metadata
+          technical: {
+            framework: 'Next.js 14',
+            styling: 'Tailwind CSS + Design System',
+            components: 'Custom UI Library',
+            animations: 'CSS Transitions + Framer Motion',
+            responsive: true,
+            accessibility: 'WCAG 2.1 AA',
+            seo: 'Built-in optimization'
+          }
         },
-      }),
+      },
+    };
+
+    // Test serialization and handle large responses
+    try {
+      const testSerialization = JSON.stringify(responseData);
+      const sizeInMB = (testSerialization.length / (1024 * 1024)).toFixed(2);
+      console.log(`✅ Response serializable: ${sizeInMB}MB`);
+      
+      // If response is too large (>4MB), use temporary storage
+      if (testSerialization.length > 4 * 1024 * 1024) {
+        console.log(`⚠️ Response too large (${sizeInMB}MB), using temporary storage...`);
+        
+        if (typeof global !== 'undefined') {
+          global.tempProjects = global.tempProjects || {};
+          global.tempProjects[generatedProject.id] = generatedProject;
+          
+          // Clean up after 15 minutes
+          setTimeout(() => {
+            if (global.tempProjects && global.tempProjects[generatedProject.id]) {
+              delete global.tempProjects[generatedProject.id];
+              console.log(`🗑️ Cleaned up temporary project: ${generatedProject.id}`);
+            }
+          }, 15 * 60 * 1000);
+        }
+
+        // Return lightweight response
+        responseData.data.project = {
+          id: generatedProject.id,
+          name: generatedProject.name,
+          type: generatedProject.type,
+          config: generatedProject.config,
+          generationMetadata: generatedProject.generationMetadata,
+          _filesInTempStorage: true,
+          _tempStorageId: generatedProject.id
+        };
+      }
+
+    } catch (serializationError) {
+      console.error(`❌ Serialization failed: ${serializationError.message}`);
+      
+      // Fallback to minimal response
+      responseData.data.project = {
+        id: generatedProject.id,
+        name: generatedProject.name,
+        type: generatedProject.type,
+        generationMetadata: generatedProject.generationMetadata,
+        _serializationError: true
+      };
+    }
+
+    return new Response(
+      JSON.stringify(responseData),
       {
         status: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Generation-Time': `${processingTime}ms`,
+          'X-File-Count': `${generatedProject?.files ? Object.keys(generatedProject.files).length : 0}`,
+          'X-Design-Theme': finalDesignConfig.theme
+        },
       }
     );
+
   } catch (error) {
-    console.error('🔥 Ecommerce generation error:', error);
+    console.error('🔥 Design-enhanced generation error:', error);
 
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Failed to generate ecommerce project',
+        error: 'Failed to generate design-enhanced project',
         details: error.message,
         timestamp: new Date().toISOString(),
+        errorType: error.name || 'GenerationError'
       }),
       {
         status: 500,
@@ -191,10 +329,14 @@ export async function POST(request) {
   }
 }
 
-// Handle unsupported methods
+// Handle unsupported methods with helpful messages
 export async function PUT() {
   return new Response(
-    JSON.stringify({ error: 'Method not allowed' }),
+    JSON.stringify({ 
+      error: 'Method not allowed', 
+      message: 'Use POST to generate projects',
+      supportedMethods: ['GET', 'POST']
+    }),
     { 
       status: 405,
       headers: { 'Content-Type': 'application/json' }
@@ -204,7 +346,11 @@ export async function PUT() {
 
 export async function DELETE() {
   return new Response(
-    JSON.stringify({ error: 'Method not allowed' }),
+    JSON.stringify({ 
+      error: 'Method not allowed',
+      message: 'Use POST to generate projects', 
+      supportedMethods: ['GET', 'POST']
+    }),
     { 
       status: 405,
       headers: { 'Content-Type': 'application/json' }
@@ -214,7 +360,11 @@ export async function DELETE() {
 
 export async function PATCH() {
   return new Response(
-    JSON.stringify({ error: 'Method not allowed' }),
+    JSON.stringify({ 
+      error: 'Method not allowed',
+      message: 'Use POST to generate projects',
+      supportedMethods: ['GET', 'POST'] 
+    }),
     { 
       status: 405,
       headers: { 'Content-Type': 'application/json' }
