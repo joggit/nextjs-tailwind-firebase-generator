@@ -3,7 +3,7 @@
 
 'use strict';
 
-import { DesignIntegratedGenerator } from '@/lib/generator/design/DesignIntegration.js';
+import { DesignIntegratedGenerator } from '@/lib/generator/DesignIntegration.js';
 
 // Initialize services
 let designGenerator = null;

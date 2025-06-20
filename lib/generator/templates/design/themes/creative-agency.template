@@ -1,0 +1,20 @@
+  name: 'Creative Agency',
+      description: 'Bold, creative design with vibrant colors',
+      colors: {
+        primary: '#F59E0B',
+        secondary: '#EF4444',
+        accent: '#8B5CF6',
+        neutral: '#374151'
+      },
+      fonts: {
+        heading: 'Poppins',
+        body: 'Inter'
+      },
+      components: {
+        header: this.getCreativeHeader(),
+        footer: this.getCreativeFooter(),
+        hero: this.getCreativeHero(),
+        features: this.getCreativeFeatures(),
+        contact: this.getCreativeContact()
+      },
+      styles: this.getCreativeStyles()

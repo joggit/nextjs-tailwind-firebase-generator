@@ -1,0 +1,20 @@
+name: 'Minimal Clean',
+      description: 'Minimalist design with focus on content',
+      colors: {
+        primary: '#1F2937',
+        secondary: '#6B7280',
+        accent: '#3B82F6',
+        neutral: '#F3F4F6'
+      },
+      fonts: {
+        heading: 'Inter',
+        body: 'Inter'
+      },
+      components: {
+        header: this.getMinimalHeader(),
+        footer: this.getMinimalFooter(),
+        hero: this.getMinimalHero(),
+        features: this.getMinimalFeatures(),
+        contact: this.getMinimalContact()
+      },
+      styles: this.getMinimalStyles()
