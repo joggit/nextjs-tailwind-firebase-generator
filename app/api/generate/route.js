@@ -1,29 +1,29 @@
-// Updated API Route with Design System Support
+// Updated Generate API Route with Design System Support
 // File: app/api/generate/route.js
 
 'use strict';
 
-import { DesignIntegratedGenerator } from '@/lib/generator/DesignIntegration.js';
+import TemplateGenerator from '@/lib/generator/TemplateGenerator.js';
 
-// Initialize services
-let designGenerator = null;
+// Initialize template generator
+let templateGenerator = null;
 
 async function initializeServices() {
   try {
-    if (!designGenerator) {
-      designGenerator = new DesignIntegratedGenerator();
+    if (!templateGenerator) {
+      templateGenerator = new TemplateGenerator();
     }
 
-    return { designGenerator };
+    return { templateGenerator };
   } catch (error) {
-    console.warn('⚠️ Design generator initialization failed:', error.message);
+    console.warn('⚠️ Template generator initialization failed:', error.message);
     throw error;
   }
 }
 
 export async function GET() {
   try {
-    const { designGenerator } = await initializeServices();
+    const { templateGenerator } = await initializeServices();
 
     return new Response(
       JSON.stringify({
@@ -33,18 +33,18 @@ export async function GET() {
           'Multi-theme design system',
           'Responsive layouts',
           'Custom hero styles',
-          'AI-powered content generation',
           'Professional component library',
           'Modern web technologies',
-          'Vector RAG enhancement',
           'SEO optimization'
         ],
         supportedThemes: [
-          'modern', 'classic', 'minimalist', 
-          'bold', 'corporate', 'creative'
+          'modern', 'elegant', 'creative', 'tech', 'minimal', 'corporate'
         ],
         supportedLayouts: [
-          'standard', 'magazine', 'landing', 'portfolio'
+          'standard', 'sidebar', 'centered', 'magazine', 'landing'
+        ],
+        supportedHeroStyles: [
+          'centered', 'split', 'fullscreen', 'minimal', 'video', 'animated'
         ],
         timestamp: new Date().toISOString(),
       }),
@@ -59,7 +59,7 @@ export async function GET() {
     return new Response(
       JSON.stringify({
         status: 'error',
-        message: 'Failed to initialize design generator',
+        message: 'Failed to initialize template generator',
         error: error.message,
       }),
       {
@@ -90,13 +90,14 @@ export async function POST(request) {
       designConfig = {},
       
       // Enhanced Features
-      vectorEnhancement = true,
+      vectorEnhancement = false,
       enableAnalytics = true,
       enableSEO = true,
       
       // Legacy support
       template = 'modern',
-      customRequirements = ''
+      customRequirements = '',
+      projectType = 'website'
     } = body;
 
     // Validate required fields
@@ -113,7 +114,7 @@ export async function POST(request) {
       );
     }
 
-    const { designGenerator } = await initializeServices();
+    const { templateGenerator } = await initializeServices();
 
     const projectName = businessName || name;
     console.log('🎨 Starting design-enhanced generation for:', projectName);
@@ -123,6 +124,7 @@ export async function POST(request) {
       theme: designConfig.theme || design.theme || template || 'modern',
       layout: designConfig.layout || design.layout || 'standard',
       heroStyle: designConfig.heroStyle || design.heroStyle || 'centered',
+      graphics: designConfig.graphics || design.graphics || 'illustrations',
       customizations: {
         ...design.customizations,
         ...designConfig.customizations
@@ -139,6 +141,7 @@ export async function POST(request) {
       businessType: businessType || 'company',
       targetAudience: targetAudience || 'customers',
       businessDescription: businessDescription || customRequirements || `${projectName} - Professional services`,
+      projectType: projectType,
       
       // Design Configuration
       design: finalDesignConfig,
@@ -164,6 +167,11 @@ export async function POST(request) {
       enableAnalytics,
       enableSEO,
       
+      // Ecommerce specific
+      enableCheckout: projectType === 'ecommerce',
+      enableUserAccounts: projectType === 'ecommerce',
+      enableWishlist: projectType === 'ecommerce',
+      
       // Generation Metadata
       generationType: 'design-enhanced',
       apiVersion: '2.0',
@@ -172,20 +180,20 @@ export async function POST(request) {
 
     console.log('📝 Generation config:', {
       businessName: generationConfig.businessName,
+      projectType: generationConfig.projectType,
       designTheme: finalDesignConfig.theme,
       layout: finalDesignConfig.layout,
       heroStyle: finalDesignConfig.heroStyle,
       industry: generationConfig.industry,
       businessType: generationConfig.businessType,
-      enabledPages: generationConfig.pages?.filter(p => p.enabled)?.length || 0,
-      vectorEnhancement: generationConfig.vectorEnhancement
+      enabledPages: generationConfig.pages?.filter(p => p.enabled)?.length || 0
     });
 
     let generatedProject;
     
     try {
       console.log('🎯 Generating design-enhanced project...');
-      generatedProject = await designGenerator.generateProject(generationConfig);
+      generatedProject = await templateGenerator.generateProject(generationConfig);
       console.log('✅ Design-enhanced generation completed successfully');
     } catch (genError) {
       console.error('❌ Design generation error:', genError);
@@ -207,6 +215,7 @@ export async function POST(request) {
           businessName: generationConfig.businessName,
           industry: generationConfig.industry,
           businessType: generationConfig.businessType,
+          projectType: generationConfig.projectType,
           processingTime: `${processingTime}ms`,
           generatedAt: new Date().toISOString(),
           fileCount: generatedProject?.files ? Object.keys(generatedProject.files).length : 0,
@@ -216,7 +225,8 @@ export async function POST(request) {
             theme: finalDesignConfig.theme,
             layout: finalDesignConfig.layout,
             heroStyle: finalDesignConfig.heroStyle,
-            customizations: Object.keys(finalDesignConfig.customizations).length
+            graphics: finalDesignConfig.graphics,
+            customizations: Object.keys(finalDesignConfig.customizations || {}).length
           },
           
           // Feature Metadata
@@ -225,7 +235,8 @@ export async function POST(request) {
             analytics: generationConfig.enableAnalytics,
             seo: generationConfig.enableSEO,
             designSystem: true,
-            responsiveDesign: true
+            responsiveDesign: true,
+            ecommerce: generationConfig.projectType === 'ecommerce'
           },
           
           // Page Metadata
@@ -240,7 +251,7 @@ export async function POST(request) {
             framework: 'Next.js 14',
             styling: 'Tailwind CSS + Design System',
             components: 'Custom UI Library',
-            animations: 'CSS Transitions + Framer Motion',
+            animations: 'CSS Transitions',
             responsive: true,
             accessibility: 'WCAG 2.1 AA',
             seo: 'Built-in optimization'
@@ -305,7 +316,8 @@ export async function POST(request) {
           'Content-Type': 'application/json',
           'X-Generation-Time': `${processingTime}ms`,
           'X-File-Count': `${generatedProject?.files ? Object.keys(generatedProject.files).length : 0}`,
-          'X-Design-Theme': finalDesignConfig.theme
+          'X-Design-Theme': finalDesignConfig.theme,
+          'X-Project-Type': generationConfig.projectType
         },
       }
     );
@@ -329,7 +341,7 @@ export async function POST(request) {
   }
 }
 
-// Handle unsupported methods with helpful messages
+// Handle unsupported methods
 export async function PUT() {
   return new Response(
     JSON.stringify({ 
@@ -350,20 +362,6 @@ export async function DELETE() {
       error: 'Method not allowed',
       message: 'Use POST to generate projects', 
       supportedMethods: ['GET', 'POST']
-    }),
-    { 
-      status: 405,
-      headers: { 'Content-Type': 'application/json' }
-    }
-  );
-}
-
-export async function PATCH() {
-  return new Response(
-    JSON.stringify({ 
-      error: 'Method not allowed',
-      message: 'Use POST to generate projects',
-      supportedMethods: ['GET', 'POST'] 
     }),
     { 
       status: 405,

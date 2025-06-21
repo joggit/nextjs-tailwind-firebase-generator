@@ -1,0 +1,164 @@
+// Fixed Hero Component Template with Proper Variables
+// File: lib/generator/templates/base/components/Hero.js.template
+
+'use client'
+
+import { useState, useEffect } from 'react'
+import { 
+  ArrowRight, 
+  Play, 
+  Star, 
+  Users, 
+  Award, 
+  TrendingUp,
+  CheckCircle,
+  Sparkles,
+  Zap,
+  Shield
+} from 'lucide-react'
+
+function Hero() {
+  const [isVisible, setIsVisible] = useState(false)
+
+  // Animate in on mount
+  useEffect(() => {
+    setIsVisible(true)
+  }, [])
+
+  const stats = [
+    { number: '10K+', label: 'Happy Customers', icon: Users },
+    { number: '99%', label: 'Success Rate', icon: TrendingUp },
+    { number: '5★', label: 'Average Rating', icon: Star },
+    { number: '24/7', label: 'Support', icon: Shield }
+  ]
+
+  const features = [
+    { text: 'Professional Quality', icon: Award },
+    { text: 'Fast Delivery', icon: Zap },
+    { text: 'Secure & Reliable', icon: Shield },
+    { text: 'Expert Support', icon: Users }
+  ]
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden {{heroBackground}}">
+      
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-40">
+        <div className="absolute top-0 left-0 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{backgroundColor: '{{primary}}30'}}></div>
+        <div className="absolute top-0 right-0 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000" style={{backgroundColor: '{{secondary}}30'}}></div>
+        <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000" style={{backgroundColor: '{{accent}}30'}}></div>
+        <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-3000" style={{backgroundColor: '{{primary}}20'}}></div>
+      </div>
+
+      {/* Floating Elements */}
+      <div className="absolute top-20 left-10 opacity-20">
+        <Sparkles className="w-8 h-8 animate-bounce" style={{color: '{{primary}}'}} />
+      </div>
+      <div className="absolute top-40 right-20 opacity-20">
+        <Zap className="w-6 h-6 animate-pulse" style={{color: '{{secondary}}'}} />
+      </div>
+
+      <div className="relative z-10 {{containerWidth}} mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="{{heroLayout}}">
+          
+          {/* Badge */}
+          <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mb-8 transition-all duration-1000 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`} style={{backgroundColor: '{{primary}}10', color: '{{primary}}'}}>
+            <Award className="w-4 h-4 mr-2" />
+            #1 Rated {{industry}} Provider {{currentYear}}
+          </div>
+
+          {/* Main Headline */}
+          <h1 className={`{{headlineSize}} font-bold leading-tight transition-all duration-1000 delay-200 mb-6 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`} style={{fontFamily: '{{fontHeading}}', fontWeight: '{{headingWeight}}', color: '{{neutral}}'}}>
+            Transform Your
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r" style={{
+              backgroundImage: 'linear-gradient(to right, {{primary}}, {{secondary}})'
+            }}>
+              {{businessName}}
+            </span>
+            Experience
+          </h1>
+
+          {/* Subheadline */}
+          <p className={`text-xl md:text-2xl mb-8 {{maxWidth}} leading-relaxed transition-all duration-1000 delay-400 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`} style={{color: '{{neutral}}'}}>
+            {{businessDescription}}
+          </p>
+
+          {/* Feature List */}
+          <div className={`flex flex-wrap {{justifyContent}} items-center gap-6 mb-10 transition-all duration-1000 delay-500 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
+            {features.map((feature, index) => (
+              <div key={index} className="flex items-center space-x-2" style={{color: '{{neutral}}'}}>
+                <CheckCircle className="w-5 h-5" style={{color: '{{accent}}'}} />
+                <span className="font-medium">{feature.text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA Buttons */}
+          <div className={`flex flex-col sm:flex-row gap-4 {{justifyContent}} items-center mb-16 transition-all duration-1000 delay-700 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
+            <button className="group inline-flex items-center px-8 py-4 text-white rounded-xl font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl" 
+                    style={{background: 'linear-gradient(to right, {{primary}}, {{secondary}})'}}>
+              Get Started Free
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+            
+            <button className="inline-flex items-center px-8 py-4 border rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl"
+                    style={{borderColor: '{{neutral}}40', color: '{{neutral}}'}}>
+              <Play className="mr-2 w-5 h-5" />
+              Watch Demo
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className={`grid grid-cols-2 md:grid-cols-4 gap-8 mb-16 transition-all duration-1000 delay-900 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center group">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 group-hover:scale-110 transition-transform duration-200"
+                     style={{background: 'linear-gradient(to right, {{primary}}10, {{secondary}}10)'}}>
+                  <stat.icon className="w-6 h-6" style={{color: '{{primary}}'}} />
+                </div>
+                <div className="text-3xl font-bold mb-1" style={{color: '{{neutral}}'}}>{stat.number}</div>
+                <div className="font-medium" style={{color: '{{neutral}}'}}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Trust Indicators */}
+          <div className={`{{justifyContent}} transition-all duration-1000 delay-1200 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
+            <p className="text-gray-500 text-sm mb-6">Trusted by industry leaders</p>
+            <div className="flex flex-wrap {{justifyContent}} items-center gap-8 opacity-60">
+              {/* Logo placeholders - replace with actual client logos */}
+              <div className="h-8 w-24 bg-gray-300 rounded-md"></div>
+              <div className="h-8 w-20 bg-gray-300 rounded-md"></div>
+              <div className="h-8 w-28 bg-gray-300 rounded-md"></div>
+              <div className="h-8 w-22 bg-gray-300 rounded-md"></div>
+              <div className="h-8 w-26 bg-gray-300 rounded-md"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Scroll Indicator */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
+          <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-pulse"></div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export default Hero

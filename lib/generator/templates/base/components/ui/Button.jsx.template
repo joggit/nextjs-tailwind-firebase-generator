@@ -1,0 +1,98 @@
+// Button UI Component Template with Design System
+// File: lib/generator/templates/base/components/ui/Button.jsx.template
+
+'use client'
+
+import React from 'react'
+
+function Button({ 
+  children, 
+  variant = 'primary', 
+  size = 'md', 
+  className = '',
+  disabled = false,
+  onClick,
+  type = 'button',
+  ...props 
+}) {
+  const baseClasses = 'inline-flex items-center justify-center font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+  
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'primary':
+        return {
+          className: '{{buttonPrimary}}',
+          style: { 
+            background: 'linear-gradient(to right, {{primary}}, {{secondary}})',
+            color: 'white'
+          }
+        }
+      case 'secondary':
+        return {
+          className: 'hover:scale-105 transition-all duration-200 font-medium rounded-lg',
+          style: { 
+            backgroundColor: '{{secondary}}',
+            color: 'white'
+          }
+        }
+      case 'outline':
+        return {
+          className: 'border-2 hover:scale-105 transition-all duration-200 font-medium rounded-lg',
+          style: { 
+            borderColor: '{{primary}}',
+            backgroundColor: 'transparent',
+            color: '{{primary}}'
+          }
+        }
+      case 'ghost':
+        return {
+          className: 'hover:scale-105 transition-all duration-200 font-medium rounded-lg',
+          style: { 
+            backgroundColor: 'transparent',
+            color: '{{primary}}'
+          }
+        }
+      default:
+        return {
+          className: '{{buttonPrimary}}',
+          style: { 
+            background: 'linear-gradient(to right, {{primary}}, {{secondary}})',
+            color: 'white'
+          }
+        }
+    }
+  }
+  
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'sm':
+        return 'px-3 py-2 text-sm'
+      case 'md':
+        return 'px-4 py-2 text-sm'
+      case 'lg':
+        return 'px-6 py-3 text-base'
+      case 'xl':
+        return 'px-8 py-4 text-lg'
+      default:
+        return 'px-4 py-2 text-sm'
+    }
+  }
+
+  const variantStyles = getVariantStyles()
+  const sizeClasses = getSizeClasses()
+
+  return (
+    <button
+      type={type}
+      className={`${baseClasses} ${variantStyles.className} ${sizeClasses} ${className}`}
+      style={variantStyles.style}
+      disabled={disabled}
+      onClick={onClick}
+      {...props}
+    >
+      {children}
+    </button>
+  )
+}
+
+export default Button

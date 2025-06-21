@@ -1,0 +1,376 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Star, Quote, ChevronLeft, ChevronRight, Play } from 'lucide-react'
+
+function Testimonials() {
+  const [currentTestimonial, setCurrentTestimonial] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+
+  const testimonials = [
+    {
+      id: 1,
+      name: 'Sarah Johnson',
+      title: 'CEO',
+      company: 'TechVision Inc.',
+      image: '/testimonial-1.jpg',
+      rating: 5,
+      text: 'Working with {{businessName}} transformed our entire {{industry}} operation. Their expertise and attention to detail exceeded our expectations.',
+      results: ['300% increase in efficiency', 'Reduced costs by 40%', 'Improved customer satisfaction'],
+      video: false
+    },
+    {
+      id: 2,
+      name: 'Michael Chen',
+      title: 'CTO',
+      company: 'InnovateHub',
+      image: '/testimonial-2.jpg', 
+      rating: 5,
+      text: 'The team at {{businessName}} delivered exactly what they promised. Professional, reliable, and truly experts in {{industry}} solutions.',
+      results: ['Seamless migration', 'Zero downtime', '24/7 support'],
+      video: true
+    },
+    {
+      id: 3,
+      name: 'Emily Rodriguez',
+      title: 'Operations Director',
+      company: 'GrowthCorp',
+      image: '/testimonial-3.jpg',
+      rating: 5,
+      text: 'Best investment we\'ve made for our business growth. The {{industry}} solutions provided by {{businessName}} are world-class.',
+      results: ['ROI within 6 months', 'Streamlined processes', 'Team productivity up 50%'],
+      video: false
+    },
+    {
+      id: 4,
+      name: 'David Park',
+      title: 'Founder',
+      company: 'StartupXYZ',
+      image: '/testimonial-4.jpg',
+      rating: 5,
+      text: 'From consultation to implementation, {{businessName}} was with us every step of the way. Incredible results!',
+      results: ['Faster time to market', 'Reduced development costs', 'Scalable architecture'],
+      video: false
+    }
+  ]
+
+  // Auto-play testimonials
+  useEffect(() => {
+    if (!isAutoPlaying) return
+    
+    const interval = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
+    }, 5000)
+    
+    return () => clearInterval(interval)
+  }, [isAutoPlaying, testimonials.length])
+
+  const nextTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
+    setIsAutoPlaying(false)
+  }
+
+  const prevTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+    setIsAutoPlaying(false)
+  }
+
+  const goToTestimonial = (index) => {
+    setCurrentTestimonial(index)
+    setIsAutoPlaying(false)
+  }
+
+  // Theme-specific styling
+  const getSectionStyle = () => {
+    switch ('{{themeId}}') {
+      case 'tech':
+        return 'py-20 px-4 bg-gradient-to-br from-slate-800 to-slate-900 text-white relative overflow-hidden'
+      case 'creative':
+        return 'py-20 px-4 bg-white relative overflow-hidden'
+      case 'elegant':
+        return 'py-20 px-4 bg-gradient-to-br from-white to-amber-25 relative'
+      case 'minimal':
+        return 'py-20 px-4 bg-gray-50'
+      case 'corporate':
+        return 'py-20 px-4 bg-white'
+      default: // modern
+        return 'py-20 px-4 bg-gradient-to-br from-blue-50 to-purple-50'
+    }
+  }
+
+  const getTextColor = () => {
+    return '{{themeId}}' === 'tech' ? 'text-white' : 'text-gray-900'
+  }
+
+  const getSubtextColor = () => {
+    switch ('{{themeId}}') {
+      case 'tech':
+        return 'text-gray-300'
+      case 'elegant':
+        return 'text-gray-700'
+      default:
+        return 'text-gray-600'
+    }
+  }
+
+  const getCardStyle = () => {
+    switch ('{{themeId}}') {
+      case 'tech':
+        return 'bg-slate-700/50 border border-cyan-500/20 rounded-lg backdrop-blur-sm shadow-xl'
+      case 'creative':
+        return 'bg-white border-2 border-pink-200 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300'
+      case 'elegant':
+        return 'bg-white border border-amber-200 rounded shadow-lg'
+      case 'minimal':
+        return 'bg-white border-l-4 border-black shadow-sm'
+      case 'corporate':
+        return 'bg-white border border-gray-200 rounded-lg shadow-lg'
+      default: // modern
+        return 'bg-white border border-gray-100 rounded-2xl shadow-xl'
+    }
+  }
+
+  const getQuoteIconStyle = () => {
+    switch ('{{themeId}}') {
+      case 'tech':
+        return 'w-12 h-12 text-cyan-400 opacity-50'
+      case 'creative':
+        return 'w-12 h-12 text-pink-400 opacity-50'
+      case 'elegant':
+        return 'w-12 h-12 text-amber-600 opacity-50'
+      case 'minimal':
+        return 'w-12 h-12 text-black opacity-30'
+      case 'corporate':
+        return 'w-12 h-12 text-blue-600 opacity-50'
+      default: // modern
+        return 'w-12 h-12 text-blue-400 opacity-50'
+    }
+  }
+
+  const getNavigationStyle = () => {
+    switch ('{{themeId}}') {
+      case 'tech':
+        return 'bg-slate-700 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/40'
+      case 'creative':
+        return 'bg-white border-2 border-pink-200 text-pink-600 hover:bg-pink-50 hover:border-pink-400 rounded-full'
+      case 'elegant':
+        return 'bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-400'
+      case 'minimal':
+        return 'bg-white border border-gray-300 text-black hover:bg-gray-50'
+      case 'corporate':
+        return 'bg-white border border-gray-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300'
+      default: // modern
+        return 'bg-white border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300'
+    }
+  }
+
+  const current = testimonials[currentTestimonial]
+
+  return (
+    <section className={getSectionStyle()}>
+      {/* Background Effects */}
+      {'{{themeId}}' === 'creative' && (
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
+        </div>
+      )}
+
+      {'{{themeId}}' === 'tech' && (
+        <div className="absolute inset-0">
+          <div className="absolute top-20 right-20 w-px h-96 bg-gradient-to-b from-transparent via-cyan-500/30 to-transparent"></div>
+          <div className="absolute bottom-20 left-20 w-96 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
+        </div>
+      )}
+
+      <div className="relative {{containerWidth}} mx-auto">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h2 className={`text-4xl md:text-5xl font-bold ${getTextColor()} mb-6`}
+              style={{fontFamily: '{{headingFont}}, sans-serif'}}>
+            What Our Clients Say
+          </h2>
+          <p className={`text-xl ${getSubtextColor()} max-w-3xl mx-auto`}>
+            Don't just take our word for it. See what industry leaders say about working with {{businessName}}.
+          </p>
+
+          {/* Theme-specific decorative element */}
+          {'{{themeId}}' === 'elegant' && (
+            <div className="flex items-center justify-center mt-8">
+              <div className="w-20 h-px bg-amber-600"></div>
+              <div className="w-4 h-4 bg-amber-600 rounded-full mx-4 rotate-45"></div>
+              <div className="w-20 h-px bg-amber-600"></div>
+            </div>
+          )}
+        </div>
+
+        {/* Main Testimonial */}
+        <div className="relative max-w-4xl mx-auto mb-16">
+          <div className={`p-8 md:p-12 ${getCardStyle()}`}>
+            {/* Quote Icon */}
+            <Quote className={`${getQuoteIconStyle()} mb-6`} />
+            
+            {/* Testimonial Content */}
+            <div className="mb-8">
+              <blockquote className={`text-xl md:text-2xl ${getTextColor()} leading-relaxed mb-6 italic`}
+                          style={{fontFamily: '{{bodyFont}}, sans-serif'}}>
+                "{current.text}"
+              </blockquote>
+              
+              {/* Results */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                {current.results.map((result, index) => (
+                  <div key={index} className={`text-center p-4 rounded-lg ${
+                    '{{themeId}}' === 'tech' ? 'bg-slate-600/30' :
+                    '{{themeId}}' === 'creative' ? 'bg-pink-50' :
+                    '{{themeId}}' === 'elegant' ? 'bg-amber-50' :
+                    '{{themeId}}' === 'minimal' ? 'bg-gray-100' :
+                    'bg-blue-50'
+                  }`}>
+                    <div className={`text-sm font-medium ${getSubtextColor()}`}>
+                      {result}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Author Info */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg ${
+                  '{{themeId}}' === 'tech' ? 'bg-gradient-to-br from-cyan-500 to-blue-600' :
+                  '{{themeId}}' === 'creative' ? 'bg-gradient-to-br from-pink-500 to-purple-600' :
+                  '{{themeId}}' === 'elegant' ? 'bg-gradient-to-br from-amber-600 to-orange-600' :
+                  '{{themeId}}' === 'minimal' ? 'bg-black' :
+                  '{{themeId}}' === 'corporate' ? 'bg-gradient-to-br from-blue-600 to-blue-700' :
+                  'bg-gradient-to-br from-blue-500 to-purple-600'
+                }`}>
+                  {current.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                
+                <div>
+                  <div className={`font-semibold ${getTextColor()}`}>
+                    {current.name}
+                  </div>
+                  <div className={`${getSubtextColor()}`}>
+                    {current.title}, {current.company}
+                  </div>
+                  
+                  {/* Rating */}
+                  <div className="flex items-center mt-1">
+                    {[...Array(current.rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Video Play Button */}
+              {current.video && (
+                <button className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
+                  '{{themeId}}' === 'tech' ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30' :
+                  '{{themeId}}' === 'creative' ? 'bg-pink-100 text-pink-600 hover:bg-pink-200' :
+                  '{{themeId}}' === 'elegant' ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' :
+                  '{{themeId}}' === 'minimal' ? 'bg-gray-100 text-black hover:bg-gray-200' :
+                  'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                }`}>
+                  <Play className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Navigation Arrows */}
+          <button
+            onClick={prevTestimonial}
+            className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${getNavigationStyle()}`}
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          
+          <button
+            onClick={nextTestimonial}
+            className={`absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${getNavigationStyle()}`}
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Testimonial Dots */}
+        <div className="flex justify-center space-x-3 mb-12">
+          {testimonials.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToTestimonial(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                index === currentTestimonial
+                  ? '{{themeId}}' === 'tech' 
+                    ? 'bg-cyan-400 w-8'
+                    : '{{themeId}}' === 'creative'
+                    ? 'bg-pink-500 w-8'
+                    : '{{themeId}}' === 'elegant'
+                    ? 'bg-amber-600 w-8'
+                    : '{{themeId}}' === 'minimal'
+                    ? 'bg-black w-8'
+                    : 'bg-blue-600 w-8'
+                  : '{{themeId}}' === 'tech'
+                  ? 'bg-gray-600 hover:bg-gray-500'
+                  : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Mini Testimonials Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {testimonials.slice(0, 3).map((testimonial, index) => (
+            <div key={testimonial.id} className={`p-6 ${
+              '{{themeId}}' === 'tech' ? 'bg-slate-800/30 border border-cyan-500/10 rounded-lg' :
+              '{{themeId}}' === 'creative' ? 'bg-white border border-purple-200 rounded-2xl' :
+              '{{themeId}}' === 'elegant' ? 'bg-white border border-amber-100 rounded' :
+              '{{themeId}}' === 'minimal' ? 'bg-white border-l-2 border-black' :
+              '{{themeId}}' === 'corporate' ? 'bg-white border border-gray-200 rounded-lg' :
+              'bg-white border border-gray-100 rounded-xl'
+            } hover:shadow-lg transition-all duration-300 cursor-pointer`}
+              onClick={() => goToTestimonial(index)}
+            >
+              <div className="flex items-center space-x-3 mb-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm ${
+                  '{{themeId}}' === 'tech' ? 'bg-gradient-to-br from-cyan-500 to-blue-600' :
+                  '{{themeId}}' === 'creative' ? 'bg-gradient-to-br from-pink-500 to-purple-600' :
+                  '{{themeId}}' === 'elegant' ? 'bg-gradient-to-br from-amber-600 to-orange-600' :
+                  '{{themeId}}' === 'minimal' ? 'bg-black' :
+                  'bg-gradient-to-br from-blue-500 to-purple-600'
+                }`}>
+                  {testimonial.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div>
+                  <div className={`font-medium ${getTextColor()}`}>
+                    {testimonial.name}
+                  </div>
+                  <div className={`text-sm ${getSubtextColor()}`}>
+                    {testimonial.company}
+                  </div>
+                </div>
+              </div>
+              
+              <p className={`text-sm ${getSubtextColor()} line-clamp-3`}>
+                "{testimonial.text}"
+              </p>
+              
+              {/* Mini Rating */}
+              <div className="flex items-center mt-3">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export default Testimonials

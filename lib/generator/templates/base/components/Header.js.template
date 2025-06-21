@@ -1,46 +1,114 @@
+// Header Component Template with Design System
+// File: lib/generator/templates/base/components/Header.js.template
+
 'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Sparkles } from 'lucide-react'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
 
   const toggleMenu = () => setIsOpen(!isOpen)
 
+  const navigation = [
+    { name: 'Home', href: '/' },
+    { name: 'About', href: '/about' },
+    { name: 'Services', href: '/services' },
+    { name: 'Contact', href: '/contact' }
+  ]
+
   return (
-    <header className="bg-white shadow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        <div className="text-xl font-bold text-blue-600">
-          <Link href="/">Datablox IT</Link>
-        </div>
+    <header className="bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-50 border-b border-gray-100">
+      <div className="{{containerWidth}} mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg text-white font-bold"
+                 style={{background: 'linear-gradient(to bottom right, {{primary}}, {{secondary}})'}}>
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <span className="text-xl font-bold" 
+                  style={{fontFamily: '{{fontHeading}}', color: '{{neutral}}'}}>
+              {{businessName}}
+            </span>
+          </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
-          <Link href="/">Home</Link>
-          <Link href="/about">About Us</Link>
-          <Link href="/services">Services</Link>
-          <Link href="/contact">Contact</Link>
-        </nav>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-8">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="px-3 py-2 text-sm font-medium transition-all duration-200 relative group hover:scale-105"
+                style={{color: '{{neutral}}'}}
+              >
+                {item.name}
+                <span className="absolute inset-x-0 bottom-0 h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"
+                      style={{backgroundColor: '{{primary}}'}}></span>
+              </Link>
+            ))}
+          </nav>
 
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <button onClick={toggleMenu} className="text-gray-700">
+          {/* Desktop CTA */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link href="/contact" 
+                  className="px-3 py-2 text-sm font-medium transition-colors hover:opacity-80"
+                  style={{color: '{{neutral}}'}}>
+              Login
+            </Link>
+            <Link href="/contact" 
+                  className="px-6 py-2 rounded-xl hover:scale-105 transition-all shadow-lg hover:shadow-xl text-white font-semibold"
+                  style={{background: 'linear-gradient(to right, {{primary}}, {{secondary}})'}}>
+              Get Started
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={toggleMenu}
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            style={{color: '{{neutral}}'}}
+          >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
-      </div>
 
-      {/* Mobile Nav */}
-      {isOpen && (
-        <nav className="md:hidden bg-white border-t border-gray-200 px-4 py-4 space-y-2 text-gray-700 font-medium">
-          <Link href="/" onClick={() => setIsOpen(false)}>Home</Link>
-          <Link href="/about" onClick={() => setIsOpen(false)}>About Us</Link>
-          <Link href="/services" onClick={() => setIsOpen(false)}>Services</Link>
-          <Link href="/contact" onClick={() => setIsOpen(false)}>Contact</Link>
-        </nav>
-      )}
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden bg-white border-t border-gray-100 py-4">
+            <div className="space-y-2">
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="block px-4 py-2 rounded-lg transition-all hover:scale-105"
+                  style={{color: '{{neutral}}'}}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              <div className="pt-4 space-y-2 border-t border-gray-100">
+                <Link href="/contact" 
+                      className="block w-full text-center px-4 py-2 border rounded-lg transition-colors"
+                      style={{borderColor: '{{neutral}}40', color: '{{neutral}}'}}
+                      onClick={() => setIsOpen(false)}>
+                  Login
+                </Link>
+                <Link href="/contact" 
+                      className="block w-full text-center px-4 py-2 rounded-lg transition-all text-white font-semibold"
+                      style={{background: 'linear-gradient(to right, {{primary}}, {{secondary}})'}}
+                      onClick={() => setIsOpen(false)}>
+                  Get Started
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   )
 }
