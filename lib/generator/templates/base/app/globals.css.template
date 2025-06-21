@@ -1,6 +1,29 @@
+/* lib/generator/templates/base/app/globals.css.template */
 @tailwind base;
-@tailwind components;
+@tailwind components;  
 @tailwind utilities;
+
+/* Import fonts based on theme */
+{{#if headingFont}}
+@import url('https://fonts.googleapis.com/css2?family={{headingFont}}:wght@400;500;600;700;800&display=swap');
+{{/if}}
+{{#if bodyFont}}
+@import url('https://fonts.googleapis.com/css2?family={{bodyFont}}:wght@400;500;600;700&display=swap');
+{{/if}}
+
+/* Design System CSS Variables */
+:root {
+  --color-primary: {{primaryColor}};
+  --color-secondary: {{secondaryColor}};
+  --color-accent: {{accentColor}};
+  --color-neutral: {{neutralColor}};
+  
+  --font-heading: '{{headingFont}}', sans-serif;
+  --font-body: '{{bodyFont}}', sans-serif;
+  
+  --border-radius: {{borderRadius}};
+  --theme-name: '{{themeName}}';
+}
 
 @layer base {
   html {
@@ -9,12 +32,73 @@
   
   body {
     @apply text-gray-900 bg-gray-50;
+    font-family: var(--font-body);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
   }
 }
 
 @layer components {
+  /* Theme-aware utility classes */
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+  
+  .bg-secondary {
+    background-color: var(--color-secondary);
+  }
+  
+  .bg-accent {
+    background-color: var(--color-accent);
+  }
+  
+  .text-primary {
+    color: var(--color-primary);
+  }
+  
+  .text-secondary {
+    color: var(--color-secondary);
+  }
+  
+  .text-accent {
+    color: var(--color-accent);
+  }
+  
+  .border-primary {
+    border-color: var(--color-primary);
+  }
+  
+  /* Design system components */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-white font-medium transition-all hover:scale-105 shadow-lg hover:shadow-xl;
+    background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+    border-radius: var(--border-radius);
+  }
+  
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl;
+    border-radius: var(--border-radius);
+  }
+  
+  .card-default {
+    @apply bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow;
+    border-radius: var(--border-radius);
+  }
+  
+  .card-elevated {
+    @apply bg-white shadow-lg hover:shadow-xl transition-shadow;
+    border-radius: var(--border-radius);
+  }
+
+  /* Animation utilities */
   .animate-blob {
     animation: blob 7s infinite;
+  }
+  
+  .animation-delay-1000 {
+    animation-delay: 1s;
   }
   
   .animation-delay-2000 {
@@ -44,8 +128,18 @@
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* Theme-specific utilities */
+  .gradient-primary {
+    background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+  }
+  
+  .gradient-accent {
+    background: linear-gradient(to right, var(--color-accent), var(--color-primary));
+  }
 }
 
+/* Keyframe animations */
 @keyframes blob {
   0% {
     transform: translate(0px, 0px) scale(1);
@@ -61,7 +155,15 @@
   }
 }
 
-/* Custom scrollbar */
+/* Responsive design utilities */
+@media (max-width: 640px) {
+  .btn-primary,
+  .btn-secondary {
+    @apply w-full;
+  }
+}
+
+/* Custom scrollbar with theme colors */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -72,10 +174,24 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background-color: var(--color-primary);
   border-radius: 3px;
+  opacity: 0.7;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background-color: var(--color-secondary);
+  opacity: 1;
+}
+
+/* Focus styles with theme colors */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Selection colors */
+::selection {
+  background-color: var(--color-primary);
+  color: white;
 }

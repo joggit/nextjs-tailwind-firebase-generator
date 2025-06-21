@@ -1,0 +1,325 @@
+// lib/generator/templates/base/app/about/page.js.template
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+import { Users, Target, Award, Heart, Zap, Shield } from 'lucide-react'
+
+export const metadata = {
+  title: 'About Us - {{businessName}}',
+  description: 'Learn more about {{businessName}} and our mission to deliver exceptional {{industry}} services.',
+}
+
+export default function AboutPage() {
+  const stats = [
+    { number: '5+', label: 'Years Experience', icon: Award },
+    { number: '500+', label: 'Happy Clients', icon: Users },
+    { number: '99%', label: 'Success Rate', icon: Target },
+    { number: '24/7', label: 'Support', icon: Shield }
+  ]
+
+  const values = [
+    {
+      icon: Heart,
+      title: 'Customer First',
+      description: 'We put our customers at the center of everything we do, ensuring their success is our priority.'
+    },
+    {
+      icon: Zap,
+      title: 'Innovation',
+      description: 'We embrace new technologies and creative solutions to deliver cutting-edge results.'
+    },
+    {
+      icon: Shield,
+      title: 'Reliability',
+      description: 'You can count on us to deliver consistent, high-quality service every time.'
+    },
+    {
+      icon: Users,
+      title: 'Teamwork',
+      description: 'Our collaborative approach brings together diverse expertise for better outcomes.'
+    }
+  ]
+
+  const team = [
+    {
+      name: 'Sarah Johnson',
+      role: 'Founder & CEO',
+      bio: 'With over 10 years in {{industry}}, Sarah leads our vision for excellence and innovation.',
+      image: '/team-sarah.jpg'
+    },
+    {
+      name: 'Michael Chen',
+      role: 'Lead Developer',
+      bio: 'Michael brings technical expertise and creative problem-solving to every project.',
+      image: '/team-michael.jpg'
+    },
+    {
+      name: 'Emily Rodriguez',
+      role: 'Operations Manager',
+      bio: 'Emily ensures smooth operations and exceptional client experiences.',
+      image: '/team-emily.jpg'
+    }
+  ]
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      
+      <main className="flex-grow">
+        {/* Hero Section */}
+        <section className="py-20 px-4 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              About{' '}
+              <span 
+                className="text-transparent bg-clip-text"
+                style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+              >
+                {{businessName}}
+              </span>
+            </h1>
+            <p 
+              className="text-xl md:text-2xl text-gray-600 leading-relaxed"
+              style={{ fontFamily: 'var(--font-body)' }}
+            >
+              We're passionate about delivering exceptional {{industry}} solutions that drive real results for our clients.
+            </p>
+          </div>
+        </section>
+
+        {/* Story Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 
+                  className="text-3xl md:text-4xl font-bold text-gray-900 mb-6"
+                  style={{ fontFamily: 'var(--font-heading)' }}
+                >
+                  Our Story
+                </h2>
+                <div 
+                  className="prose prose-lg text-gray-600 space-y-4"
+                  style={{ fontFamily: 'var(--font-body)' }}
+                >
+                  <p>
+                    Founded with a vision to transform the {{industry}} landscape, {{businessName}} began as a small team of passionate professionals who believed in the power of innovation and excellence.
+                  </p>
+                  <p>
+                    Over the years, we've grown into a trusted partner for businesses of all sizes, helping them achieve their goals through our comprehensive {{industry}} solutions. Our commitment to quality and customer satisfaction has been the driving force behind our success.
+                  </p>
+                  <p>
+                    Today, we continue to push boundaries and set new standards in the industry, always staying true to our core values and the principles that founded our company.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="relative">
+                <div 
+                  className="aspect-square rounded-2xl flex items-center justify-center text-white text-6xl font-bold shadow-2xl"
+                  style={{ 
+                    background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+                    borderRadius: 'var(--border-radius)'
+                  }}
+                >
+                  {{businessName.charAt(0).toUpperCase()}}
+                </div>
+                <div 
+                  className="absolute -top-4 -right-4 w-24 h-24 rounded-full animate-pulse opacity-60"
+                  style={{ backgroundColor: 'var(--color-accent)' }}
+                ></div>
+                <div 
+                  className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full animate-pulse opacity-40 animation-delay-1000"
+                  style={{ backgroundColor: 'var(--color-secondary)' }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-16 px-4 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                Our Impact
+              </h2>
+              <p 
+                className="text-lg text-gray-600"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                Numbers that reflect our commitment to excellence
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {stats.map((stat, index) => {
+                const Icon = stat.icon
+                return (
+                  <div key={index} className="text-center p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                    <div 
+                      className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                      style={{ backgroundColor: 'var(--color-primary)20' }}
+                    >
+                      <Icon 
+                        className="w-8 h-8"
+                        style={{ color: 'var(--color-primary)' }}
+                      />
+                    </div>
+                    <div 
+                      className="text-4xl font-bold text-gray-900 mb-2"
+                      style={{ fontFamily: 'var(--font-heading)' }}
+                    >
+                      {stat.number}
+                    </div>
+                    <div 
+                      className="text-gray-600 font-medium"
+                      style={{ fontFamily: 'var(--font-body)' }}
+                    >
+                      {stat.label}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Values Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                Our Values
+              </h2>
+              <p 
+                className="text-lg text-gray-600 max-w-2xl mx-auto"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                The principles that guide everything we do and define who we are as a company
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {values.map((value, index) => {
+                const Icon = value.icon
+                return (
+                  <div key={index} className="text-center p-6 hover:shadow-lg transition-shadow rounded-xl">
+                    <div 
+                      className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-6"
+                      style={{ backgroundColor: 'var(--color-accent)20' }}
+                    >
+                      <Icon 
+                        className="w-8 h-8"
+                        style={{ color: 'var(--color-accent)' }}
+                      />
+                    </div>
+                    <h3 
+                      className="text-xl font-semibold text-gray-900 mb-4"
+                      style={{ fontFamily: 'var(--font-heading)' }}
+                    >
+                      {value.title}
+                    </h3>
+                    <p 
+                      className="text-gray-600 leading-relaxed"
+                      style={{ fontFamily: 'var(--font-body)' }}
+                    >
+                      {value.description}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Team Section */}
+        <section className="py-16 px-4 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                Meet Our Team
+              </h2>
+              <p 
+                className="text-lg text-gray-600"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                The talented people behind our success
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {team.map((member, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                  <div 
+                    className="h-64 flex items-center justify-center text-white text-4xl font-bold"
+                    style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))' }}
+                  >
+                    {member.name.charAt(0)}
+                  </div>
+                  <div className="p-6">
+                    <h3 
+                      className="text-xl font-semibold text-gray-900 mb-2"
+                      style={{ fontFamily: 'var(--font-heading)' }}
+                    >
+                      {member.name}
+                    </h3>
+                    <p 
+                      className="font-medium mb-3"
+                      style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-body)' }}
+                    >
+                      {member.role}
+                    </p>
+                    <p 
+                      className="text-gray-600 text-sm leading-relaxed"
+                      style={{ fontFamily: 'var(--font-body)' }}
+                    >
+                      {member.bio}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 
+              className="text-3xl md:text-4xl font-bold text-gray-900 mb-6"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              Ready to Work Together?
+            </h2>
+            <p 
+              className="text-lg text-gray-600 mb-8"
+              style={{ fontFamily: 'var(--font-body)' }}
+            >
+              Let's discuss how we can help you achieve your {{industry}} goals
+            </p>
+            <a 
+              href="/contact"
+              className="btn-primary"
+            >
+              Get In Touch
+            </a>
+          </div>
+        </section>
+      </main>
+      
+      <Footer />
+    </div>
+  )
+}

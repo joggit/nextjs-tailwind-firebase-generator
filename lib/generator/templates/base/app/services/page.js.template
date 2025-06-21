@@ -1,0 +1,452 @@
+// lib/generator/templates/base/app/services/page.js.template
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+import { 
+  CheckCircle, 
+  ArrowRight, 
+  Star, 
+  Clock, 
+  Shield, 
+  Zap, 
+  Users, 
+  Target,
+  Briefcase,
+  Lightbulb,
+  Settings,
+  TrendingUp
+} from 'lucide-react'
+
+export const metadata = {
+  title: 'Services - {{businessName}}',
+  description: 'Explore our comprehensive {{industry}} services designed to help your business succeed.',
+}
+
+export default function ServicesPage() {
+  const services = [
+    {
+      icon: Briefcase,
+      title: 'Consulting Services',
+      description: 'Expert guidance and strategic advice to help you make informed business decisions.',
+      features: ['Strategic Planning', 'Business Analysis', 'Risk Assessment', 'Growth Strategy'],
+      price: 'Starting at $150/hour'
+    },
+    {
+      icon: Settings,
+      title: 'Implementation',
+      description: 'Full-service implementation of solutions tailored to your specific needs.',
+      features: ['Custom Solutions', 'System Integration', 'Training & Support', 'Quality Assurance'],
+      price: 'Custom Quote'
+    },
+    {
+      icon: TrendingUp,
+      title: 'Optimization',
+      description: 'Continuous improvement and optimization of your existing processes and systems.',
+      features: ['Performance Analysis', 'Process Improvement', 'Efficiency Gains', 'Cost Reduction'],
+      price: 'Starting at $200/hour'
+    },
+    {
+      icon: Users,
+      title: 'Support & Maintenance',
+      description: '24/7 support and ongoing maintenance to ensure everything runs smoothly.',
+      features: ['24/7 Support', 'Regular Updates', 'Preventive Maintenance', 'Issue Resolution'],
+      price: 'From $99/month'
+    }
+  ]
+
+  const processes = [
+    {
+      step: '01',
+      title: 'Discovery',
+      description: 'We start by understanding your business needs, goals, and challenges.',
+      icon: Lightbulb
+    },
+    {
+      step: '02',
+      title: 'Strategy',
+      description: 'We develop a customized strategy and roadmap for your success.',
+      icon: Target
+    },
+    {
+      step: '03',
+      title: 'Implementation',
+      description: 'Our expert team implements the solution with precision and care.',
+      icon: Settings
+    },
+    {
+      step: '04',
+      title: 'Optimization',
+      description: 'We continuously monitor and optimize for the best results.',
+      icon: TrendingUp
+    }
+  ]
+
+  const benefits = [
+    {
+      icon: Clock,
+      title: 'Save Time',
+      description: 'Streamlined processes that free up your time for core business activities.'
+    },
+    {
+      icon: Shield,
+      title: 'Reduce Risk',
+      description: 'Expert guidance helps you avoid costly mistakes and minimize risks.'
+    },
+    {
+      icon: Zap,
+      title: 'Increase Efficiency',
+      description: 'Optimized workflows and systems that boost your overall productivity.'
+    },
+    {
+      icon: TrendingUp,
+      title: 'Drive Growth',
+      description: 'Strategic solutions designed to accelerate your business growth.'
+    }
+  ]
+
+  const testimonials = [
+    {
+      quote: "{{businessName}} transformed our operations completely. Their expertise in {{industry}} is unmatched.",
+      author: "Jennifer Smith",
+      company: "TechCorp",
+      rating: 5
+    },
+    {
+      quote: "Professional, reliable, and results-driven. Couldn't ask for a better partner.",
+      author: "David Wilson",
+      company: "InnovateCo",
+      rating: 5
+    },
+    {
+      quote: "The ROI we've seen from their services has exceeded all our expectations.",
+      author: "Maria Garcia",
+      company: "GrowthLabs",
+      rating: 5
+    }
+  ]
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      
+      <main className="flex-grow">
+        {/* Hero Section */}
+        <section className="py-20 px-4 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              Our{' '}
+              <span 
+                className="text-transparent bg-clip-text"
+                style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+              >
+                Services
+              </span>
+            </h1>
+            <p 
+              className="text-xl md:text-2xl text-gray-600 leading-relaxed mb-8"
+              style={{ fontFamily: 'var(--font-body)' }}
+            >
+              Comprehensive {{industry}} solutions designed to drive your business forward
+            </p>
+            <a 
+              href="#services"
+              className="btn-primary"
+            >
+              Explore Services
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </a>
+          </div>
+        </section>
+
+        {/* Services Grid */}
+        <section id="services" className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                What We Offer
+              </h2>
+              <p 
+                className="text-lg text-gray-600 max-w-2xl mx-auto"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                Choose from our range of professional services tailored to meet your specific needs
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {services.map((service, index) => {
+                const Icon = service.icon
+                return (
+                  <div key={index} className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow">
+                    <div className="flex items-center mb-6">
+                      <div 
+                        className="w-12 h-12 rounded-lg flex items-center justify-center mr-4"
+                        style={{ backgroundColor: 'var(--color-primary)20' }}
+                      >
+                        <Icon 
+                          className="w-6 h-6"
+                          style={{ color: 'var(--color-primary)' }}
+                        />
+                      </div>
+                      <h3 
+                        className="text-xl font-semibold text-gray-900"
+                        style={{ fontFamily: 'var(--font-heading)' }}
+                      >
+                        {service.title}
+                      </h3>
+                    </div>
+                    
+                    <p 
+                      className="text-gray-600 mb-6 leading-relaxed"
+                      style={{ fontFamily: 'var(--font-body)' }}
+                    >
+                      {service.description}
+                    </p>
+                    
+                    <ul className="space-y-3 mb-6">
+                      {service.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center text-sm text-gray-600">
+                          <CheckCircle 
+                            className="w-4 h-4 mr-3 flex-shrink-0"
+                            style={{ color: 'var(--color-accent)' }}
+                          />
+                          <span style={{ fontFamily: 'var(--font-body)' }}>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    <div className="flex items-center justify-between">
+                      <span 
+                        className="text-lg font-semibold"
+                        style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-heading)' }}
+                      >
+                        {service.price}
+                      </span>
+                      <a 
+                        href="/contact"
+                        className="text-sm font-medium px-4 py-2 rounded-lg border transition-colors"
+                        style={{ 
+                          borderColor: 'var(--color-primary)',
+                          color: 'var(--color-primary)',
+                          fontFamily: 'var(--font-body)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = 'var(--color-primary)';
+                          e.target.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = 'transparent';
+                          e.target.style.color = 'var(--color-primary)';
+                        }}
+                      >
+                        Learn More
+                      </a>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Process Section */}
+        <section className="py-16 px-4 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                Our Process
+              </h2>
+              <p 
+                className="text-lg text-gray-600"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                A proven methodology that delivers consistent results
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {processes.map((process, index) => {
+                const Icon = process.icon
+                return (
+                  <div key={index} className="text-center">
+                    <div className="relative mb-6">
+                      <div 
+                        className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold"
+                        style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))' }}
+                      >
+                        <Icon className="w-8 h-8" />
+                      </div>
+                      <div 
+                        className="absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                        style={{ backgroundColor: 'var(--color-accent)' }}
+                      >
+                        {process.step}
+                      </div>
+                    </div>
+                    <h3 
+                      className="text-lg font-semibold text-gray-900 mb-3"
+                      style={{ fontFamily: 'var(--font-heading)' }}
+                    >
+                      {process.title}
+                    </h3>
+                    <p 
+                      className="text-gray-600 text-sm leading-relaxed"
+                      style={{ fontFamily: 'var(--font-body)' }}
+                    >
+                      {process.description}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Benefits Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                Why Choose Us
+              </h2>
+              <p 
+                className="text-lg text-gray-600"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                The benefits you'll experience working with our team
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {benefits.map((benefit, index) => {
+                const Icon = benefit.icon
+                return (
+                  <div key={index} className="text-center p-6 hover:shadow-lg transition-shadow rounded-xl">
+                    <div 
+                      className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                      style={{ backgroundColor: 'var(--color-accent)20' }}
+                    >
+                      <Icon 
+                        className="w-8 h-8"
+                        style={{ color: 'var(--color-accent)' }}
+                      />
+                    </div>
+                    <h3 
+                      className="text-lg font-semibold text-gray-900 mb-3"
+                      style={{ fontFamily: 'var(--font-heading)' }}
+                    >
+                      {benefit.title}
+                    </h3>
+                    <p 
+                      className="text-gray-600 text-sm leading-relaxed"
+                      style={{ fontFamily: 'var(--font-body)' }}
+                    >
+                      {benefit.description}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="py-16 px-4 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                What Our Clients Say
+              </h2>
+              <p 
+                className="text-lg text-gray-600"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                Real feedback from businesses we've helped succeed
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-lg p-6">
+                  <div className="flex items-center mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                  <blockquote 
+                    className="text-gray-600 mb-4 italic leading-relaxed"
+                    style={{ fontFamily: 'var(--font-body)' }}
+                  >
+                    "{testimonial.quote}"
+                  </blockquote>
+                  <div className="border-t pt-4">
+                    <div 
+                      className="font-semibold text-gray-900"
+                      style={{ fontFamily: 'var(--font-heading)' }}
+                    >
+                      {testimonial.author}
+                    </div>
+                    <div 
+                      className="text-sm"
+                      style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-body)' }}
+                    >
+                      {testimonial.company}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 
+              className="text-3xl md:text-4xl font-bold text-gray-900 mb-6"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              Ready to Get Started?
+            </h2>
+            <p 
+              className="text-lg text-gray-600 mb-8"
+              style={{ fontFamily: 'var(--font-body)' }}
+            >
+              Let's discuss how our {{industry}} services can help your business thrive
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a 
+                href="/contact"
+                className="btn-primary"
+              >
+                Get Free Consultation
+              </a>
+              <a 
+                href="/about"
+                className="btn-secondary"
+              >
+                Learn More About Us
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+      
+      <Footer />
+    </div>
+  )
+}

@@ -1,44 +1,399 @@
+// lib/generator/templates/base/app/page.js.template
 import Header from '@/components/Header'
 import Hero from '@/components/Hero'
-//import Features from '@/components/Features'
-//import About from '@/components/About'
-//import Services from '@/components/Services'
-import Testimonials from '@/components/Testimonials'
-//import CTA from '@/components/CTA'
-import Contact from '@/components/Contact'
 import Footer from '@/components/Footer'
+import { ArrowRight, CheckCircle, Star, Users, Award, TrendingUp } from 'lucide-react'
+
+export const metadata = {
+  title: '{{metaTitle}}',
+  description: '{{metaDescription}}',
+}
 
 export default function HomePage() {
+  const features = [
+    {
+      icon: CheckCircle,
+      title: 'Quality Assurance',
+      description: 'We ensure the highest quality in every project we deliver for our clients.'
+    },
+    {
+      icon: Users,
+      title: 'Expert Team',
+      description: 'Work with experienced professionals who understand your {{industry}} needs.'
+    },
+    {
+      icon: Award,
+      title: 'Proven Results',
+      description: 'Track record of successful projects and satisfied clients across industries.'
+    },
+    {
+      icon: TrendingUp,
+      title: 'Growth Focused',
+      description: 'Solutions designed to scale with your business and drive sustainable growth.'
+    }
+  ]
+
+  const stats = [
+    { number: '500+', label: 'Happy Clients' },
+    { number: '99%', label: 'Success Rate' },
+    { number: '5+', label: 'Years Experience' },
+    { number: '24/7', label: 'Support' }
+  ]
+
+  const testimonials = [
+    {
+      quote: "{{businessName}} transformed our operations completely. Outstanding results!",
+      author: "Sarah Johnson",
+      company: "TechCorp",
+      rating: 5
+    },
+    {
+      quote: "Professional, reliable, and results-driven. Highly recommended!",
+      author: "Michael Chen",
+      company: "InnovateCo", 
+      rating: 5
+    },
+    {
+      quote: "The ROI we've seen has exceeded all our expectations.",
+      author: "Emily Rodriguez",
+      company: "GrowthLabs",
+      rating: 5
+    }
+  ]
+
   return (
-    <div className="min-h-screen">
-      {/* Header */}
+    <div className="min-h-screen flex flex-col">
       <Header />
       
-      {/* Main Content */}
-      <main>
+      <main className="flex-grow">
         {/* Hero Section */}
         <Hero />
-        
+
         {/* Features Section */}
-        {/* <Features /> */}
-        
-        {/* About Section */}
-        {/* <About /> */}
-        
-        {/* Services Section */}
-        {/* <Services /> */}
-        
+        <section className="py-16 px-4 bg-white">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                Why Choose {{businessName}}
+              </h2>
+              <p 
+                className="text-lg text-gray-600 max-w-2xl mx-auto"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                Discover what makes us the perfect choice for your {{industry}} needs
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {features.map((feature, index) => {
+                const Icon = feature.icon
+                return (
+                  <div key={index} className="text-center p-6 hover:shadow-lg transition-shadow rounded-xl">
+                    <div 
+                      className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                      style={{ backgroundColor: 'var(--color-primary)20' }}
+                    >
+                      <Icon 
+                        className="w-8 h-8"
+                        style={{ color: 'var(--color-primary)' }}
+                      />
+                    </div>
+                    <h3 
+                      className="text-lg font-semibold text-gray-900 mb-3"
+                      style={{ fontFamily: 'var(--font-heading)' }}
+                    >
+                      {feature.title}
+                    </h3>
+                    <p 
+                      className="text-gray-600 leading-relaxed"
+                      style={{ fontFamily: 'var(--font-body)' }}
+                    >
+                      {feature.description}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-16 px-4 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                Our Impact in Numbers
+              </h2>
+              <p 
+                className="text-lg text-gray-600"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                Results that speak for themselves
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center p-6 bg-white rounded-xl shadow-lg">
+                  <div 
+                    className="text-4xl font-bold mb-2"
+                    style={{ 
+                      color: 'var(--color-primary)',
+                      fontFamily: 'var(--font-heading)'
+                    }}
+                  >
+                    {stat.number}
+                  </div>
+                  <div 
+                    className="text-gray-600 font-medium"
+                    style={{ fontFamily: 'var(--font-body)' }}
+                  >
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Services Preview */}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                Our Services
+              </h2>
+              <p 
+                className="text-lg text-gray-600"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                Comprehensive {{industry}} solutions for your business
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <h3 
+                  className="text-xl font-semibold text-gray-900 mb-3"
+                  style={{ fontFamily: 'var(--font-heading)' }}
+                >
+                  Consulting
+                </h3>
+                <p 
+                  className="text-gray-600 mb-4"
+                  style={{ fontFamily: 'var(--font-body)' }}
+                >
+                  Expert guidance and strategic advice for your {{industry}} challenges.
+                </p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <CheckCircle 
+                      className="w-4 h-4 mr-2"
+                      style={{ color: 'var(--color-accent)' }}
+                    />
+                    Strategic Planning
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle 
+                      className="w-4 h-4 mr-2"
+                      style={{ color: 'var(--color-accent)' }}
+                    />
+                    Business Analysis
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle 
+                      className="w-4 h-4 mr-2"
+                      style={{ color: 'var(--color-accent)' }}
+                    />
+                    Risk Assessment
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <h3 
+                  className="text-xl font-semibold text-gray-900 mb-3"
+                  style={{ fontFamily: 'var(--font-heading)' }}
+                >
+                  Implementation
+                </h3>
+                <p 
+                  className="text-gray-600 mb-4"
+                  style={{ fontFamily: 'var(--font-body)' }}
+                >
+                  Full-service implementation tailored to your specific needs.
+                </p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <CheckCircle 
+                      className="w-4 h-4 mr-2"
+                      style={{ color: 'var(--color-accent)' }}
+                    />
+                    Custom Solutions
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle 
+                      className="w-4 h-4 mr-2"
+                      style={{ color: 'var(--color-accent)' }}
+                    />
+                    System Integration
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle 
+                      className="w-4 h-4 mr-2"
+                      style={{ color: 'var(--color-accent)' }}
+                    />
+                    Quality Assurance
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <h3 
+                  className="text-xl font-semibold text-gray-900 mb-3"
+                  style={{ fontFamily: 'var(--font-heading)' }}
+                >
+                  Support
+                </h3>
+                <p 
+                  className="text-gray-600 mb-4"
+                  style={{ fontFamily: 'var(--font-body)' }}
+                >
+                  Ongoing support and maintenance to ensure smooth operations.
+                </p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <CheckCircle 
+                      className="w-4 h-4 mr-2"
+                      style={{ color: 'var(--color-accent)' }}
+                    />
+                    24/7 Support
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle 
+                      className="w-4 h-4 mr-2"
+                      style={{ color: 'var(--color-accent)' }}
+                    />
+                    Regular Updates
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle 
+                      className="w-4 h-4 mr-2"
+                      style={{ color: 'var(--color-accent)' }}
+                    />
+                    Issue Resolution
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <a 
+                href="/services"
+                className="btn-primary"
+              >
+                View All Services
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </a>
+            </div>
+          </div>
+        </section>
+
         {/* Testimonials Section */}
-        <Testimonials />
-        
-        {/* Call to Action */}
-        {/* <CTA /> */}
-        
-        {/* Contact Section */}
-        <Contact />
+        <section className="py-16 px-4 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                What Our Clients Say
+              </h2>
+              <p 
+                className="text-lg text-gray-600"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                Real feedback from businesses we've helped succeed
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-lg p-6">
+                  <div className="flex items-center mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                  <blockquote 
+                    className="text-gray-600 mb-4 italic leading-relaxed"
+                    style={{ fontFamily: 'var(--font-body)' }}
+                  >
+                    "{testimonial.quote}"
+                  </blockquote>
+                  <div className="border-t pt-4">
+                    <div 
+                      className="font-semibold text-gray-900"
+                      style={{ fontFamily: 'var(--font-heading)' }}
+                    >
+                      {testimonial.author}
+                    </div>
+                    <div 
+                      className="text-sm"
+                      style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-body)' }}
+                    >
+                      {testimonial.company}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 
+              className="text-3xl md:text-4xl font-bold text-gray-900 mb-6"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              Ready to Transform Your {{industry}}?
+            </h2>
+            <p 
+              className="text-lg text-gray-600 mb-8"
+              style={{ fontFamily: 'var(--font-body)' }}
+            >
+              Let's discuss how we can help you achieve your business goals
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a 
+                href="/contact"
+                className="btn-primary"
+              >
+                Get Started Today
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </a>
+              <a 
+                href="/about"
+                className="btn-secondary"
+              >
+                Learn More About Us
+              </a>
+            </div>
+          </div>
+        </section>
       </main>
       
-      {/* Footer */}
       <Footer />
     </div>
   )
