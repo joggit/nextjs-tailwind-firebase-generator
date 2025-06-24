@@ -1,18 +1,41 @@
-// Updated API Route - app/api/generate/route.js
-import TemplateGenerator from '@/lib/generator/TemplateGenerator.js';
+// Updated API Route with Nested Menu Support - app/api/generate/route.js
+import TemplatePathGenerator from '@/lib/generator/TemplatePathGenerator.js';
 
-let templateGenerator = null;
+let templatePathGenerator = null;
 
 async function initializeServices() {
   try {
-    if (!templateGenerator) {
-      templateGenerator = new TemplateGenerator();
+    if (!templatePathGenerator) {
+      templatePathGenerator = new TemplatePathGenerator();
     }
-    return { templateGenerator };
+    return { templatePathGenerator };
   } catch (error) {
     console.warn('⚠️ Template generator initialization failed:', error.message);
     throw error;
   }
+}
+
+// Helper function to analyze nested menu structure
+function analyzeMenuStructure(menuItems = []) {
+  const totalItems = menuItems.length;
+  const dropdownMenus = menuItems.filter(item => 
+    item.type === 'dropdown' || (item.children && item.children.length > 0)
+  );
+  const nestedItems = menuItems.reduce((sum, item) => sum + (item.children?.length || 0), 0);
+  const maxDepth = Math.max(1, ...menuItems.map(item => item.children?.length ? 2 : 1));
+  
+  return {
+    totalItems,
+    dropdownCount: dropdownMenus.length,
+    nestedItems,
+    maxDepth,
+    hasNestedMenus: nestedItems > 0,
+    structure: menuItems.map(item => ({
+      name: item.name,
+      type: item.type || 'link',
+      childCount: item.children?.length || 0
+    }))
+  };
 }
 
 export async function GET() {
@@ -22,18 +45,26 @@ export async function GET() {
     return new Response(
       JSON.stringify({
         status: 'ready',
-        message: 'Enhanced Website Generator API is online',
+        message: 'Enhanced Website Generator API with Nested Menu Support is online',
         capabilities: [
+          'Nested navigation menus with dropdown support',
           'Custom header and footer design',
           'Hero section customization',
           'Multi-theme design system',
           'Responsive layouts', 
           'File-based templates',
           'Ecommerce support',
-          'Modern web technologies'
+          'Modern web technologies',
+          'Multi-level menu structure'
         ],
         supportedTemplates: ['base', 'ecommerce'],
         supportedThemes: ['modern', 'elegant', 'creative', 'tech'],
+        navigationFeatures: [
+          'Dropdown menus',
+          'Nested menu items',
+          'Mobile-responsive navigation',
+          'Custom menu styling'
+        ],
         timestamp: new Date().toISOString(),
       }),
       {
@@ -90,7 +121,7 @@ export async function POST(request) {
         backgroundVideo: ''
       },
       
-      // Header customization data
+      // Enhanced Header customization data with nested menu support
       headerData = {
         style: 'solid',
         logoType: 'text',
@@ -99,10 +130,18 @@ export async function POST(request) {
         ctaText: 'Get Started',
         ctaLink: '/contact',
         menuItems: [
-          { name: 'Home', link: '/' },
-          { name: 'About', link: '/about' },
-          { name: 'Services', link: '/services' },
-          { name: 'Contact', link: '/contact' }
+          { name: 'Home', link: '/', type: 'link', children: [] },
+          { name: 'About', link: '/about', type: 'link', children: [] },
+          { 
+            name: 'Services', 
+            link: '/services', 
+            type: 'dropdown',
+            children: [
+              { name: 'Consulting', link: '/services/consulting', description: 'Expert consulting services' },
+              { name: 'Support', link: '/services/support', description: '24/7 customer support' }
+            ]
+          },
+          { name: 'Contact', link: '/contact', type: 'link', children: [] }
         ]
       },
       
@@ -131,7 +170,11 @@ export async function POST(request) {
       // Advanced options
       vectorEnhancement = false,
       enableAnalytics = true,
-      enableSEO = true
+      enableSEO = true,
+      
+      // Generation metadata
+      generationType = 'enhanced-customization-with-nested-menus',
+      apiVersion = '2.2'
       
     } = body;
 
@@ -146,18 +189,34 @@ export async function POST(request) {
       );
     }
 
-    const { templateGenerator } = await initializeServices();
+    const { templatePathGenerator } = await initializeServices();
     const projectName = businessName || name;
     
-    console.log('🎨 Starting enhanced generation for:', projectName);
+    // Analyze nested menu structure
+    const menuAnalysis = analyzeMenuStructure(headerData.menuItems);
+    
+    console.log('🎨 Starting enhanced generation with nested menus for:', projectName);
+    console.log('🧭 Navigation Structure Analysis:', {
+      totalMenuItems: menuAnalysis.totalItems,
+      dropdownMenus: menuAnalysis.dropdownCount,
+      nestedItems: menuAnalysis.nestedItems,
+      maxDepth: menuAnalysis.maxDepth,
+      hasNestedMenus: menuAnalysis.hasNestedMenus,
+      structure: menuAnalysis.structure
+    });
+    
     console.log('📊 Customization data received:', {
       hero: {
         backgroundType: heroData.backgroundType,
-        hasCustomHeadline: !!heroData.headline
+        hasCustomHeadline: !!heroData.headline,
+        hasCustomSubheadline: !!heroData.subheadline
       },
       header: {
         style: headerData.style,
-        menuItems: headerData.menuItems?.length || 0,
+        logoType: headerData.logoType,
+        menuItems: menuAnalysis.totalItems,
+        dropdownMenus: menuAnalysis.dropdownCount,
+        nestedItems: menuAnalysis.nestedItems,
         showCta: headerData.showCta
       },
       footer: {
@@ -166,6 +225,24 @@ export async function POST(request) {
         socialLinks: Object.values(footerData.socialLinks || {}).filter(url => url.trim()).length
       }
     });
+
+    // Log nested menu details
+    if (menuAnalysis.hasNestedMenus) {
+      console.log('📋 Nested Menu Details:');
+      menuAnalysis.structure.forEach((item, index) => {
+        if (item.childCount > 0) {
+          console.log(`  └─ ${item.name} (${item.type}): ${item.childCount} sub-items`);
+          const parentItem = headerData.menuItems[index];
+          if (parentItem.children) {
+            parentItem.children.forEach((child, childIndex) => {
+              console.log(`     ├─ ${child.name} → ${child.link}`);
+            });
+          }
+        } else {
+          console.log(`  └─ ${item.name} (${item.type})`);
+        }
+      });
+    }
 
     // Prepare enhanced configuration for template generator
     const config = {
@@ -205,7 +282,7 @@ export async function POST(request) {
         }]
       },
       
-      // Header customization
+      // Enhanced Header customization with nested menu support
       headerData: {
         style: headerData.style || 'solid',
         logoType: headerData.logoType || 'text',
@@ -213,12 +290,29 @@ export async function POST(request) {
         showCta: headerData.showCta !== false,
         ctaText: headerData.ctaText || 'Get Started',
         ctaLink: headerData.ctaLink || '/contact',
-        menuItems: headerData.menuItems || [
-          { name: 'Home', link: '/' },
-          { name: 'About', link: '/about' },
-          { name: 'Services', link: '/services' },
-          { name: 'Contact', link: '/contact' }
-        ]
+        
+        // Enhanced menu items with nested structure
+        menuItems: (headerData.menuItems || []).map(item => ({
+          name: item.name,
+          link: item.link,
+          type: item.type || 'link',
+          children: item.children || [],
+          // Add processing metadata
+          hasChildren: item.children && item.children.length > 0,
+          isDropdown: item.type === 'dropdown',
+          childCount: item.children?.length || 0
+        })),
+        
+        // Navigation metadata for template processing
+        navigationMetadata: {
+          totalItems: menuAnalysis.totalItems,
+          dropdownCount: menuAnalysis.dropdownCount,
+          nestedItems: menuAnalysis.nestedItems,
+          maxDepth: menuAnalysis.maxDepth,
+          hasNestedMenus: menuAnalysis.hasNestedMenus,
+          supportsMobile: true,
+          supportsDropdown: true
+        }
       },
       
       // Footer customization
@@ -252,7 +346,9 @@ export async function POST(request) {
         'Responsive Design',
         'SEO Optimized',
         'Modern UI/UX',
-        'Cross-browser Compatible'
+        'Cross-browser Compatible',
+        'Nested Navigation Menus',
+        'Mobile-Friendly Dropdowns'
       ],
       
       // Advanced options
@@ -260,32 +356,53 @@ export async function POST(request) {
       enableAnalytics,
       enableSEO,
       
-      // Generation metadata
-      generationType: 'enhanced-customization',
-      apiVersion: '2.1'
+      // Enhanced generation metadata
+      generationType,
+      apiVersion,
+      customizationFeatures: {
+        nestedMenus: menuAnalysis.hasNestedMenus,
+        dropdownMenus: menuAnalysis.dropdownCount > 0,
+        customHeader: true,
+        customFooter: true,
+        heroCustomization: true,
+        socialLinks: Object.values(footerData.socialLinks || {}).filter(url => url.trim()).length > 0,
+        newsletter: footerData.showNewsletter
+      }
     };
 
-    console.log('📝 Enhanced config prepared:', {
+    console.log('📝 Enhanced config prepared with nested menu support:', {
       businessName: config.businessName,
       template: config.template,
       designTheme: config.design.theme,
       heroHeadline: config.design.heroData[0].headline.substring(0, 50) + '...',
       headerStyle: config.headerData.style,
       footerStyle: config.footerData.style,
-      menuItems: config.headerData.menuItems.length,
-      socialLinks: Object.values(config.footerData.socialLinks).filter(url => url.trim()).length
+      navigation: {
+        totalMenuItems: config.headerData.navigationMetadata.totalItems,
+        dropdownMenus: config.headerData.navigationMetadata.dropdownCount,
+        nestedItems: config.headerData.navigationMetadata.nestedItems,
+        hasNestedMenus: config.headerData.navigationMetadata.hasNestedMenus
+      },
+      socialLinks: Object.values(config.footerData.socialLinks).filter(url => url.trim()).length,
+      customizationLevel: 'advanced-with-nested-menus'
     });
 
     // Generate project with enhanced configuration
-    const generatedProject = await templateGenerator.generateProject(config);
+    console.log('⚙️ Generating project with nested navigation structure...');
+    const generatedProject = await templatePathGenerator.generateProject(config);
     
     const endTime = Date.now();
     const processingTime = endTime - startTime;
 
     console.log(`🏁 Enhanced generation completed in ${processingTime}ms`);
     console.log(`📊 Generated ${Object.keys(generatedProject.files).length} files`);
+    console.log(`🧭 Navigation features applied:`);
+    console.log(`   ├─ ${menuAnalysis.totalItems} total menu items`);
+    console.log(`   ├─ ${menuAnalysis.dropdownCount} dropdown menus`);
+    console.log(`   ├─ ${menuAnalysis.nestedItems} nested sub-items`);
+    console.log(`   └─ Mobile-responsive navigation: ✅`);
 
-    // Enhanced response data
+    // Enhanced response data with nested menu metadata
     const responseData = {
       success: true,
       data: {
@@ -304,23 +421,40 @@ export async function POST(request) {
             heroStyle: config.design.heroStyle
           },
           
-          // Customization metadata
+          // Enhanced customization metadata with nested menu info
           customization: {
             hero: {
               backgroundType: config.design.heroData[0].backgroundType,
-              hasCustomContent: !!(heroData.headline || heroData.subheadline)
+              hasCustomContent: !!(heroData.headline || heroData.subheadline),
+              customHeadline: !!heroData.headline,
+              customSubheadline: !!heroData.subheadline
             },
             header: {
               style: config.headerData.style,
               logoType: config.headerData.logoType,
-              menuItems: config.headerData.menuItems.length,
-              hasCta: config.headerData.showCta
+              menuItems: menuAnalysis.totalItems,
+              dropdownMenus: menuAnalysis.dropdownCount,
+              nestedItems: menuAnalysis.nestedItems,
+              maxDepth: menuAnalysis.maxDepth,
+              hasNestedMenus: menuAnalysis.hasNestedMenus,
+              hasCta: config.headerData.showCta,
+              mobileResponsive: true
             },
             footer: {
               style: config.footerData.style,
               hasNewsletter: config.footerData.showNewsletter,
               socialLinksCount: Object.values(config.footerData.socialLinks).filter(url => url.trim()).length,
               hasContactInfo: !!(config.footerData.email || config.footerData.phone || config.footerData.address)
+            },
+            navigation: {
+              structure: menuAnalysis.structure,
+              complexity: menuAnalysis.hasNestedMenus ? 'complex' : 'simple',
+              features: [
+                'responsive-design',
+                menuAnalysis.hasNestedMenus ? 'nested-menus' : null,
+                menuAnalysis.dropdownCount > 0 ? 'dropdown-support' : null,
+                'mobile-friendly'
+              ].filter(Boolean)
             }
           },
           
@@ -330,11 +464,26 @@ export async function POST(request) {
             analytics: config.enableAnalytics,
             seo: config.enableSEO,
             responsive: true,
-            customDesign: true
+            customDesign: true,
+            nestedNavigation: menuAnalysis.hasNestedMenus,
+            dropdownMenus: menuAnalysis.dropdownCount > 0,
+            mobileOptimized: true
+          },
+          
+          // Generation statistics
+          generation: {
+            type: generationType,
+            version: apiVersion,
+            processingTimeMs: processingTime,
+            complexity: 'enhanced-with-nested-menus',
+            featuresApplied: config.features.length
           }
         }
       }
     };
+
+    console.log('✅ Response prepared with nested menu metadata');
+    console.log('📤 Sending enhanced project data to client...');
 
     return new Response(
       JSON.stringify(responseData),
@@ -345,20 +494,30 @@ export async function POST(request) {
           'X-Generation-Time': `${processingTime}ms`,
           'X-File-Count': `${Object.keys(generatedProject.files).length}`,
           'X-Design-Theme': config.design.theme,
-          'X-Customization-Level': 'enhanced'
+          'X-Customization-Level': 'enhanced-with-nested-menus',
+          'X-Menu-Items': `${menuAnalysis.totalItems}`,
+          'X-Dropdown-Count': `${menuAnalysis.dropdownCount}`,
+          'X-Nested-Items': `${menuAnalysis.nestedItems}`,
+          'X-Has-Nested-Menus': menuAnalysis.hasNestedMenus.toString()
         }
       }
     );
 
   } catch (error) {
-    console.error('🔥 Enhanced generation error:', error);
+    console.error('🔥 Enhanced generation with nested menus error:', error);
+    console.error('❌ Error details:', {
+      message: error.message,
+      stack: error.stack?.split('\n').slice(0, 3).join('\n')
+    });
+    
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Failed to generate enhanced project',
+        error: 'Failed to generate enhanced project with nested menus',
         details: error.message,
         timestamp: new Date().toISOString(),
-        errorType: error.name || 'GenerationError'
+        errorType: error.name || 'GenerationError',
+        generationType: 'enhanced-customization-with-nested-menus'
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
@@ -370,7 +529,7 @@ export async function PUT() {
   return new Response(
     JSON.stringify({ 
       error: 'Method not allowed', 
-      message: 'Use POST to generate projects',
+      message: 'Use POST to generate projects with nested menu support',
       supportedMethods: ['GET', 'POST']
     }),
     { 
@@ -384,8 +543,22 @@ export async function DELETE() {
   return new Response(
     JSON.stringify({ 
       error: 'Method not allowed',
-      message: 'Use POST to generate projects', 
+      message: 'Use POST to generate projects with nested menu support', 
       supportedMethods: ['GET', 'POST']
+    }),
+    { 
+      status: 405,
+      headers: { 'Content-Type': 'application/json' }
+    }
+  );
+}
+
+export async function PATCH() {
+  return new Response(
+    JSON.stringify({ 
+      error: 'Method not allowed',
+      message: 'Use POST to generate projects with nested menu support',
+      supportedMethods: ['GET', 'POST'] 
     }),
     { 
       status: 405,

@@ -20,7 +20,11 @@ import {
   Link,
   Settings,
   Play,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ChevronDown,
+  ChevronRight,
+  Folder,
+  FolderOpen
 } from 'lucide-react'
 
 // Design theme options (keeping existing)
@@ -175,6 +179,7 @@ const FOOTER_STYLES = {
 
 function DesignSelector({ config, onChange, onNext, onPrev }) {
   const [selectedSection, setSelectedSection] = useState('theme')
+  const [expandedMenus, setExpandedMenus] = useState({})
 
   const updateDesign = (key, value) => {
     onChange({
@@ -216,21 +221,73 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
     })
   }
 
+  // Enhanced menu item functions with nested support
   const updateMenuItem = (index, key, value) => {
     const newMenuItems = [...(config.headerData.menuItems || [])]
     newMenuItems[index] = { ...newMenuItems[index], [key]: value }
     updateHeaderData('menuItems', newMenuItems)
   }
 
+  const updateNestedMenuItem = (parentIndex, childIndex, key, value) => {
+    const newMenuItems = [...(config.headerData.menuItems || [])]
+    if (!newMenuItems[parentIndex].children) {
+      newMenuItems[parentIndex].children = []
+    }
+    newMenuItems[parentIndex].children[childIndex] = { 
+      ...newMenuItems[parentIndex].children[childIndex], 
+      [key]: value 
+    }
+    updateHeaderData('menuItems', newMenuItems)
+  }
+
   const addMenuItem = () => {
     const newMenuItems = [...(config.headerData.menuItems || [])]
-    newMenuItems.push({ name: 'New Item', link: '/' })
+    newMenuItems.push({ 
+      name: 'New Item', 
+      link: '/',
+      type: 'link', // 'link' or 'dropdown'
+      children: []
+    })
+    updateHeaderData('menuItems', newMenuItems)
+  }
+
+  const addNestedMenuItem = (parentIndex) => {
+    const newMenuItems = [...(config.headerData.menuItems || [])]
+    if (!newMenuItems[parentIndex].children) {
+      newMenuItems[parentIndex].children = []
+    }
+    newMenuItems[parentIndex].children.push({
+      name: 'New Sub Item',
+      link: '/',
+      description: 'Sub menu description'
+    })
+    // Make parent a dropdown type
+    newMenuItems[parentIndex].type = 'dropdown'
     updateHeaderData('menuItems', newMenuItems)
   }
 
   const removeMenuItem = (index) => {
     const newMenuItems = config.headerData.menuItems.filter((_, i) => i !== index)
     updateHeaderData('menuItems', newMenuItems)
+  }
+
+  const removeNestedMenuItem = (parentIndex, childIndex) => {
+    const newMenuItems = [...(config.headerData.menuItems || [])]
+    newMenuItems[parentIndex].children = newMenuItems[parentIndex].children.filter((_, i) => i !== childIndex)
+    
+    // If no children left, convert back to link type
+    if (newMenuItems[parentIndex].children.length === 0) {
+      newMenuItems[parentIndex].type = 'link'
+    }
+    
+    updateHeaderData('menuItems', newMenuItems)
+  }
+
+  const toggleMenuExpansion = (index) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }))
   }
 
   const updateSocialLink = (platform, value) => {
@@ -330,7 +387,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Main Headline</label>
             <input
               type="text"
-              value={config.heroData.headline}
+              value={config.heroData.headline || ''}
               onChange={(e) => updateHeroData('headline', e.target.value)}
               placeholder={`Transform Your ${config.industry || 'Business'} with ${config.businessName || 'Our Solutions'}`}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -339,7 +396,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Sub-headline</label>
             <textarea
-              value={config.heroData.subheadline}
+              value={config.heroData.subheadline || ''}
               onChange={(e) => updateHeroData('subheadline', e.target.value)}
               placeholder={config.businessDescription || `Professional ${config.industry || 'business'} solutions designed for ${config.targetAudience || 'your success'}`}
               rows={3}
@@ -357,7 +414,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Primary Button Text</label>
             <input
               type="text"
-              value={config.heroData.primaryCta}
+              value={config.heroData.primaryCta || ''}
               onChange={(e) => updateHeroData('primaryCta', e.target.value)}
               placeholder="Get Started"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -367,7 +424,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Secondary Button Text</label>
             <input
               type="text"
-              value={config.heroData.secondaryCta}
+              value={config.heroData.secondaryCta || ''}
               onChange={(e) => updateHeroData('secondaryCta', e.target.value)}
               placeholder="Learn More"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -408,7 +465,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Background Image URL</label>
             <input
               type="url"
-              value={config.heroData.backgroundImage}
+              value={config.heroData.backgroundImage || ''}
               onChange={(e) => updateHeroData('backgroundImage', e.target.value)}
               placeholder="https://example.com/your-image.jpg"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -423,7 +480,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Background Video URL</label>
             <input
               type="url"
-              value={config.heroData.backgroundVideo}
+              value={config.heroData.backgroundVideo || ''}
               onChange={(e) => updateHeroData('backgroundVideo', e.target.value)}
               placeholder="https://example.com/your-video.mp4"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -479,7 +536,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
     <div className="space-y-6">
       <div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">Customize Header & Navigation</h3>
-        <p className="text-gray-600 mb-6">Design your website header and navigation menu</p>
+        <p className="text-gray-600 mb-6">Design your website header and navigation menu with nested dropdown support</p>
       </div>
 
       {/* Header Style Selection */}
@@ -513,7 +570,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Logo Type</label>
             <select
-              value={config.headerData.logoType}
+              value={config.headerData.logoType || 'text'}
               onChange={(e) => updateHeaderData('logoType', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
@@ -525,7 +582,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Logo Text</label>
             <input
               type="text"
-              value={config.headerData.logoText}
+              value={config.headerData.logoText || ''}
               onChange={(e) => updateHeaderData('logoText', e.target.value)}
               placeholder={config.businessName || "Your Business"}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -534,7 +591,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
         </div>
       </div>
 
-      {/* Navigation Menu Items */}
+      {/* Navigation Menu Items with Nested Support */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-lg font-medium text-gray-900">Navigation Menu</h4>
@@ -543,37 +600,158 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Item</span>
+            <span>Add Menu Item</span>
           </button>
         </div>
         
         <div className="space-y-3">
           {(config.headerData.menuItems || []).map((item, index) => (
-            <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <div className="flex-1 grid grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  value={item.name}
-                  onChange={(e) => updateMenuItem(index, 'name', e.target.value)}
-                  placeholder="Menu Name"
-                  className="px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <input
-                  type="text"
-                  value={item.link}
-                  onChange={(e) => updateMenuItem(index, 'link', e.target.value)}
-                  placeholder="/page-url"
-                  className="px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                />
+            <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+              {/* Main Menu Item */}
+              <div className="p-4 bg-white">
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => toggleMenuExpansion(index)}
+                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    {item.children && item.children.length > 0 ? (
+                      expandedMenus[index] ? (
+                        <FolderOpen className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <Folder className="w-4 h-4 text-gray-500" />
+                      )
+                    ) : (
+                      <div className="w-4 h-4" />
+                    )}
+                  </button>
+                  
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <input
+                      type="text"
+                      value={item.name || ''}
+                      onChange={(e) => updateMenuItem(index, 'name', e.target.value)}
+                      placeholder="Menu Name"
+                      className="px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="text"
+                      value={item.link || ''}
+                      onChange={(e) => updateMenuItem(index, 'link', e.target.value)}
+                      placeholder="/page-url"
+                      className="px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                    <select
+                      value={item.type || 'link'}
+                      onChange={(e) => updateMenuItem(index, 'type', e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="link">Single Link</option>
+                      <option value="dropdown">Dropdown Menu</option>
+                    </select>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => addNestedMenuItem(index)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      title="Add sub-menu item"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => removeMenuItem(index)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
-              <button
-                onClick={() => removeMenuItem(index)}
-                className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+
+              {/* Nested Menu Items */}
+              {item.children && item.children.length > 0 && expandedMenus[index] && (
+                <div className="bg-gray-50 border-t border-gray-200">
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h5 className="text-sm font-medium text-gray-700">Sub-menu Items</h5>
+                      <button
+                        onClick={() => addNestedMenuItem(index)}
+                        className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                      >
+                        Add Sub-item
+                      </button>
+                    </div>
+                    
+                    {item.children.map((child, childIndex) => (
+                      <div key={childIndex} className="flex items-center space-x-3 pl-6">
+                        <ChevronRight className="w-3 h-3 text-gray-400" />
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <input
+                            type="text"
+                            value={child.name || ''}
+                            onChange={(e) => updateNestedMenuItem(index, childIndex, 'name', e.target.value)}
+                            placeholder="Sub-menu Name"
+                            className="px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm"
+                          />
+                          <input
+                            type="text"
+                            value={child.link || ''}
+                            onChange={(e) => updateNestedMenuItem(index, childIndex, 'link', e.target.value)}
+                            placeholder="/sub-page-url"
+                            className="px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm"
+                          />
+                          <input
+                            type="text"
+                            value={child.description || ''}
+                            onChange={(e) => updateNestedMenuItem(index, childIndex, 'description', e.target.value)}
+                            placeholder="Description (optional)"
+                            className="px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm"
+                          />
+                        </div>
+                        <button
+                          onClick={() => removeNestedMenuItem(index, childIndex)}
+                          className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
+        </div>
+
+        {/* Menu Preview */}
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <h5 className="text-sm font-medium text-gray-700 mb-3">Menu Preview</h5>
+          <div className="flex flex-wrap gap-2">
+            {(config.headerData.menuItems || []).map((item, index) => (
+              <div key={index} className="relative group">
+                <div className="flex items-center space-x-1 px-3 py-2 bg-white border border-gray-200 rounded text-sm">
+                  <span>{item.name || 'Unnamed'}</span>
+                  {item.children && item.children.length > 0 && (
+                    <ChevronDown className="w-3 h-3 text-gray-400" />
+                  )}
+                </div>
+                
+                {/* Dropdown Preview */}
+                {item.children && item.children.length > 0 && (
+                  <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 min-w-48">
+                    {item.children.map((child, childIndex) => (
+                      <div key={childIndex} className="px-4 py-2 text-sm border-b border-gray-100 last:border-b-0">
+                        <div className="font-medium text-gray-900">{child.name || 'Unnamed'}</div>
+                        {child.description && (
+                          <div className="text-xs text-gray-500 mt-1">{child.description}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -584,7 +762,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
           <label className="flex items-center">
             <input
               type="checkbox"
-              checked={config.headerData.showCta}
+              checked={config.headerData.showCta || false}
               onChange={(e) => updateHeaderData('showCta', e.target.checked)}
               className="mr-2 rounded border-gray-300"
             />
@@ -595,14 +773,14 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="text"
-                value={config.headerData.ctaText}
+                value={config.headerData.ctaText || ''}
                 onChange={(e) => updateHeaderData('ctaText', e.target.value)}
                 placeholder="Button Text"
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
               <input
                 type="text"
-                value={config.headerData.ctaLink}
+                value={config.headerData.ctaLink || ''}
                 onChange={(e) => updateHeaderData('ctaLink', e.target.value)}
                 placeholder="Button Link"
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -653,7 +831,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
             <input
               type="text"
-              value={config.footerData.companyName}
+              value={config.footerData.companyName || ''}
               onChange={(e) => updateFooterData('companyName', e.target.value)}
               placeholder={config.businessName || "Your Company"}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -663,7 +841,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
             <input
               type="email"
-              value={config.footerData.email}
+              value={config.footerData.email || ''}
               onChange={(e) => updateFooterData('email', e.target.value)}
               placeholder="contact@company.com"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -673,7 +851,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
             <input
               type="tel"
-              value={config.footerData.phone}
+              value={config.footerData.phone || ''}
               onChange={(e) => updateFooterData('phone', e.target.value)}
               placeholder="(555) 123-4567"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -683,7 +861,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
             <input
               type="text"
-              value={config.footerData.address}
+              value={config.footerData.address || ''}
               onChange={(e) => updateFooterData('address', e.target.value)}
               placeholder="123 Business St, City, State"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -694,7 +872,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Company Description</label>
           <textarea
-            value={config.footerData.companyDescription}
+            value={config.footerData.companyDescription || ''}
             onChange={(e) => updateFooterData('companyDescription', e.target.value)}
             placeholder={config.businessDescription || "Brief description of your company"}
             rows={3}
@@ -710,7 +888,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
           <label className="flex items-center">
             <input
               type="checkbox"
-              checked={config.footerData.showNewsletter}
+              checked={config.footerData.showNewsletter || false}
               onChange={(e) => updateFooterData('showNewsletter', e.target.checked)}
               className="mr-2 rounded border-gray-300"
             />
@@ -722,7 +900,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
               <label className="block text-sm font-medium text-gray-700 mb-2">Newsletter Title</label>
               <input
                 type="text"
-                value={config.footerData.newsletterTitle}
+                value={config.footerData.newsletterTitle || ''}
                 onChange={(e) => updateFooterData('newsletterTitle', e.target.value)}
                 placeholder="Stay Updated"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -736,12 +914,12 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
       <div className="space-y-4">
         <h4 className="text-lg font-medium text-gray-900">Social Media Links</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Object.entries(config.footerData.socialLinks || {}).map(([platform, url]) => (
+          {(['facebook', 'twitter', 'linkedin', 'instagram']).map((platform) => (
             <div key={platform}>
               <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">{platform}</label>
               <input
                 type="url"
-                value={url}
+                value={config.footerData.socialLinks?.[platform] || ''}
                 onChange={(e) => updateSocialLink(platform, e.target.value)}
                 placeholder={`https://${platform}.com/yourcompany`}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -800,7 +978,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
           Live Preview
         </h4>
         
-        {/* Header Preview */}
+        {/* Header Preview with Nested Menus */}
         <div className="bg-white rounded-lg mb-4 overflow-hidden shadow-sm">
           <div className={`px-6 py-4 ${HEADER_STYLES[config.headerData.style]?.preview || 'bg-white'} border-b`}>
             <div className="flex items-center justify-between">
@@ -814,7 +992,26 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
               </div>
               <nav className="hidden md:flex space-x-6">
                 {(config.headerData.menuItems || []).slice(0, 4).map((item, index) => (
-                  <span key={index} className="text-sm text-gray-600">{item.name}</span>
+                  <div key={index} className="relative group">
+                    <span className="text-sm text-gray-600 flex items-center space-x-1 cursor-pointer">
+                      <span>{item.name}</span>
+                      {item.children && item.children.length > 0 && (
+                        <ChevronDown className="w-3 h-3" />
+                      )}
+                    </span>
+                    {item.children && item.children.length > 0 && (
+                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 min-w-48">
+                        {item.children.slice(0, 3).map((child, childIndex) => (
+                          <div key={childIndex} className="px-3 py-2 text-xs border-b border-gray-100 last:border-b-0">
+                            <div className="font-medium text-gray-900">{child.name}</div>
+                            {child.description && (
+                              <div className="text-gray-500 mt-1">{child.description}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </nav>
               {config.headerData.showCta && (
@@ -869,7 +1066,10 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
           </div>
           <div>
             <span className="text-gray-600">Menu Items:</span>
-            <div className="font-medium text-gray-900">{config.headerData.menuItems?.length || 0}</div>
+            <div className="font-medium text-gray-900">
+              {config.headerData.menuItems?.length || 0} 
+              ({(config.headerData.menuItems || []).reduce((sum, item) => sum + (item.children?.length || 0), 0)} nested)
+            </div>
           </div>
         </div>
       </div>

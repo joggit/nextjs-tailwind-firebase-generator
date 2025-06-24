@@ -14,7 +14,10 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "firebase": "^10.7.0",
-    "lucide-react": "^0.300.0"
+    "lucide-react": "^0.300.0",
+    "@headlessui/react":"latest",
+    "@heroicons/react":"latest"
+
   },
   "devDependencies": {
     "tailwindcss": "^3.3.0",

@@ -18,7 +18,8 @@ import {
   ArrowLeft,
   Navigation,
   Menu,
-  Settings
+  Settings,
+  ChevronDown
 } from 'lucide-react'
 import GeneratorForm from './GeneratorForm'
 import DesignSelector from './DesignSelector'
@@ -55,7 +56,7 @@ function ProjectGenerator() {
       backgroundVideo: ''
     },
     
-    // Header Configuration
+    // Enhanced Header Configuration with Nested Menu Support
     headerData: {
       style: 'solid',
       logoType: 'text',
@@ -65,10 +66,33 @@ function ProjectGenerator() {
       ctaText: 'Get Started',
       ctaLink: '/contact',
       menuItems: [
-        { name: 'Home', link: '/' },
-        { name: 'About', link: '/about' },
-        { name: 'Services', link: '/services' },
-        { name: 'Contact', link: '/contact' }
+        { 
+          name: 'Home', 
+          link: '/', 
+          type: 'link',
+          children: []
+        },
+        { 
+          name: 'About', 
+          link: '/about', 
+          type: 'link',
+          children: []
+        },
+        { 
+          name: 'Services', 
+          link: '/services', 
+          type: 'dropdown',
+          children: [
+            { name: 'Consulting', link: '/services/consulting', description: 'Expert consulting services' },
+            { name: 'Support', link: '/services/support', description: '24/7 customer support' }
+          ]
+        },
+        { 
+          name: 'Contact', 
+          link: '/contact', 
+          type: 'link',
+          children: []
+        }
       ]
     },
     
@@ -176,7 +200,7 @@ function ProjectGenerator() {
     {
       id: 'design',
       title: 'Customization',
-      description: 'Theme, header, footer, and layout',
+      description: 'Theme, header, footer, and nested menus',
       icon: Palette,
       component: 'design'
     },
@@ -214,84 +238,111 @@ function ProjectGenerator() {
     }
   }
 
-const handleGenerate = async () => {
-  setLoading(true)
-  setError(null)
-  setResult(null)
+  const handleGenerate = async () => {
+    setLoading(true)
+    setError(null)
+    setResult(null)
 
-  try {
-    // Simple validation
-    if (!formData.businessName) {
-      throw new Error('Business name is required')
+    try {
+      // Simple validation
+      if (!formData.businessName) {
+        throw new Error('Business name is required')
+      }
+      if (!formData.industry) {
+        throw new Error('Industry is required')
+      }
+      if (!formData.businessType) {
+        throw new Error('Business type is required')
+      }
+
+      console.log('🚀 Starting generation for:', formData.businessName)
+
+      // Enhanced payload with nested menu support
+      const payload = {
+        // Core business information
+        businessName: formData.businessName,
+        industry: formData.industry,
+        businessType: formData.businessType,
+        targetAudience: formData.targetAudience || 'customers',
+        businessDescription: formData.businessDescription || `${formData.businessName} - Professional ${formData.industry} Services`,
+        
+        // Template and design
+        template: formData.template || 'modern',
+        design: formData.design || { theme: 'modern', layout: 'standard' },
+        
+        // Enhanced customization data with nested menu support
+        heroData: formData.heroData || {},
+        headerData: {
+          ...formData.headerData,
+          // Ensure menu items have proper structure for nested support
+          menuItems: (formData.headerData.menuItems || []).map(item => ({
+            name: item.name,
+            link: item.link,
+            type: item.type || 'link',
+            children: item.children || [],
+            // Add metadata for nested menu processing
+            hasChildren: item.children && item.children.length > 0,
+            isDropdown: item.type === 'dropdown'
+          }))
+        },
+        footerData: formData.footerData || {},
+        
+        // Pages and features
+        pages: formData.pages?.filter(page => page.enabled) || [],
+        features: formData.features || [],
+        
+        // Options
+        vectorEnhancement: formData.vectorEnhancement || false,
+        enableAnalytics: formData.enableAnalytics !== false,
+        enableSEO: formData.enableSEO !== false,
+        
+        // Enhanced metadata
+        generationType: 'enhanced-customization-with-nested-menus',
+        apiVersion: '2.2',
+        customizationFeatures: {
+          nestedMenus: true,
+          customHeader: true,
+          customFooter: true,
+          heroCustomization: true,
+          socialLinks: true,
+          newsletter: formData.footerData.showNewsletter
+        }
+      }
+
+      console.log('📦 Sending payload with nested menu support:', {
+        businessName: payload.businessName,
+        menuItemsCount: payload.headerData.menuItems.length,
+        nestedItemsCount: payload.headerData.menuItems.reduce((sum, item) => sum + (item.children?.length || 0), 0),
+        dropdownMenus: payload.headerData.menuItems.filter(item => item.type === 'dropdown').length
+      })
+
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      console.log('📡 Response status:', response.status)
+
+      const data = await response.json()
+
+      if (data.success) {
+        setResult(data.data)
+        console.log('✅ Generation successful with nested menu support')
+      } else {
+        setError(data.error || 'Failed to generate project')
+        console.error('❌ Generation failed:', data.error)
+      }
+    } catch (err) {
+      setError(`Generation failed: ${err.message}`)
+      console.error('❌ Generation error:', err)
+    } finally {
+      setLoading(false)
     }
-    if (!formData.industry) {
-      throw new Error('Industry is required')
-    }
-    if (!formData.businessType) {
-      throw new Error('Business type is required')
-    }
-
-    console.log('🚀 Starting generation for:', formData.businessName)
-
-    const payload = {
-      // Core business information
-      businessName: formData.businessName,
-      industry: formData.industry,
-      businessType: formData.businessType,
-      targetAudience: formData.targetAudience || 'customers',
-      businessDescription: formData.businessDescription || `${formData.businessName} - Professional ${formData.industry} Services`,
-      
-      // Template and design
-      template: formData.template || 'modern',
-      design: formData.design || { theme: 'modern', layout: 'standard' },
-      
-      // Your existing customization data
-      heroData: formData.heroData || {},
-      headerData: formData.headerData || {},
-      footerData: formData.footerData || {},
-      
-      // Pages and features
-      pages: formData.pages?.filter(page => page.enabled) || [],
-      features: formData.features || [],
-      
-      // Options
-      vectorEnhancement: formData.vectorEnhancement || false,
-      enableAnalytics: formData.enableAnalytics !== false,
-      enableSEO: formData.enableSEO !== false,
-      
-      // Metadata
-      generationType: 'enhanced-customization',
-      apiVersion: '2.1'
-    }
-
-    console.log('📦 Sending payload with businessName:', payload.businessName)
-
-    const response = await fetch('/api/generate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
-
-    console.log('📡 Response status:', response.status)
-
-    const data = await response.json()
-
-    if (data.success) {
-      setResult(data.data)
-      console.log('✅ Generation successful')
-    } else {
-      setError(data.error || 'Failed to generate project')
-      console.error('❌ Generation failed:', data.error)
-    }
-  } catch (err) {
-    setError(`Generation failed: ${err.message}`)
-    console.error('❌ Generation error:', err)
-  } finally {
-    setLoading(false)
   }
-}
+
   const downloadProject = async () => {
     if (!result) return
 
@@ -341,14 +392,33 @@ const handleGenerate = async () => {
     }
   }
 
+  // Enhanced menu analysis functions
+  const getMenuAnalysis = () => {
+    const menuItems = formData.headerData.menuItems || []
+    const totalItems = menuItems.length
+    const dropdownMenus = menuItems.filter(item => item.type === 'dropdown' || (item.children && item.children.length > 0))
+    const nestedItems = menuItems.reduce((sum, item) => sum + (item.children?.length || 0), 0)
+    
+    return {
+      totalItems,
+      dropdownMenus: dropdownMenus.length,
+      nestedItems,
+      hasNestedMenus: nestedItems > 0
+    }
+  }
+
   const getCustomizationSummary = () => {
+    const menuAnalysis = getMenuAnalysis()
+    
     return {
       theme: formData.design.theme,
       heroStyle: formData.design.heroStyle,
       headerStyle: formData.headerData.style,
       footerStyle: formData.footerData.style,
       logoType: formData.headerData.logoType,
-      menuItems: formData.headerData.menuItems?.length || 0,
+      menuItems: menuAnalysis.totalItems,
+      dropdownMenus: menuAnalysis.dropdownMenus,
+      nestedItems: menuAnalysis.nestedItems,
       socialLinks: Object.values(formData.footerData.socialLinks || {}).filter(url => url.trim()).length,
       newsletter: formData.footerData.showNewsletter,
       ctaButton: formData.headerData.showCta,
@@ -414,7 +484,7 @@ const handleGenerate = async () => {
           AI Website Generator
         </h1>
         <p className="text-gray-600 mb-6">
-          Create a professional website with custom header, footer, and AI-powered content generation
+          Create a professional website with custom header, nested menus, footer, and AI-powered content generation
         </p>
 
         {/* Enhanced Step Progress */}
@@ -476,7 +546,7 @@ const handleGenerate = async () => {
         {renderStepContent()}
       </div>
 
-      {/* Enhanced Customization Preview (shown on design step) */}
+      {/* Enhanced Customization Preview with Nested Menu Support (shown on design step) */}
       {currentStep === 1 && (
         <div className="mt-8 bg-white rounded-xl shadow-sm border p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -536,27 +606,29 @@ const handleGenerate = async () => {
             </div>
           </div>
           
-          {/* Detailed Customization Summary */}
+          {/* Enhanced Nested Menu Analysis */}
           <div className="p-4 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-3">Customization Details</h4>
+            <h4 className="font-medium text-gray-900 mb-3">Navigation & Customization Details</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
               <div>
-                <span className="text-gray-600">Hero Style:</span>
-                <span className="ml-2 font-medium capitalize">{formData.design.heroStyle}</span>
+                <span className="text-gray-600">Menu Items:</span>
+                <span className="ml-2 font-medium">{getMenuAnalysis().totalItems} items</span>
+              </div>
+              <div>
+                <span className="text-gray-600">Dropdown Menus:</span>
+                <span className="ml-2 font-medium">{getMenuAnalysis().dropdownMenus} dropdowns</span>
+              </div>
+              <div>
+                <span className="text-gray-600">Nested Items:</span>
+                <span className="ml-2 font-medium">{getMenuAnalysis().nestedItems} sub-items</span>
               </div>
               <div>
                 <span className="text-gray-600">Hero Background:</span>
                 <span className="ml-2 font-medium capitalize">{formData.heroData.backgroundType}</span>
               </div>
               <div>
-                <span className="text-gray-600">Logo:</span>
-                <span className="ml-2 font-medium">
-                  {formData.headerData.logoType} - "{formData.headerData.logoText || formData.businessName || 'Not set'}"
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Menu Items:</span>
-                <span className="ml-2 font-medium">{formData.headerData.menuItems?.length || 0} items</span>
+                <span className="text-gray-600">Logo Type:</span>
+                <span className="ml-2 font-medium capitalize">{formData.headerData.logoType}</span>
               </div>
               <div>
                 <span className="text-gray-600">Header CTA:</span>
@@ -579,6 +651,30 @@ const handleGenerate = async () => {
                 </span>
               </div>
             </div>
+            
+            {/* Nested Menu Preview */}
+            {getMenuAnalysis().hasNestedMenus && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <h5 className="text-sm font-medium text-gray-700 mb-2">Nested Menu Structure:</h5>
+                <div className="space-y-1 text-xs">
+                  {formData.headerData.menuItems?.map((item, index) => (
+                    <div key={index}>
+                      <span className="text-gray-600">{item.name}</span>
+                      {item.children && item.children.length > 0 && (
+                        <div className="ml-4 text-gray-500">
+                          {item.children.map((child, childIndex) => (
+                            <div key={childIndex} className="flex items-center">
+                              <ChevronDown className="w-3 h-3 mr-1" />
+                              {child.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -586,17 +682,9 @@ const handleGenerate = async () => {
   )
 }
 
-// Enhanced Generate Step Component
+// Enhanced Generate Step Component with Nested Menu Support
 function GenerateStep({ config, loading, result, error, onGenerate, onDownload, onPrev }) {
-  const summary = {
-    theme: config.design.theme,
-    heroStyle: config.design.heroStyle,
-    headerStyle: config.headerData.style,
-    footerStyle: config.footerData.style,
-    menuItems: config.headerData.menuItems?.length || 0,
-    socialLinks: Object.values(config.footerData.socialLinks || {}).filter(url => url.trim()).length,
-    heroBackground: config.heroData.backgroundType
-  }
+  const summary = getCustomizationSummary(config)
 
   return (
     <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -605,7 +693,7 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
           Generate Your Custom Website
         </h2>
         <p className="text-gray-600">
-          Ready to create your website with custom header, footer, and AI-powered content
+          Ready to create your website with nested navigation menus, custom header, footer, and AI-powered content
         </p>
       </div>
 
@@ -624,8 +712,9 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-purple-600">Header</p>
-              <p className="text-lg font-bold text-purple-900 capitalize">{summary.headerStyle}</p>
+              <p className="text-sm font-medium text-purple-600">Navigation</p>
+              <p className="text-lg font-bold text-purple-900">{summary.menuItems} + {summary.nestedItems}</p>
+              <p className="text-xs text-purple-600">Items + Nested</p>
             </div>
             <Navigation className="w-8 h-8 text-purple-600" />
           </div>
@@ -634,8 +723,9 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-green-600">Footer</p>
-              <p className="text-lg font-bold text-green-900 capitalize">{summary.footerStyle}</p>
+              <p className="text-sm font-medium text-green-600">Dropdowns</p>
+              <p className="text-lg font-bold text-green-900">{summary.dropdownMenus}</p>
+              <p className="text-xs text-green-600">Nested Menus</p>
             </div>
             <Menu className="w-8 h-8 text-green-600" />
           </div>
@@ -652,10 +742,10 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
         </div>
       </div>
 
-      {/* Customization Features Preview */}
+      {/* Enhanced Customization Features Preview */}
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mb-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          🎨 Custom Features Included
+          🎨 Advanced Features Included
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-center space-x-2">
@@ -664,11 +754,11 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-            <span><strong>{summary.footerStyle}</strong> footer layout</span>
+            <span><strong>{summary.dropdownMenus}</strong> dropdown menus</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span><strong>{summary.menuItems}</strong> navigation items</span>
+            <span><strong>{summary.nestedItems}</strong> nested menu items</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
@@ -696,20 +786,20 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
             {loading ? (
               <>
                 <Loader className="w-5 h-5 mr-2 animate-spin" />
-                Generating Custom Website...
+                Generating with Nested Menus...
               </>
             ) : (
               <>
                 <Brain className="w-5 h-5 mr-2" />
-                Generate Website with Custom Design
+                Generate Website with Nested Navigation
               </>
             )}
           </button>
           
           {loading && (
             <div className="mt-4 text-sm text-gray-600">
-              <p>Creating your website with custom header and footer...</p>
-              <p className="text-xs mt-1">Applying {summary.menuItems} menu items and {summary.socialLinks} social links</p>
+              <p>Creating your website with {summary.dropdownMenus} dropdown menus and {summary.nestedItems} nested items...</p>
+              <p className="text-xs mt-1">Applying custom header, footer, and responsive navigation</p>
             </div>
           )}
         </div>
@@ -741,7 +831,7 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                <span className="font-medium text-green-800">Custom Website Generated Successfully!</span>
+                <span className="font-medium text-green-800">Website with Nested Navigation Generated Successfully!</span>
               </div>
               <button
                 onClick={onDownload}
@@ -758,12 +848,12 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
                 <div className="text-gray-600">{result.metadata?.fileCount || 0} files</div>
               </div>
               <div className="bg-white p-3 rounded-lg">
-                <div className="font-medium text-gray-900">Header Style</div>
-                <div className="text-gray-600 capitalize">{summary.headerStyle}</div>
+                <div className="font-medium text-gray-900">Menu Items</div>
+                <div className="text-gray-600">{summary.menuItems} + {summary.nestedItems} nested</div>
               </div>
               <div className="bg-white p-3 rounded-lg">
-                <div className="font-medium text-gray-900">Footer Style</div>
-                <div className="text-gray-600 capitalize">{summary.footerStyle}</div>
+                <div className="font-medium text-gray-900">Dropdown Menus</div>
+                <div className="text-gray-600">{summary.dropdownMenus} dropdowns</div>
               </div>
               <div className="bg-white p-3 rounded-lg">
                 <div className="font-medium text-gray-900">Processing Time</div>
@@ -771,17 +861,18 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
               </div>
             </div>
 
-            {/* Detailed success message */}
+            {/* Detailed success message with nested menu info */}
             <div className="p-4 bg-white rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">✨ Customizations Applied Successfully</h4>
+              <h4 className="font-medium text-gray-900 mb-2">✨ Navigation & Customizations Applied</h4>
               <div className="text-sm text-gray-600 space-y-1">
+                <p>• <strong>{summary.dropdownMenus}</strong> dropdown menus with <strong>{summary.nestedItems}</strong> nested items</p>
                 <p>• Custom <strong>{summary.headerStyle}</strong> header with {config.headerData.logoType} logo</p>
                 <p>• <strong>{summary.footerStyle}</strong> footer layout with company information</p>
-                <p>• <strong>{summary.menuItems}</strong> navigation menu items configured</p>
+                <p>• Responsive navigation that works on all devices</p>
                 <p>• <strong>{summary.socialLinks}</strong> social media links integrated</p>
                 <p>• Newsletter signup: <strong>{config.footerData.showNewsletter ? 'Enabled' : 'Disabled'}</strong></p>
                 <p>• Header CTA button: <strong>{config.headerData.showCta ? 'Enabled' : 'Disabled'}</strong></p>
-                <p>• Fully responsive design optimized for all devices</p>
+                <p>• Mobile-friendly nested menu structure</p>
               </div>
             </div>
           </div>
@@ -815,6 +906,29 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
       </div>
     </div>
   )
+}
+
+// Helper function to get customization summary
+function getCustomizationSummary(config) {
+  const menuItems = config.headerData.menuItems || []
+  const totalItems = menuItems.length
+  const dropdownMenus = menuItems.filter(item => item.type === 'dropdown' || (item.children && item.children.length > 0))
+  const nestedItems = menuItems.reduce((sum, item) => sum + (item.children?.length || 0), 0)
+  
+  return {
+    theme: config.design.theme,
+    heroStyle: config.design.heroStyle,
+    headerStyle: config.headerData.style,
+    footerStyle: config.footerData.style,
+    logoType: config.headerData.logoType,
+    menuItems: totalItems,
+    dropdownMenus: dropdownMenus.length,
+    nestedItems,
+    socialLinks: Object.values(config.footerData.socialLinks || {}).filter(url => url.trim()).length,
+    newsletter: config.footerData.showNewsletter,
+    ctaButton: config.headerData.showCta,
+    heroBackground: config.heroData.backgroundType
+  }
 }
 
 export default ProjectGenerator
