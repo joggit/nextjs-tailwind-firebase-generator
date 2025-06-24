@@ -24,8 +24,11 @@ import {
   ChevronDown,
   ChevronRight,
   Folder,
-  FolderOpen
+  FolderOpen,
+  FileText  // Add this
 } from 'lucide-react'
+import PageEditor from './PageEditor'
+
 
 // Design theme options (keeping existing)
 const DESIGN_THEMES = {
@@ -57,34 +60,6 @@ const DESIGN_THEMES = {
     features: ['Serif fonts', 'Warm colors', 'Spacious layout', 'Classic'],
     preview: 'bg-gradient-to-br from-amber-600 to-orange-600'
   },
-  creative: {
-    id: 'creative',
-    name: 'Creative',
-    description: 'Vibrant and playful with unique elements',
-    colors: {
-      primary: '#EC4899',
-      secondary: '#8B5CF6',
-      accent: '#F59E0B',
-      background: '#F3F4F6',
-      surface: '#FFFFFF'
-    },
-    features: ['Rounded corners', 'Bright colors', 'Animations', 'Playful'],
-    preview: 'bg-gradient-to-br from-pink-500 to-purple-500'
-  },
-  tech: {
-    id: 'tech',
-    name: 'Tech',
-    description: 'Futuristic design with neon accents',
-    colors: {
-      primary: '#06B6D4',
-      secondary: '#8B5CF6',
-      accent: '#10B981',
-      background: '#0F172A',
-      surface: '#1E293B'
-    },
-    features: ['Dark theme', 'Neon effects', 'Monospace fonts', 'Futuristic'],
-    preview: 'bg-gradient-to-br from-cyan-500 to-blue-600'
-  }
 }
 
 // Hero background options
@@ -297,16 +272,21 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
     })
   }
 
-  const isComplete = () => {
-    return (
-      config.design.theme && 
-      config.design.layout && 
-      config.design.heroStyle && 
-      config.headerData.style && 
-      config.footerData.style &&
-      config.heroData.backgroundType
-    )
-  }
+// Update the isComplete function to include pages check:
+const isComplete = () => {
+  const hasPages = config.pages && Object.keys(config.pages).length > 0
+  const hasEnabledPages = hasPages && Object.values(config.pages).some(p => p.enabled !== false)
+  
+  return (
+    config.design.theme && 
+    config.design.layout && 
+    config.design.heroStyle && 
+    config.headerData.style && 
+    config.footerData.style &&
+    config.heroData.backgroundType &&
+    hasEnabledPages
+  )
+}
 
   const renderThemeSelector = () => (
     <div className="space-y-6">
@@ -532,7 +512,7 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
     </div>
   )
 
-  const renderHeaderCustomization = () => (
+  const renderHeaderCustomization = () => ( 
     <div className="space-y-6">
       <div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">Customize Header & Navigation</h3>
@@ -936,7 +916,8 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
     { id: 'hero', label: 'Hero', icon: Sparkles, component: renderHeroCustomization },
     { id: 'header', label: 'Header', icon: Navigation, component: renderHeaderCustomization },
     { id: 'footer', label: 'Footer', icon: Menu, component: renderFooterCustomization },
-    { id: 'layout', label: 'Layout', icon: Layout, component: () => <div>Layout selector (existing)</div> }
+    { id: 'layout', label: 'Layout', icon: Layout, component: () => <div>Layout selector (existing)</div> },
+    { id: 'pages', label: 'Pages', icon: FileText, component: () => <PageEditor config={config} onChange={onChange} /> },
   ]
 
   return (

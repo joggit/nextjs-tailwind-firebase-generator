@@ -32,55 +32,12 @@ export default function GeneratorForm({ config, onChange, onNext }) {
       icon: ShoppingBag,
       features: ['Product Catalog', 'Shopping Cart', 'Payment Integration']
     },
-    {
-      id: 'saas',
-      name: 'SaaS Platform',
-      description: 'Software as a Service application',
-      icon: BarChart3,
-      features: ['User Dashboard', 'Subscription Billing', 'Analytics']
-    },
-    {
-      id: 'blog',
-      name: 'Blog Platform',
-      description: 'Content management system',
-      icon: FileText,
-      features: ['Content Editor', 'Comments', 'SEO Tools']
-    },
-    {
-      id: 'portfolio',
-      name: 'Portfolio Site',
-      description: 'Showcase your work and skills',
-      icon: Briefcase,
-      features: ['Project Gallery', 'About Section', 'Contact Form']
-    },
-    {
-      id: 'crm',
-      name: 'CRM System',
-      description: 'Customer relationship management',
-      icon: Users,
-      features: ['Contact Management', 'Deal Tracking', 'Reports']
-    },
-    {
-      id: 'ngo',
-      name: 'NGO Website',
-      description: 'Website for non-profit organizations',
-      icon: Globe,
-      features: ['Donation Forms', 'Event Management', 'Volunteer Sign-up']
-    }
+    
   ]
 
   const availableFeatures = [
     'Authentication',
-    'User Profiles',
-    'Admin Dashboard',
-    'Email Integration',
-    'Payment Processing',
-    'File Upload',
-    'Real-time Chat',
-    'Push Notifications',
-    'Analytics',
     'SEO Tools',
-    'Multi-language',
     'Dark Mode'
   ]
 
@@ -124,7 +81,6 @@ export default function GeneratorForm({ config, onChange, onNext }) {
       </h2>
 
       <div className="space-y-8">
-        {/* CRITICAL FIX: Changed from config.name to config.businessName */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Business Name *
@@ -174,7 +130,7 @@ export default function GeneratorForm({ config, onChange, onNext }) {
               <option value="education">Education</option>
               <option value="retail">Retail</option>
               <option value="consulting">Consulting</option>
-              <option value="manufacturing">Manufacturing</option>
+              <option value="manufacturing">Manufacturing</option>  
               <option value="other">Other</option>
             </select>
           </div>

@@ -1,6 +1,3 @@
-// Progress Steps Component
-// File: src/components/generator/ProgressSteps.jsx
-
 'use client'
 
 import { motion } from 'framer-motion'
@@ -8,8 +5,8 @@ import { CheckCircle } from 'lucide-react'
 
 export default function ProgressSteps({ steps, currentStep, onStepClick }) {
   return (
-    <div className="flex items-center justify-center">
-      <div className="flex items-center space-x-4">
+    <div className="flex items-center justify-center px-4 sm:px-6">
+      <div className="flex flex-wrap justify-center gap-y-6 gap-x-4 sm:flex-nowrap sm:gap-x-6">
         {steps.map((step, index) => {
           const Icon = step.icon
           const isCompleted = index < currentStep
@@ -38,7 +35,7 @@ export default function ProgressSteps({ steps, currentStep, onStepClick }) {
                 ) : (
                   <Icon className="w-6 h-6" />
                 )}
-                
+
                 {/* Step label */}
                 <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-600 whitespace-nowrap">
                   {step.title}
@@ -47,9 +44,11 @@ export default function ProgressSteps({ steps, currentStep, onStepClick }) {
 
               {/* Connector line */}
               {index < steps.length - 1 && (
-                <div className={`w-16 h-1 mx-2 transition-colors ${
-                  index < currentStep ? 'bg-green-500' : 'bg-gray-200'
-                }`} />
+                <div className="hidden sm:block w-16 h-1 mx-2 bg-gray-200 transition-colors"
+                  style={{
+                    backgroundColor: index < currentStep ? '#22c55e' : undefined,
+                  }}
+                />
               )}
             </div>
           )

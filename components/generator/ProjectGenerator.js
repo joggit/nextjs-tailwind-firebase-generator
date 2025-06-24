@@ -1,15 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
-  Brain, 
-  Zap, 
-  Download, 
-  Loader, 
-  CheckCircle, 
-  AlertCircle, 
-  Users, 
-  Building, 
+import {
+  Brain,
+  Zap,
+  Download,
+  Loader,
+  CheckCircle,
+  AlertCircle,
+  Users,
+  Building,
   Palette,
   Layout,
   Eye,
@@ -24,7 +24,6 @@ import {
 import GeneratorForm from './GeneratorForm'
 import DesignSelector from './DesignSelector'
 import TemplatePreview from './TemplatePreview'
-import CodeViewer from './CodeViewer'
 
 function ProjectGenerator() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -36,7 +35,7 @@ function ProjectGenerator() {
     targetAudience: '',
     businessDescription: '',
     template: 'modern',
-    
+
     // Design Configuration
     design: {
       theme: 'modern',
@@ -44,7 +43,7 @@ function ProjectGenerator() {
       heroStyle: 'centered',
       graphics: 'illustrations'
     },
-    
+
     // Hero Configuration
     heroData: {
       headline: '',
@@ -55,7 +54,7 @@ function ProjectGenerator() {
       backgroundImage: '',
       backgroundVideo: ''
     },
-    
+
     // Enhanced Header Configuration with Nested Menu Support
     headerData: {
       style: 'solid',
@@ -66,36 +65,36 @@ function ProjectGenerator() {
       ctaText: 'Get Started',
       ctaLink: '/contact',
       menuItems: [
-        { 
-          name: 'Home', 
-          link: '/', 
+        {
+          name: 'Home',
+          link: '/',
           type: 'link',
           children: []
         },
-        { 
-          name: 'About', 
-          link: '/about', 
+        {
+          name: 'About',
+          link: '/about',
           type: 'link',
           children: []
         },
-        { 
-          name: 'Services', 
-          link: '/services', 
+        {
+          name: 'Services',
+          link: '/services',
           type: 'dropdown',
           children: [
             { name: 'Consulting', link: '/services/consulting', description: 'Expert consulting services' },
             { name: 'Support', link: '/services/support', description: '24/7 customer support' }
           ]
         },
-        { 
-          name: 'Contact', 
-          link: '/contact', 
+        {
+          name: 'Contact',
+          link: '/contact',
           type: 'link',
           children: []
         }
       ]
     },
-    
+
     // Footer Configuration
     footerData: {
       style: 'multiColumn',
@@ -118,10 +117,10 @@ function ProjectGenerator() {
         { name: 'Support', link: '/support' }
       ]
     },
-    
+
     // Features
     features: [],
-    
+
     // Pages Configuration
     pages: [
       {
@@ -159,7 +158,7 @@ function ProjectGenerator() {
         config: {}
       }
     ],
-    
+
     // Advanced Options
     vectorEnhancement: true,
     enableAnalytics: true,
@@ -265,11 +264,11 @@ function ProjectGenerator() {
         businessType: formData.businessType,
         targetAudience: formData.targetAudience || 'customers',
         businessDescription: formData.businessDescription || `${formData.businessName} - Professional ${formData.industry} Services`,
-        
+
         // Template and design
         template: formData.template || 'modern',
         design: formData.design || { theme: 'modern', layout: 'standard' },
-        
+
         // Enhanced customization data with nested menu support
         heroData: formData.heroData || {},
         headerData: {
@@ -286,16 +285,17 @@ function ProjectGenerator() {
           }))
         },
         footerData: formData.footerData || {},
-        
+
         // Pages and features
-        pages: formData.pages?.filter(page => page.enabled) || [],
+        // Pages and features
+        pages: Array.isArray(formData.pages) ? formData.pages.filter(page => page.enabled) : [],
         features: formData.features || [],
-        
+
         // Options
         vectorEnhancement: formData.vectorEnhancement || false,
         enableAnalytics: formData.enableAnalytics !== false,
         enableSEO: formData.enableSEO !== false,
-        
+
         // Enhanced metadata
         generationType: 'enhanced-customization-with-nested-menus',
         apiVersion: '2.2',
@@ -321,7 +321,14 @@ function ProjectGenerator() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          ...formData,
+          // Include design configuration in the generation request
+          designConfig: formData.design,
+          customRequirements: formData.businessDescription,
+          pages: Array.isArray(formData.pages) ? formData.pages.filter(page => page.enabled !== false) : [],
+          useDesignSystem: true // Flag to use design-aware generation
+        }),
       })
 
       console.log('📡 Response status:', response.status)
@@ -379,10 +386,10 @@ function ProjectGenerator() {
         return !!(formData.businessName && formData.industry && formData.businessType)
       case 1: // Design/Customization
         return !!(
-          formData.design.theme && 
-          formData.design.layout && 
-          formData.design.heroStyle && 
-          formData.headerData.style && 
+          formData.design.theme &&
+          formData.design.layout &&
+          formData.design.heroStyle &&
+          formData.headerData.style &&
           formData.footerData.style
         )
       case 2: // Preview
@@ -398,7 +405,7 @@ function ProjectGenerator() {
     const totalItems = menuItems.length
     const dropdownMenus = menuItems.filter(item => item.type === 'dropdown' || (item.children && item.children.length > 0))
     const nestedItems = menuItems.reduce((sum, item) => sum + (item.children?.length || 0), 0)
-    
+
     return {
       totalItems,
       dropdownMenus: dropdownMenus.length,
@@ -409,7 +416,7 @@ function ProjectGenerator() {
 
   const getCustomizationSummary = () => {
     const menuAnalysis = getMenuAnalysis()
-    
+
     return {
       theme: formData.design.theme,
       heroStyle: formData.design.heroStyle,
@@ -428,7 +435,7 @@ function ProjectGenerator() {
 
   const renderStepContent = () => {
     const step = steps[currentStep]
-    
+
     switch (step.component) {
       case 'form':
         return (
@@ -438,7 +445,7 @@ function ProjectGenerator() {
             onNext={handleNext}
           />
         )
-      
+
       case 'design':
         return (
           <DesignSelector
@@ -448,7 +455,7 @@ function ProjectGenerator() {
             onPrev={handlePrev}
           />
         )
-      
+
       case 'preview':
         return (
           <TemplatePreview
@@ -457,7 +464,7 @@ function ProjectGenerator() {
             onPrev={handlePrev}
           />
         )
-      
+
       case 'generate':
         return (
           <GenerateStep
@@ -470,7 +477,7 @@ function ProjectGenerator() {
             onPrev={handlePrev}
           />
         )
-      
+
       default:
         return null
     }
@@ -495,21 +502,20 @@ function ProjectGenerator() {
               const isActive = currentStep === index
               const isCompleted = index < currentStep || (index === currentStep && isStepComplete(index))
               const isAccessible = index <= currentStep || isStepComplete(index - 1)
-              
+
               return (
                 <div key={step.id} className="flex items-center">
                   <button
                     onClick={() => handleStepClick(index)}
                     disabled={!isAccessible}
-                    className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 ${
-                      isCompleted
-                        ? 'bg-green-500 text-white shadow-lg transform scale-105'
-                        : isActive
+                    className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 ${isCompleted
+                      ? 'bg-green-500 text-white shadow-lg transform scale-105'
+                      : isActive
                         ? 'bg-blue-600 text-white shadow-lg scale-110'
                         : isAccessible
-                        ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    }`}
+                          ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      }`}
                   >
                     {isCompleted && index !== currentStep ? (
                       <CheckCircle className="w-6 h-6" />
@@ -517,11 +523,10 @@ function ProjectGenerator() {
                       <Icon className="w-6 h-6" />
                     )}
                   </button>
-                  
+
                   <div className="ml-3 text-left">
-                    <div className={`text-sm font-medium ${
-                      isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
-                    }`}>
+                    <div className={`text-sm font-medium ${isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
+                      }`}>
                       {step.title}
                     </div>
                     <div className="text-xs text-gray-500">
@@ -530,9 +535,8 @@ function ProjectGenerator() {
                   </div>
 
                   {index < steps.length - 1 && (
-                    <div className={`w-16 h-1 mx-6 transition-colors duration-200 ${
-                      index < currentStep ? 'bg-green-500' : 'bg-gray-200'
-                    }`} />
+                    <div className={`w-16 h-1 mx-6 transition-colors duration-200 ${index < currentStep ? 'bg-green-500' : 'bg-gray-200'
+                      }`} />
                   )}
                 </div>
               )
@@ -553,7 +557,7 @@ function ProjectGenerator() {
             <Settings className="w-5 h-5 mr-2" />
             Current Customization Status
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
               <div className="flex items-center justify-between">
@@ -564,7 +568,7 @@ function ProjectGenerator() {
                 <Palette className="w-8 h-8 text-blue-600" />
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -574,7 +578,7 @@ function ProjectGenerator() {
                 <Eye className="w-8 h-8 text-indigo-600" />
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -584,7 +588,7 @@ function ProjectGenerator() {
                 <Navigation className="w-8 h-8 text-purple-600" />
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -594,7 +598,7 @@ function ProjectGenerator() {
                 <Menu className="w-8 h-8 text-green-600" />
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -605,7 +609,7 @@ function ProjectGenerator() {
               </div>
             </div>
           </div>
-          
+
           {/* Enhanced Nested Menu Analysis */}
           <div className="p-4 bg-gray-50 rounded-lg">
             <h4 className="font-medium text-gray-900 mb-3">Navigation & Customization Details</h4>
@@ -651,7 +655,7 @@ function ProjectGenerator() {
                 </span>
               </div>
             </div>
-            
+
             {/* Nested Menu Preview */}
             {getMenuAnalysis().hasNestedMenus && (
               <div className="mt-4 pt-4 border-t border-gray-200">
@@ -795,7 +799,7 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
               </>
             )}
           </button>
-          
+
           {loading && (
             <div className="mt-4 text-sm text-gray-600">
               <p>Creating your website with {summary.dropdownMenus} dropdown menus and {summary.nestedItems} nested items...</p>
@@ -876,11 +880,6 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
               </div>
             </div>
           </div>
-
-          {/* Code Preview */}
-          {result.project && (
-            <CodeViewer project={result.project} />
-          )}
         </div>
       )}
 
@@ -893,7 +892,7 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
           <ArrowLeft className="w-4 h-4" />
           <span>Previous</span>
         </button>
-        
+
         {result && (
           <button
             onClick={() => window.location.reload()}
@@ -914,7 +913,7 @@ function getCustomizationSummary(config) {
   const totalItems = menuItems.length
   const dropdownMenus = menuItems.filter(item => item.type === 'dropdown' || (item.children && item.children.length > 0))
   const nestedItems = menuItems.reduce((sum, item) => sum + (item.children?.length || 0), 0)
-  
+
   return {
     theme: config.design.theme,
     heroStyle: config.design.heroStyle,
