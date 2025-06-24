@@ -1,4 +1,4 @@
-// Fixed API Route - app/api/generate/route.js
+// Updated API Route - app/api/generate/route.js
 import TemplateGenerator from '@/lib/generator/TemplateGenerator.js';
 
 let templateGenerator = null;
@@ -22,8 +22,10 @@ export async function GET() {
     return new Response(
       JSON.stringify({
         status: 'ready',
-        message: 'Website Generator API is online',
+        message: 'Enhanced Website Generator API is online',
         capabilities: [
+          'Custom header and footer design',
+          'Hero section customization',
           'Multi-theme design system',
           'Responsive layouts', 
           'File-based templates',
@@ -31,6 +33,7 @@ export async function GET() {
           'Modern web technologies'
         ],
         supportedTemplates: ['base', 'ecommerce'],
+        supportedThemes: ['modern', 'elegant', 'creative', 'tech'],
         timestamp: new Date().toISOString(),
       }),
       {
@@ -60,6 +63,7 @@ export async function POST(request) {
     const body = await request.json();
     
     const {
+      // Core business information
       businessName,
       name,
       industry = 'business',
@@ -67,12 +71,68 @@ export async function POST(request) {
       targetAudience = 'customers',
       businessDescription = '',
       template = 'base',
+      
       // Design configuration
       design = {
         theme: 'modern',
-        layout: 'standard', 
+        layout: 'standard',
         heroStyle: 'centered'
-      }
+      },
+      
+      // Hero customization data
+      heroData = {
+        headline: '',
+        subheadline: '',
+        primaryCta: 'Get Started',
+        secondaryCta: 'Learn More',
+        backgroundType: 'gradient',
+        backgroundImage: '',
+        backgroundVideo: ''
+      },
+      
+      // Header customization data
+      headerData = {
+        style: 'solid',
+        logoType: 'text',
+        logoText: '',
+        showCta: true,
+        ctaText: 'Get Started',
+        ctaLink: '/contact',
+        menuItems: [
+          { name: 'Home', link: '/' },
+          { name: 'About', link: '/about' },
+          { name: 'Services', link: '/services' },
+          { name: 'Contact', link: '/contact' }
+        ]
+      },
+      
+      // Footer customization data
+      footerData = {
+        style: 'multiColumn',
+        companyName: '',
+        companyDescription: '',
+        email: '',
+        phone: '',
+        address: '',
+        showNewsletter: true,
+        newsletterTitle: 'Stay Updated',
+        socialLinks: {
+          facebook: '',
+          twitter: '',
+          linkedin: '',
+          instagram: ''
+        }
+      },
+      
+      // Pages and features
+      pages = [],
+      features = [],
+      
+      // Advanced options
+      vectorEnhancement = false,
+      enableAnalytics = true,
+      enableSEO = true
+      
     } = body;
 
     // Validate required fields
@@ -89,35 +149,143 @@ export async function POST(request) {
     const { templateGenerator } = await initializeServices();
     const projectName = businessName || name;
     
-    console.log('🎨 Starting generation for:', projectName);
+    console.log('🎨 Starting enhanced generation for:', projectName);
+    console.log('📊 Customization data received:', {
+      hero: {
+        backgroundType: heroData.backgroundType,
+        hasCustomHeadline: !!heroData.headline
+      },
+      header: {
+        style: headerData.style,
+        menuItems: headerData.menuItems?.length || 0,
+        showCta: headerData.showCta
+      },
+      footer: {
+        style: footerData.style,
+        showNewsletter: footerData.showNewsletter,
+        socialLinks: Object.values(footerData.socialLinks || {}).filter(url => url.trim()).length
+      }
+    });
 
-    // Prepare configuration
+    // Prepare enhanced configuration for template generator
     const config = {
+      // Core business info
       businessName: projectName,
       industry,
       businessType,
       targetAudience, 
-      businessDescription: businessDescription || `${projectName} - Professional services`,
+      businessDescription: businessDescription || `${projectName} - Professional ${industry} services`,
+      
+      // Project type determination
       template,
-      design,
-      projectType: template // Use template to determine project type
+      projectType: template,
+      
+      // Enhanced design configuration
+      design: {
+        theme: design.theme || 'modern',
+        layout: design.layout || 'standard',
+        heroStyle: design.heroStyle || 'centered',
+        
+        // Transform heroData for template processing
+        heroData: [{
+          type: design.heroStyle || 'centered',
+          headline: heroData.headline || `Transform Your ${industry} with ${projectName}`,
+          description: heroData.subheadline || businessDescription || `Professional ${industry} solutions for ${targetAudience}`,
+          ctaPrimary: { 
+            text: heroData.primaryCta || 'Get Started', 
+            href: '/contact' 
+          },
+          ctaSecondary: { 
+            text: heroData.secondaryCta || 'Learn More', 
+            href: '/about' 
+          },
+          backgroundType: heroData.backgroundType || 'gradient',
+          backgroundImage: heroData.backgroundImage || '',
+          backgroundVideo: heroData.backgroundVideo || ''
+        }]
+      },
+      
+      // Header customization
+      headerData: {
+        style: headerData.style || 'solid',
+        logoType: headerData.logoType || 'text',
+        logoText: headerData.logoText || projectName,
+        showCta: headerData.showCta !== false,
+        ctaText: headerData.ctaText || 'Get Started',
+        ctaLink: headerData.ctaLink || '/contact',
+        menuItems: headerData.menuItems || [
+          { name: 'Home', link: '/' },
+          { name: 'About', link: '/about' },
+          { name: 'Services', link: '/services' },
+          { name: 'Contact', link: '/contact' }
+        ]
+      },
+      
+      // Footer customization
+      footerData: {
+        style: footerData.style || 'multiColumn',
+        companyName: footerData.companyName || projectName,
+        companyDescription: footerData.companyDescription || businessDescription || `Professional ${industry} services`,
+        email: footerData.email || `contact@${projectName.toLowerCase().replace(/\s+/g, '')}.com`,
+        phone: footerData.phone || '(555) 123-4567',
+        address: footerData.address || '123 Business St, City, State 12345',
+        showNewsletter: footerData.showNewsletter !== false,
+        newsletterTitle: footerData.newsletterTitle || 'Stay Updated',
+        socialLinks: footerData.socialLinks || {
+          facebook: '',
+          twitter: '',
+          linkedin: '',
+          instagram: ''
+        }
+      },
+      
+      // Pages configuration
+      pages: pages.length > 0 ? pages : [
+        { id: 'home', name: 'Home', type: 'home', enabled: true },
+        { id: 'about', name: 'About', type: 'about', enabled: true },
+        { id: 'services', name: 'Services', type: 'services', enabled: true },
+        { id: 'contact', name: 'Contact', type: 'contact', enabled: true }
+      ],
+      
+      // Features
+      features: features.length > 0 ? features : [
+        'Responsive Design',
+        'SEO Optimized',
+        'Modern UI/UX',
+        'Cross-browser Compatible'
+      ],
+      
+      // Advanced options
+      vectorEnhancement,
+      enableAnalytics,
+      enableSEO,
+      
+      // Generation metadata
+      generationType: 'enhanced-customization',
+      apiVersion: '2.1'
     };
 
-    console.log('📝 Generation config:', {
+    console.log('📝 Enhanced config prepared:', {
       businessName: config.businessName,
       template: config.template,
-      design: config.design
+      designTheme: config.design.theme,
+      heroHeadline: config.design.heroData[0].headline.substring(0, 50) + '...',
+      headerStyle: config.headerData.style,
+      footerStyle: config.footerData.style,
+      menuItems: config.headerData.menuItems.length,
+      socialLinks: Object.values(config.footerData.socialLinks).filter(url => url.trim()).length
     });
 
-    // Generate project
+    // Generate project with enhanced configuration
     const generatedProject = await templateGenerator.generateProject(config);
     
     const endTime = Date.now();
     const processingTime = endTime - startTime;
 
-    console.log(`🏁 Generation completed in ${processingTime}ms`);
+    console.log(`🏁 Enhanced generation completed in ${processingTime}ms`);
     console.log(`📊 Generated ${Object.keys(generatedProject.files).length} files`);
 
+    // Enhanced response data
     const responseData = {
       success: true,
       data: {
@@ -128,7 +296,42 @@ export async function POST(request) {
           processingTime: `${processingTime}ms`,
           generatedAt: new Date().toISOString(),
           fileCount: Object.keys(generatedProject.files).length,
-          design: config.design
+          
+          // Design metadata
+          design: {
+            theme: config.design.theme,
+            layout: config.design.layout,
+            heroStyle: config.design.heroStyle
+          },
+          
+          // Customization metadata
+          customization: {
+            hero: {
+              backgroundType: config.design.heroData[0].backgroundType,
+              hasCustomContent: !!(heroData.headline || heroData.subheadline)
+            },
+            header: {
+              style: config.headerData.style,
+              logoType: config.headerData.logoType,
+              menuItems: config.headerData.menuItems.length,
+              hasCta: config.headerData.showCta
+            },
+            footer: {
+              style: config.footerData.style,
+              hasNewsletter: config.footerData.showNewsletter,
+              socialLinksCount: Object.values(config.footerData.socialLinks).filter(url => url.trim()).length,
+              hasContactInfo: !!(config.footerData.email || config.footerData.phone || config.footerData.address)
+            }
+          },
+          
+          // Technical metadata
+          features: {
+            vectorEnhancement: config.vectorEnhancement,
+            analytics: config.enableAnalytics,
+            seo: config.enableSEO,
+            responsive: true,
+            customDesign: true
+          }
         }
       }
     };
@@ -140,21 +343,53 @@ export async function POST(request) {
         headers: { 
           'Content-Type': 'application/json',
           'X-Generation-Time': `${processingTime}ms`,
-          'X-File-Count': `${Object.keys(generatedProject.files).length}`
+          'X-File-Count': `${Object.keys(generatedProject.files).length}`,
+          'X-Design-Theme': config.design.theme,
+          'X-Customization-Level': 'enhanced'
         }
       }
     );
 
   } catch (error) {
-    console.error('🔥 Generation error:', error);
+    console.error('🔥 Enhanced generation error:', error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Failed to generate project',
+        error: 'Failed to generate enhanced project',
         details: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        errorType: error.name || 'GenerationError'
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
+}
+
+// Handle unsupported methods
+export async function PUT() {
+  return new Response(
+    JSON.stringify({ 
+      error: 'Method not allowed', 
+      message: 'Use POST to generate projects',
+      supportedMethods: ['GET', 'POST']
+    }),
+    { 
+      status: 405,
+      headers: { 'Content-Type': 'application/json' }
+    }
+  );
+}
+
+export async function DELETE() {
+  return new Response(
+    JSON.stringify({ 
+      error: 'Method not allowed',
+      message: 'Use POST to generate projects', 
+      supportedMethods: ['GET', 'POST']
+    }),
+    { 
+      status: 405,
+      headers: { 'Content-Type': 'application/json' }
+    }
+  );
 }

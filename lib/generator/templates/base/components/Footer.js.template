@@ -1,150 +1,99 @@
-// lib/generator/templates/base/components/Footer.js.template
 'use client'
 
-import Link from 'next/link'
-import { Sparkles, Mail, Phone, MapPin } from 'lucide-react'
-
-export default function Footer() {
+export default function Footer({
+  logo = '/logo.svg',
+  sections = {},
+  socialLinks = [],
+  newsletter = {
+    title: 'Subscribe to our newsletter',
+    description: 'The latest news, articles, and resources, sent to your inbox weekly.',
+  },
+  copyright = '© 2024 Your Company, Inc. All rights reserved.',
+}) {
   return (
-    <footer className="bg-gray-900 text-white relative overflow-hidden">
-      {/* Background gradient with theme colors */}
-      <div 
-        className="absolute inset-0 opacity-10"
-        style={{
-          background: `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`
-        }}
-      ></div>
-      
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          
-          {/* Company Info */}
-          <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center space-x-3 mb-6">
-              <div 
-                className="w-10 h-10 flex items-center justify-center text-white"
-                style={{ 
-                  background: `linear-gradient(to bottom right, var(--color-primary), var(--color-secondary))`,
-                  borderRadius: 'var(--border-radius)'
-                }}
-              >
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <span 
-                className="text-2xl font-bold"
-                style={{ fontFamily: 'var(--font-heading)' }}
-              >
-                {{businessName}}
-              </span>
-            </Link>
-            <p 
-              className="text-gray-300 text-lg mb-6 max-w-md"
-              style={{ fontFamily: 'var(--font-body)' }}
-            >
-              {{businessDescription}}
-            </p>
-            <div className="flex items-center space-x-2 text-sm">
-              <div 
-                className="w-2 h-2 rounded-full animate-pulse"
-                style={{ backgroundColor: 'var(--color-accent)' }}
-              ></div>
-              <span className="text-gray-400">Built with modern technology</span>
-            </div>
-          </div>
+    <footer className="bg-gray-900">
+      <div className="mx-auto max-w-7xl px-6 pt-16 pb-8 sm:pt-24 lg:px-8 lg:pt-32">
+        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
+          <img src={logo} alt="Company logo" className="h-9" />
 
-          {/* Quick Links */}
-          <div>
-            <h3 
-              className="text-lg font-semibold mb-6"
-              style={{ fontFamily: 'var(--font-heading)' }}
-            >
-              Quick Links
-            </h3>
-            <ul className="space-y-3">
-              {['About', 'Services', 'Contact', 'Privacy'].map((link) => (
-                <li key={link}>
-                  <Link 
-                    href={`/${link.toLowerCase()}`}
-                    className="text-gray-400 hover:text-white transition-colors duration-200 flex items-center group"
-                    style={{ fontFamily: 'var(--font-body)' }}
-                    onMouseEnter={(e) => {
-                      e.target.style.color = 'var(--color-accent)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.color = '#9CA3AF';
-                    }}
-                  >
-                    <span 
-                      className="w-0 group-hover:w-2 h-0.5 transition-all duration-200 mr-0 group-hover:mr-2"
-                      style={{ backgroundColor: 'var(--color-accent)' }}
-                    ></span>
-                    {link}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h3 
-              className="text-lg font-semibold mb-6"
-              style={{ fontFamily: 'var(--font-heading)' }}
-            >
-              Contact
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center text-gray-300">
-                <Mail 
-                  className="w-5 h-5 mr-3"
-                  style={{ color: 'var(--color-accent)' }}
-                />
-                <span style={{ fontFamily: 'var(--font-body)' }}>
-                  hello@{{businessNameSlug}}.com
-                </span>
+          <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
+            {Object.entries(sections).slice(0, 2).map(([sectionTitle, links]) => (
+              <div key={sectionTitle} className="md:grid md:grid-cols-2 md:gap-8">
+                <div>
+                  <h3 className="text-sm font-semibold text-white capitalize">{sectionTitle}</h3>
+                  <ul role="list" className="mt-6 space-y-4">
+                    {links.map((item) => (
+                      <li key={item.name}>
+                        <a href={item.href} className="text-sm text-gray-400 hover:text-white">
+                          {item.name}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <div className="flex items-center text-gray-300">
-                <Phone 
-                  className="w-5 h-5 mr-3"
-                  style={{ color: 'var(--color-accent)' }}
-                />
-                <span style={{ fontFamily: 'var(--font-body)' }}>
-                  (555) 123-4567
-                </span>
+            ))}
+            {Object.entries(sections).slice(2).map(([sectionTitle, links]) => (
+              <div key={sectionTitle} className="md:grid md:grid-cols-2 md:gap-8">
+                <div>
+                  <h3 className="text-sm font-semibold text-white capitalize">{sectionTitle}</h3>
+                  <ul role="list" className="mt-6 space-y-4">
+                    {links.map((item) => (
+                      <li key={item.name}>
+                        <a href={item.href} className="text-sm text-gray-400 hover:text-white">
+                          {item.name}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <div className="flex items-center text-gray-300">
-                <MapPin 
-                  className="w-5 h-5 mr-3"
-                  style={{ color: 'var(--color-accent)' }}
-                />
-                <span style={{ fontFamily: 'var(--font-body)' }}>
-                  Your Location
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p 
-            className="text-gray-400 text-sm"
-            style={{ fontFamily: 'var(--font-body)' }}
-          >
-            © {{currentYear}} {{businessName}}. All rights reserved.
-          </p>
-          <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            <span 
-              className="text-gray-400 text-xs"
-              style={{ fontFamily: 'var(--font-body)' }}
-            >
-              Powered by AI • {{themeName}} theme
-            </span>
-            <div 
-              className="w-2 h-2 rounded-full animate-pulse"
-              style={{ backgroundColor: 'var(--color-accent)' }}
-            ></div>
+        {/* Newsletter */}
+        {newsletter && (
+          <div className="mt-16 border-t border-white/10 pt-8 sm:mt-20 lg:mt-24 lg:flex lg:items-center lg:justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-white">{newsletter.title}</h3>
+              <p className="mt-2 text-sm text-gray-400">{newsletter.description}</p>
+            </div>
+            <form className="mt-6 sm:flex sm:max-w-md lg:mt-0">
+              <label htmlFor="email-address" className="sr-only">Email address</label>
+              <input
+                id="email-address"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="Enter your email"
+                className="w-full rounded-md bg-white/5 px-3 py-1.5 text-white placeholder:text-gray-500 focus:outline-2 focus:outline-indigo-500 sm:w-56 sm:text-sm"
+              />
+              <div className="mt-4 sm:mt-0 sm:ml-4 sm:flex-shrink-0">
+                <button
+                  type="submit"
+                  className="w-full rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
+                >
+                  Subscribe
+                </button>
+              </div>
+            </form>
           </div>
+        )}
+
+        {/* Bottom Bar */}
+        <div className="mt-8 border-t border-white/10 pt-8 md:flex md:items-center md:justify-between">
+          <div className="flex gap-x-6 md:order-2">
+            {socialLinks.map((item) => (
+              <a key={item.name} href={item.href} className="text-gray-400 hover:text-white">
+                <span className="sr-only">{item.name}</span>
+                <item.icon className="size-6" aria-hidden="true" />
+              </a>
+            ))}
+          </div>
+          <p className="mt-8 text-sm text-gray-400 md:order-1 md:mt-0">
+            {copyright}
+          </p>
         </div>
       </div>
     </footer>

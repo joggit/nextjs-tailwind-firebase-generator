@@ -93,18 +93,18 @@ export default function GeneratorForm({ config, onChange, onNext }) {
   }
 
   const handleFeatureToggle = (feature) => {
-    const newFeatures = config.features.includes(feature)
+    const newFeatures = config.features?.includes(feature)
       ? config.features.filter(f => f !== feature)
-      : [...config.features, feature]
+      : [...(config.features || []), feature]
     
     onChange({ ...config, features: newFeatures })
   }
 
   const handleAddCustomFeature = () => {
-    if (customFeature.trim() && !config.features.includes(customFeature)) {
+    if (customFeature.trim() && !(config.features || []).includes(customFeature)) {
       onChange({
         ...config,
-        features: [...config.features, customFeature.trim()]
+        features: [...(config.features || []), customFeature.trim()]
       })
       setCustomFeature('')
     }
@@ -113,7 +113,7 @@ export default function GeneratorForm({ config, onChange, onNext }) {
   const handleRemoveFeature = (feature) => {
     onChange({
       ...config,
-      features: config.features.filter(f => f !== feature)
+      features: (config.features || []).filter(f => f !== feature)
     })
   }
 
@@ -124,16 +124,91 @@ export default function GeneratorForm({ config, onChange, onNext }) {
       </h2>
 
       <div className="space-y-8">
-        {/* Project Name */}
+        {/* CRITICAL FIX: Changed from config.name to config.businessName */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Project Name
+            Business Name *
           </label>
           <input
             type="text"
-            value={config.name}
-            onChange={(e) => onChange({ ...config, name: e.target.value })}
-            placeholder="Enter your project name"
+            value={config.businessName || ''}
+            onChange={(e) => {
+              console.log('📝 Business name changed to:', e.target.value);
+              onChange({ 
+                ...config, 
+                businessName: e.target.value,
+                name: e.target.value // Also set name for compatibility
+              });
+            }}
+            placeholder="Enter your business name"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            required
+          />
+          {/* Debug info */}
+          <div className="text-xs text-gray-500 mt-1">
+            Current: "{config.businessName}" 
+            {config.businessName ? (
+              <span className="text-green-600 ml-2">✓ Set</span>
+            ) : (
+              <span className="text-red-600 ml-2">⚠ Required</span>
+            )}
+          </div>
+        </div>
+
+        {/* Add basic business info fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Industry *
+            </label>
+            <select
+              value={config.industry || ''}
+              onChange={(e) => onChange({ ...config, industry: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+              <option value="">Select Industry</option>
+              <option value="technology">Technology</option>
+              <option value="healthcare">Healthcare</option>
+              <option value="finance">Finance</option>
+              <option value="education">Education</option>
+              <option value="retail">Retail</option>
+              <option value="consulting">Consulting</option>
+              <option value="manufacturing">Manufacturing</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Business Type *
+            </label>
+            <select
+              value={config.businessType || ''}
+              onChange={(e) => onChange({ ...config, businessType: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+              <option value="">Select Type</option>
+              <option value="startup">Startup</option>
+              <option value="small-business">Small Business</option>
+              <option value="enterprise">Enterprise</option>
+              <option value="nonprofit">Non-Profit</option>
+              <option value="freelancer">Freelancer</option>
+              <option value="agency">Agency</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Business Description
+          </label>
+          <textarea
+            value={config.businessDescription || ''}
+            onChange={(e) => onChange({ ...config, businessDescription: e.target.value })}
+            placeholder="Describe your business and what you do..."
+            rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -199,13 +274,13 @@ export default function GeneratorForm({ config, onChange, onNext }) {
           </h3>
           
           {/* Selected Features */}
-          {config.features.length > 0 && (
+          {(config.features || []).length > 0 && (
             <div className="mb-4">
               <h4 className="text-sm font-medium text-gray-700 mb-2">
                 Selected Features
               </h4>
               <div className="flex flex-wrap gap-2">
-                {config.features.map((feature) => (
+                {(config.features || []).map((feature) => (
                   <span
                     key={feature}
                     className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
@@ -232,7 +307,7 @@ export default function GeneratorForm({ config, onChange, onNext }) {
               >
                 <input
                   type="checkbox"
-                  checked={config.features.includes(feature)}
+                  checked={(config.features || []).includes(feature)}
                   onChange={() => handleFeatureToggle(feature)}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
@@ -266,7 +341,7 @@ export default function GeneratorForm({ config, onChange, onNext }) {
         <div className="flex justify-end pt-6 border-t">
           <button
             onClick={onNext}
-            disabled={!config.name || !config.template}
+            disabled={!config.businessName || !config.industry || !config.businessType || !config.template}
             className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span>Next: Design</span>
