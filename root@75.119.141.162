@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+
+# === CONFIGURE YOUR SITES HERE ===
+sites = [
+    {"domain": "site1.com", "root": "/var/www/site1.com"},
+    {"domain": "site2.com", "root": "/var/www/site2.com"},
+]
+
+use_ssl = True  # Set to False if you don't want HTTPS/Certbot
+
+# === UTILITIES ===
+def run(cmd):
+    print(f"🔧 {cmd}")
+    subprocess.run(cmd, shell=True, check=True)
+
+# === SETUP STEPS ===
+def install_dependencies():
+    run("apt update && apt upgrade -y")
+    run("apt install -y nginx ufw curl software-properties-common")
+    run("add-apt-repository universe -y")
+    run("apt install -y certbot python3-certbot-nginx")
+
+def configure_firewall():
+    run("ufw allow OpenSSH")
+    run("ufw allow 'Nginx Full'")
+    run("ufw --force enable")
+
+def create_directories_and_html():
+    for site in sites:
+        os.makedirs(site["root"], exist_ok=True)
+        with open(f"{site['root']}/index.html", "w") as f:
+            f.write(f"<html><body><h1>{site['domain']} is live!</h1></body></html>")
+
+def create_nginx_configs():
+    for site in sites:
+        config = f"""
+server {{
+    listen 80;
+    server_name {site['domain']} www.{site['domain']};
+
+    root {site['root']};
+    index index.html;
+
+    location / {{
+        try_files $uri $uri/ =404;
+    }}
+}}
+"""
+        config_path = f"/etc/nginx/sites-available/{site['domain']}"
+        with open(config_path, "w") as f:
+            f.write(config)
+
+        symlink = f"/etc/nginx/sites-enabled/{site['domain']}"
+        if not os.path.exists(symlink):
+            os.symlink(config_path, symlink)
+
+def restart_nginx():
+    run("nginx -t")
+    run("systemctl reload nginx")
+    run("systemctl enable nginx")
+
+def obtain_ssl_certificates():
+    for site in sites:
+        domain = site["domain"]
+        print(f"🔒 Obtaining SSL certificate for {domain}...")
+        run(f"certbot --nginx -d {domain} -d www.{domain} --non-interactive --agree-tos -m admin@{domain}")
+
+# === MAIN ENTRY ===
+if __name__ == "__main__":
+    print("🚀 Setting up Nginx multi-site environment on fresh Ubuntu server...")
+    install_dependencies()
+    configure_firewall()
+    create_directories_and_html()
+    create_nginx_configs()
+    restart_nginx()
+
+    if use_ssl:
+        obtain_ssl_certificates()
+
+    print("✅ All done! Your websites are live.")

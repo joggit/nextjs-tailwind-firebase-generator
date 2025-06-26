@@ -1,0 +1,35 @@
+servers:
+  production:
+    host: "your-server-ip"
+    username: "deploy"
+    key_file: "~/.ssh/deployment_key"
+    port: 22
+    os_type: "ubuntu"
+  
+  staging:
+    host: "staging-server-ip"
+    username: "deploy"
+    key_file: "~/.ssh/deployment_key"
+    port: 22
+    os_type: "ubuntu"
+
+projects:
+  # Main business website
+  datablox-main:
+    domain: "datablox.com"
+    ssl_enabled: true
+    node_version: "18"
+    port: 3000
+    env_vars:
+      NODE_ENV: "production"
+      NEXT_PUBLIC_APP_URL: "https://datablox.com"
+  
+  # Client portal
+  client-portal:
+    domain: "datablox.com"
+    subdomain: "client"
+    ssl_enabled: true
+    port: 3001
+    env_vars:
+      NODE_ENV: "production"
+      NEXT_PUBLIC_APP_URL: "https://client.datablox.com"

@@ -1,769 +1,739 @@
 #!/usr/bin/env python3
 """
-Next.js Project Deployment Script
-Deploys generated Next.js projects to Linux servers with nginx
+Automated Server Deployment System for Next.js Projects
+Handles server setup, nginx virtual hosting, and project deployment
 """
 
 import os
 import sys
-import argparse
 import json
+import subprocess
+import paramiko
+import time
 import logging
 from pathlib import Path
-from datetime import datetime
-import paramiko
-from scp import SCPClient
+from typing import Dict, List, Optional
+from dataclasses import dataclass
 import yaml
-import time
+import shutil
+import zipfile
+import tempfile
 
-class NextJSDeployer:
-    def __init__(self, config_file=None):
-        # Setup logging
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler('deployment.log'),
-                logging.StreamHandler(sys.stdout)
-            ]
-        )
-        self.logger = logging.getLogger(__name__)
-        
-        # Load configuration
-        self.config = self.load_config(config_file)
-        self.ssh = None
-        self.sftp = None
-        
-    def load_config(self, config_file):
-        """Load deployment configuration"""
-        default_config = {
-            'server': {
-                'host': '',
-                'port': 22,
-                'username': '',
-                'key_file': '~/.ssh/id_rsa',
-                'password': None
-            },
-            'deployment': {
-                'base_path': '/var/www',
-                'app_name': 'nextjs-app',
-                'node_version': '18',
-                'pm2_enabled': True,
-                'nginx_enabled': True,
-                'domain': 'localhost',
-                'port': 3000,
-                'ssl_enabled': False,
-                'backup_previous': True,
-                'auto_restart': True
-            },
-            'build': {
-                'install_dependencies': True,
-                'run_build': True,
-                'run_tests': False,
-                'env_file': None,
-                'custom_build_script': None
-            }
-        }
-        
-        if config_file and os.path.exists(config_file):
-            with open(config_file, 'r') as f:
-                if config_file.endswith('.yaml') or config_file.endswith('.yml'):
-                    user_config = yaml.safe_load(f)
-                else:
-                    user_config = json.load(f)
-            
-            # Merge configs
-            for key, value in user_config.items():
-                if isinstance(value, dict) and key in default_config:
-                    default_config[key].update(value)
-                else:
-                    default_config[key] = value
-        
-        return default_config
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('deployment.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+@dataclass
+class ServerConfig:
+    """Server configuration"""
+    host: str
+    username: str
+    password: Optional[str] = None
+    key_file: Optional[str] = None
+    port: int = 22
+    os_type: str = "ubuntu"  # ubuntu, debian, centos
+
+@dataclass
+class ProjectConfig:
+    """Project deployment configuration"""
+    domain: str
+    subdomain: Optional[str] = None
+    project_name: str = ""
+    ssl_enabled: bool = True
+    node_version: str = "18"
+    port: int = 3000
+    env_vars: Dict[str, str] = None
+    build_command: str = "npm run build"
+    start_command: str = "npm start"
     
-    def connect_ssh(self):
-        """Establish SSH connection"""
+    def __post_init__(self):
+        if not self.project_name:
+            self.project_name = self.domain.replace('.', '_')
+        if self.env_vars is None:
+            self.env_vars = {}
+
+class ServerManager:
+    """Manages server operations via SSH"""
+    
+    def __init__(self, config: ServerConfig):
+        self.config = config
+        self.ssh = paramiko.SSHClient()
+        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.connected = False
+    
+    def connect(self):
+        """Connect to server via SSH"""
         try:
-            self.logger.info(f"Connecting to {self.config['server']['host']}...")
-            
-            self.ssh = paramiko.SSHClient()
-            self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            
-            # Prepare connection parameters
-            connect_params = {
-                'hostname': self.config['server']['host'],
-                'port': self.config['server']['port'],
-                'username': self.config['server']['username'],
-                'timeout': 30
-            }
-            
-            # Use key file or password
-            if self.config['server']['key_file']:
-                key_file = os.path.expanduser(self.config['server']['key_file'])
-                if os.path.exists(key_file):
-                    connect_params['key_filename'] = key_file
-                else:
-                    self.logger.warning(f"Key file not found: {key_file}")
-            
-            if self.config['server']['password']:
-                connect_params['password'] = self.config['server']['password']
-            
-            self.ssh.connect(**connect_params)
-            self.sftp = self.ssh.open_sftp()
-            self.logger.info("SSH connection established")
-            
+            if self.config.key_file:
+                self.ssh.connect(
+                    hostname=self.config.host,
+                    username=self.config.username,
+                    key_filename=self.config.key_file,
+                    port=self.config.port
+                )
+            else:
+                self.ssh.connect(
+                    hostname=self.config.host,
+                    username=self.config.username,
+                    password=self.config.password,
+                    port=self.config.port
+                )
+            self.connected = True
+            logger.info(f"Connected to {self.config.host}")
         except Exception as e:
-            self.logger.error(f"SSH connection failed: {e}")
+            logger.error(f"Failed to connect to server: {e}")
             raise
     
-    def disconnect_ssh(self):
-        """Close SSH connection"""
-        if self.sftp:
-            self.sftp.close()
-        if self.ssh:
-            self.ssh.close()
-        self.logger.info("SSH connection closed")
-    
-    def execute_command(self, command, check_return_code=True, timeout=300):
+    def execute_command(self, command: str, sudo: bool = False) -> tuple:
         """Execute command on remote server"""
-        self.logger.info(f"Executing: {command}")
+        if not self.connected:
+            self.connect()
         
-        stdin, stdout, stderr = self.ssh.exec_command(command, timeout=timeout)
-        stdout_data = stdout.read().decode('utf-8')
-        stderr_data = stderr.read().decode('utf-8')
-        return_code = stdout.channel.recv_exit_status()
+        if sudo:
+            command = f"sudo {command}"
         
-        if stdout_data:
-            self.logger.info(f"STDOUT: {stdout_data}")
-        if stderr_data and return_code != 0:
-            self.logger.error(f"STDERR: {stderr_data}")
+        logger.info(f"Executing: {command}")
+        stdin, stdout, stderr = self.ssh.exec_command(command)
         
-        if check_return_code and return_code != 0:
-            raise Exception(f"Command failed with return code {return_code}: {command}")
+        # Wait for command to complete
+        exit_status = stdout.channel.recv_exit_status()
+        output = stdout.read().decode('utf-8')
+        error = stderr.read().decode('utf-8')
         
-        return stdout_data, stderr_data, return_code
+        if exit_status != 0 and error:
+            logger.warning(f"Command failed with exit code {exit_status}: {error}")
+        
+        return exit_status, output, error
     
-    def upload_file(self, local_path, remote_path):
-        """Upload file to remote server"""
-        self.logger.info(f"Uploading {local_path} to {remote_path}")
+    def upload_file(self, local_path: str, remote_path: str):
+        """Upload file to server"""
+        if not self.connected:
+            self.connect()
         
+        sftp = self.ssh.open_sftp()
         try:
-            # Ensure remote directory exists
+            # Create remote directory if it doesn't exist
             remote_dir = os.path.dirname(remote_path)
-            self.execute_command(f"mkdir -p {remote_dir}", check_return_code=False)
+            try:
+                sftp.mkdir(remote_dir)
+            except:
+                pass  # Directory might already exist
             
-            # Upload file
-            with SCPClient(self.ssh.get_transport()) as scp:
-                scp.put(local_path, remote_path)
-            
-            self.logger.info("File uploaded successfully")
-        except Exception as e:
-            self.logger.error(f"File upload failed: {e}")
-            raise
+            sftp.put(local_path, remote_path)
+            logger.info(f"Uploaded {local_path} to {remote_path}")
+        finally:
+            sftp.close()
     
-    def backup_previous_deployment(self, app_path):
-        """Backup previous deployment"""
-        if not self.config['deployment']['backup_previous']:
-            return
+    def upload_directory(self, local_path: str, remote_path: str):
+        """Upload entire directory to server"""
+        if not self.connected:
+            self.connect()
         
-        # Check if app directory exists
-        stdout, _, return_code = self.execute_command(
-            f"test -d {app_path}", 
-            check_return_code=False
-        )
-        
-        if return_code == 0:  # Directory exists
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            backup_path = f"{app_path}_backup_{timestamp}"
-            self.execute_command(f"mv {app_path} {backup_path}")
-            self.logger.info(f"Previous deployment backed up to {backup_path}")
+        sftp = self.ssh.open_sftp()
+        try:
+            # Create remote directory
+            self.execute_command(f"mkdir -p {remote_path}")
             
-            # Clean up old backups (keep only last 5)
-            self.execute_command(
-                f"ls -dt {app_path}_backup_* | tail -n +6 | xargs rm -rf",
-                check_return_code=False
-            )
+            for root, dirs, files in os.walk(local_path):
+                # Create directories
+                for dirname in dirs:
+                    local_dir = os.path.join(root, dirname)
+                    relative_path = os.path.relpath(local_dir, local_path)
+                    remote_dir = os.path.join(remote_path, relative_path).replace('\\', '/')
+                    try:
+                        sftp.mkdir(remote_dir)
+                    except:
+                        pass
+                
+                # Upload files
+                for filename in files:
+                    local_file = os.path.join(root, filename)
+                    relative_path = os.path.relpath(local_file, local_path)
+                    remote_file = os.path.join(remote_path, relative_path).replace('\\', '/')
+                    sftp.put(local_file, remote_file)
+                    logger.info(f"Uploaded {relative_path}")
+        finally:
+            sftp.close()
     
-    def install_system_dependencies(self):
-        """Install system dependencies"""
-        self.logger.info("Installing system dependencies...")
-        
-        # Update package list
-        self.execute_command("sudo apt-get update", timeout=600)
-        
-        # Install required packages
-        packages = [
-            "curl", "wget", "unzip", "nginx", 
-            "software-properties-common", "build-essential"
-        ]
-        
-        package_list = " ".join(packages)
-        self.execute_command(f"sudo apt-get install -y {package_list}", timeout=600)
+    def disconnect(self):
+        """Close SSH connection"""
+        if self.connected:
+            self.ssh.close()
+            self.connected = False
+            logger.info("Disconnected from server")
+
+class ServerSetup:
+    """Handles initial server setup"""
     
-    def install_node_dependencies(self):
-        """Install Node.js and npm if needed"""
-        self.logger.info("Checking Node.js installation...")
+    def __init__(self, server_manager: ServerManager):
+        self.server = server_manager
+    
+    def setup_server(self):
+        """Complete server setup"""
+        logger.info("Starting server setup...")
         
-        # Check if Node.js is installed
-        stdout, _, return_code = self.execute_command(
-            "node --version", 
-            check_return_code=False
-        )
+        self.update_system()
+        self.install_nodejs()
+        self.install_nginx()
+        self.install_pm2()
+        self.install_certbot()
+        self.setup_firewall()
+        self.create_deploy_user()
         
-        if return_code != 0:
-            self.logger.info("Installing Node.js...")
-            node_version = self.config['deployment']['node_version']
-            
-            # Install Node.js using NodeSource repository
+        logger.info("Server setup completed!")
+    
+    def update_system(self):
+        """Update system packages"""
+        logger.info("Updating system packages...")
+        
+        if self.server.config.os_type in ['ubuntu', 'debian']:
+            self.server.execute_command("apt update && apt upgrade -y", sudo=True)
+        elif self.server.config.os_type == 'centos':
+            self.server.execute_command("yum update -y", sudo=True)
+    
+    def install_nodejs(self):
+        """Install Node.js and npm"""
+        logger.info("Installing Node.js...")
+        
+        if self.server.config.os_type in ['ubuntu', 'debian']:
             commands = [
-                f"curl -fsSL https://deb.nodesource.com/setup_{node_version}.x | sudo -E bash -",
-                "sudo apt-get install -y nodejs"
+                "curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -",
+                "apt-get install -y nodejs",
+                "npm install -g npm@latest"
             ]
-            
-            for cmd in commands:
-                self.execute_command(cmd, timeout=600)
-        else:
-            self.logger.info(f"Node.js already installed: {stdout.strip()}")
+        elif self.server.config.os_type == 'centos':
+            commands = [
+                "curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -",
+                "yum install -y nodejs",
+                "npm install -g npm@latest"
+            ]
         
-        # Check npm
-        self.execute_command("npm --version")
-        self.logger.info("Node.js and npm are ready")
+        for cmd in commands:
+            self.server.execute_command(cmd, sudo=True)
+    
+    def install_nginx(self):
+        """Install and configure nginx"""
+        logger.info("Installing nginx...")
+        
+        if self.server.config.os_type in ['ubuntu', 'debian']:
+            self.server.execute_command("apt install -y nginx", sudo=True)
+        elif self.server.config.os_type == 'centos':
+            self.server.execute_command("yum install -y nginx", sudo=True)
+        
+        # Start and enable nginx
+        self.server.execute_command("systemctl start nginx", sudo=True)
+        self.server.execute_command("systemctl enable nginx", sudo=True)
+        
+        # Create sites directory
+        self.server.execute_command("mkdir -p /etc/nginx/sites-available", sudo=True)
+        self.server.execute_command("mkdir -p /etc/nginx/sites-enabled", sudo=True)
+        
+        # Update main nginx config
+        nginx_config = self.get_main_nginx_config()
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+            f.write(nginx_config)
+            temp_path = f.name
+        
+        self.server.upload_file(temp_path, "/tmp/nginx.conf")
+        self.server.execute_command("mv /tmp/nginx.conf /etc/nginx/nginx.conf", sudo=True)
+        self.server.execute_command("nginx -t", sudo=True)
+        self.server.execute_command("systemctl reload nginx", sudo=True)
+        
+        os.unlink(temp_path)
     
     def install_pm2(self):
         """Install PM2 process manager"""
-        if not self.config['deployment']['pm2_enabled']:
-            return
-        
-        self.logger.info("Checking PM2 installation...")
-        stdout, _, return_code = self.execute_command(
-            "pm2 --version", 
-            check_return_code=False
-        )
-        
-        if return_code != 0:
-            self.logger.info("Installing PM2...")
-            self.execute_command("sudo npm install -g pm2", timeout=300)
-            self.execute_command("pm2 startup", check_return_code=False)
-        else:
-            self.logger.info(f"PM2 already installed: {stdout.strip()}")
+        logger.info("Installing PM2...")
+        self.server.execute_command("npm install -g pm2", sudo=True)
+        self.server.execute_command("pm2 startup", sudo=True)
     
-    def deploy_project(self, zip_file_path):
-        """Deploy the Next.js project"""
-        app_name = self.config['deployment']['app_name']
-        base_path = self.config['deployment']['base_path']
-        app_path = f"{base_path}/{app_name}"
+    def install_certbot(self):
+        """Install Certbot for SSL certificates"""
+        logger.info("Installing Certbot...")
         
-        try:
-            # Connect to server
-            self.connect_ssh()
-            
-            # Install system dependencies
-            self.install_system_dependencies()
-            
-            # Install Node.js and PM2
-            self.install_node_dependencies()
-            if self.config['deployment']['pm2_enabled']:
-                self.install_pm2()
-            
-            # Stop existing services
-            self.stop_existing_services(app_name)
-            
-            # Backup previous deployment
-            self.backup_previous_deployment(app_path)
-            
-            # Create app directory
-            self.execute_command(f"sudo mkdir -p {app_path}")
-            
-            # Upload zip file
-            remote_zip_path = f"{app_path}/project.zip"
-            self.upload_file(zip_file_path, remote_zip_path)
-            
-            # Extract zip file
-            self.logger.info("Extracting project files...")
-            self.execute_command(f"cd {app_path} && sudo unzip -o project.zip")
-            self.execute_command(f"sudo rm {remote_zip_path}")
-            
-            # Set correct permissions
-            self.execute_command(f"sudo chown -R www-data:www-data {app_path}")
-            self.execute_command(f"sudo chmod -R 755 {app_path}")
-            
-            # Copy environment file if provided
-            if self.config['build']['env_file'] and os.path.exists(self.config['build']['env_file']):
-                env_remote_path = f"{app_path}/.env.local"
-                self.upload_file(self.config['build']['env_file'], env_remote_path)
-                self.execute_command(f"sudo chown www-data:www-data {env_remote_path}")
-            
-            # Install project dependencies
-            if self.config['build']['install_dependencies']:
-                self.logger.info("Installing project dependencies...")
-                self.execute_command(f"cd {app_path} && sudo -u www-data npm install", timeout=600)
-            
-            # Build project
-            if self.config['build']['run_build']:
-                self.logger.info("Building Next.js project...")
-                if self.config['build']['custom_build_script']:
-                    self.execute_command(f"cd {app_path} && sudo -u www-data {self.config['build']['custom_build_script']}", timeout=600)
-                else:
-                    self.execute_command(f"cd {app_path} && sudo -u www-data npm run build", timeout=600)
-            
-            # Run tests if enabled
-            if self.config['build']['run_tests']:
-                self.logger.info("Running tests...")
-                self.execute_command(f"cd {app_path} && sudo -u www-data npm test", check_return_code=False, timeout=300)
-            
-            # Configure and start services
-            if self.config['deployment']['nginx_enabled']:
-                self.configure_nginx(app_path)
-            
-            if self.config['deployment']['pm2_enabled']:
-                self.configure_pm2(app_path)
-            else:
-                self.start_application(app_path)
-            
-            # Verify deployment
-            self.verify_deployment()
-            
-            self.logger.info("Deployment completed successfully!")
-            self.print_deployment_info()
-            
-        except Exception as e:
-            self.logger.error(f"Deployment failed: {e}")
-            self.rollback_deployment(app_path)
-            raise
-        finally:
-            self.disconnect_ssh()
+        if self.server.config.os_type in ['ubuntu', 'debian']:
+            commands = [
+                "apt install -y snapd",
+                "snap install core; snap refresh core",
+                "snap install --classic certbot",
+                "ln -sf /snap/bin/certbot /usr/bin/certbot"
+            ]
+        elif self.server.config.os_type == 'centos':
+            commands = [
+                "yum install -y epel-release",
+                "yum install -y certbot python3-certbot-nginx"
+            ]
+        
+        for cmd in commands:
+            self.server.execute_command(cmd, sudo=True)
     
-    def stop_existing_services(self, app_name):
-        """Stop existing services before deployment"""
-        if self.config['deployment']['pm2_enabled']:
-            self.execute_command(f"pm2 delete {app_name}", check_return_code=False)
+    def setup_firewall(self):
+        """Configure firewall"""
+        logger.info("Configuring firewall...")
         
-        # Kill any process on the target port
-        port = self.config['deployment']['port']
-        self.execute_command(f"sudo fuser -k {port}/tcp", check_return_code=False)
+        commands = [
+            "ufw allow ssh",
+            "ufw allow 'Nginx Full'",
+            "ufw --force enable"
+        ]
         
-        # Wait a moment for processes to stop
-        time.sleep(2)
+        for cmd in commands:
+            self.server.execute_command(cmd, sudo=True)
     
-    def configure_nginx(self, app_path):
-        """Configure nginx for the application"""
-        self.logger.info("Configuring nginx...")
+    def create_deploy_user(self):
+        """Create deployment user"""
+        logger.info("Creating deployment user...")
         
-        app_name = self.config['deployment']['app_name']
-        domain = self.config['deployment']['domain']
-        port = self.config['deployment']['port']
-        ssl_enabled = self.config['deployment']['ssl_enabled']
+        commands = [
+            "useradd -m -s /bin/bash deploy",
+            "usermod -aG sudo deploy",
+            "mkdir -p /home/deploy/.ssh",
+            "chown deploy:deploy /home/deploy/.ssh",
+            "chmod 700 /home/deploy/.ssh"
+        ]
         
-        # Create nginx configuration
-        nginx_config = f"""
-# {app_name} Next.js Application
-server {{
-    listen 80;
-    server_name {domain} www.{domain};
+        for cmd in commands:
+            self.server.execute_command(cmd, sudo=True)
     
-    # Security headers
-    add_header X-Frame-Options DENY;
-    add_header X-Content-Type-Options nosniff;
-    add_header X-XSS-Protection "1; mode=block";
+    def get_main_nginx_config(self) -> str:
+        """Get main nginx configuration"""
+        return """
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+    worker_connections 768;
+    multi_accept on;
+    use epoll;
+}
+
+http {
+    # Basic Settings
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+    client_max_body_size 50M;
     
-    # Gzip compression
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    
+    # SSL Settings
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+    
+    # Logging Settings
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                   '$status $body_bytes_sent "$http_referer" '
+                   '"$http_user_agent" "$http_x_forwarded_for"';
+    
+    access_log /var/log/nginx/access.log main;
+    error_log /var/log/nginx/error.log;
+    
+    # Gzip Settings
     gzip on;
     gzip_vary on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types
+        text/plain
+        text/css
+        text/xml
+        text/javascript
+        application/json
+        application/javascript
+        application/xml+rss
+        application/atom+xml
+        image/svg+xml;
     
-    {"return 301 https://$server_name$request_uri;" if ssl_enabled else ""}
-    
-    {"" if ssl_enabled else f'''
-    # Static files
-    location /_next/static/ {{
-        alias {app_path}/.next/static/;
-        expires 365d;
-        add_header Cache-Control "public, immutable";
-    }}
-    
-    location /static/ {{
-        alias {app_path}/public/;
-        expires 30d;
-        add_header Cache-Control "public";
-    }}
-    
-    # Main application
-    location / {{
-        proxy_pass http://localhost:{port};
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 300s;
-        proxy_connect_timeout 75s;
-    }}
-    '''}
-}}
-
-{f'''
-server {{
-    listen 443 ssl http2;
-    server_name {domain} www.{domain};
-    
-    ssl_certificate /etc/ssl/certs/{domain}.crt;
-    ssl_certificate_key /etc/ssl/private/{domain}.key;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
-    ssl_prefer_server_ciphers off;
-    
-    # Security headers
-    add_header Strict-Transport-Security "max-age=63072000" always;
-    add_header X-Frame-Options DENY;
-    add_header X-Content-Type-Options nosniff;
-    add_header X-XSS-Protection "1; mode=block";
-    
-    # Static files
-    location /_next/static/ {{
-        alias {app_path}/.next/static/;
-        expires 365d;
-        add_header Cache-Control "public, immutable";
-    }}
-    
-    location /static/ {{
-        alias {app_path}/public/;
-        expires 30d;
-        add_header Cache-Control "public";
-    }}
-    
-    # Main application
-    location / {{
-        proxy_pass http://localhost:{port};
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 300s;
-        proxy_connect_timeout 75s;
-    }}
-}}
-''' if ssl_enabled else ""}
+    # Virtual Host Configs
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}
 """
+
+class ProjectDeployer:
+    """Handles project deployment"""
+    
+    def __init__(self, server_manager: ServerManager):
+        self.server = server_manager
+    
+    def deploy_project(self, project_config: ProjectConfig, project_path: str):
+        """Deploy a Next.js project"""
+        logger.info(f"Deploying project {project_config.project_name}...")
         
-        # Write nginx config locally
-        config_path = f"/tmp/{app_name}_nginx_local.conf"
-        with open(config_path, 'w') as f:
-            f.write(nginx_config.strip())
+        # Create project directory
+        app_dir = f"/var/www/{project_config.project_name}"
+        self.server.execute_command(f"mkdir -p {app_dir}", sudo=True)
+        self.server.execute_command(f"chown -R deploy:deploy {app_dir}", sudo=True)
         
-        # Upload and enable nginx config
-        self.upload_file(config_path, f"/tmp/{app_name}_nginx.conf")
-        self.execute_command(f"sudo mv /tmp/{app_name}_nginx.conf /etc/nginx/sites-available/{app_name}")
+        # Upload project files
+        if project_path.endswith('.zip'):
+            self.deploy_from_zip(project_config, project_path)
+        else:
+            self.deploy_from_directory(project_config, project_path)
         
-        # Remove default site if it exists
-        self.execute_command("sudo rm -f /etc/nginx/sites-enabled/default", check_return_code=False)
+        # Install dependencies and build
+        self.install_dependencies(project_config)
+        self.build_project(project_config)
+        
+        # Configure nginx
+        self.configure_nginx(project_config)
+        
+        # Start with PM2
+        self.start_with_pm2(project_config)
+        
+        # Setup SSL if enabled
+        if project_config.ssl_enabled:
+            self.setup_ssl(project_config)
+        
+        logger.info(f"Project {project_config.project_name} deployed successfully!")
+    
+    def deploy_from_zip(self, project_config: ProjectConfig, zip_path: str):
+        """Deploy from ZIP file"""
+        app_dir = f"/var/www/{project_config.project_name}"
+        
+        # Upload ZIP file
+        self.server.upload_file(zip_path, f"/tmp/{project_config.project_name}.zip")
+        
+        # Extract ZIP file
+        commands = [
+            f"cd {app_dir}",
+            f"unzip -o /tmp/{project_config.project_name}.zip",
+            f"rm /tmp/{project_config.project_name}.zip",
+            f"chown -R deploy:deploy {app_dir}"
+        ]
+        
+        for cmd in commands:
+            self.server.execute_command(cmd, sudo=True)
+    
+    def deploy_from_directory(self, project_config: ProjectConfig, project_path: str):
+        """Deploy from local directory"""
+        app_dir = f"/var/www/{project_config.project_name}"
+        self.server.upload_directory(project_path, app_dir)
+        self.server.execute_command(f"chown -R deploy:deploy {app_dir}", sudo=True)
+    
+    def install_dependencies(self, project_config: ProjectConfig):
+        """Install npm dependencies"""
+        logger.info("Installing dependencies...")
+        app_dir = f"/var/www/{project_config.project_name}"
+        
+        # Create .env file
+        env_content = "\n".join([f"{k}={v}" for k, v in project_config.env_vars.items()])
+        if env_content:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+                f.write(env_content)
+                temp_path = f.name
+            
+            self.server.upload_file(temp_path, f"{app_dir}/.env")
+            os.unlink(temp_path)
+        
+        # Install dependencies
+        self.server.execute_command(f"cd {app_dir} && npm install --production", sudo=False)
+    
+    def build_project(self, project_config: ProjectConfig):
+        """Build the Next.js project"""
+        logger.info("Building project...")
+        app_dir = f"/var/www/{project_config.project_name}"
+        self.server.execute_command(f"cd {app_dir} && {project_config.build_command}", sudo=False)
+    
+    def configure_nginx(self, project_config: ProjectConfig):
+        """Configure nginx virtual host"""
+        logger.info("Configuring nginx...")
+        
+        domain = project_config.domain
+        if project_config.subdomain:
+            domain = f"{project_config.subdomain}.{project_config.domain}"
+        
+        nginx_config = self.get_nginx_site_config(project_config, domain)
+        
+        # Upload configuration
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+            f.write(nginx_config)
+            temp_path = f.name
+        
+        site_config = f"/etc/nginx/sites-available/{project_config.project_name}"
+        self.server.upload_file(temp_path, site_config)
         
         # Enable site
-        self.execute_command(f"sudo ln -sf /etc/nginx/sites-available/{app_name} /etc/nginx/sites-enabled/")
+        self.server.execute_command(
+            f"ln -sf {site_config} /etc/nginx/sites-enabled/{project_config.project_name}",
+            sudo=True
+        )
         
         # Test and reload nginx
-        self.execute_command("sudo nginx -t")
-        self.execute_command("sudo systemctl enable nginx")
-        self.execute_command("sudo systemctl restart nginx")
+        exit_code, _, _ = self.server.execute_command("nginx -t", sudo=True)
+        if exit_code == 0:
+            self.server.execute_command("systemctl reload nginx", sudo=True)
+        else:
+            logger.error("Nginx configuration test failed!")
+            raise Exception("Invalid nginx configuration")
         
-        # Clean up local temp file
-        os.remove(config_path)
-        
-        self.logger.info("Nginx configured successfully")
+        os.unlink(temp_path)
     
-    def configure_pm2(self, app_path):
-        """Configure PM2 for the application"""
-        self.logger.info("Configuring PM2...")
+    def start_with_pm2(self, project_config: ProjectConfig):
+        """Start application with PM2"""
+        logger.info("Starting application with PM2...")
         
-        app_name = self.config['deployment']['app_name']
-        port = self.config['deployment']['port']
+        app_dir = f"/var/www/{project_config.project_name}"
         
         # Create PM2 ecosystem file
-        pm2_config = {
+        ecosystem_config = {
             "apps": [{
-                "name": app_name,
-                "script": "npm",
-                "args": "start",
-                "cwd": app_path,
+                "name": project_config.project_name,
+                "cwd": app_dir,
+                "script": project_config.start_command,
                 "instances": "max",
                 "exec_mode": "cluster",
                 "env": {
                     "NODE_ENV": "production",
-                    "PORT": str(port)
-                },
-                "error_file": f"{app_path}/logs/err.log",
-                "out_file": f"{app_path}/logs/out.log",
-                "log_file": f"{app_path}/logs/combined.log",
-                "time": True,
-                "restart_delay": 4000,
-                "max_restarts": 10,
-                "min_uptime": "10s"
+                    "PORT": str(project_config.port),
+                    **project_config.env_vars
+                }
             }]
         }
         
-        # Create logs directory
-        self.execute_command(f"sudo mkdir -p {app_path}/logs")
-        self.execute_command(f"sudo chown -R www-data:www-data {app_path}/logs")
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+            json.dump(ecosystem_config, f, indent=2)
+            temp_path = f.name
         
-        # Write PM2 config locally
-        local_pm2_config = f"/tmp/{app_name}_pm2.json"
-        with open(local_pm2_config, 'w') as f:
-            json.dump(pm2_config, f, indent=2)
-        
-        # Upload PM2 config
-        pm2_config_path = f"{app_path}/ecosystem.config.json"
-        self.upload_file(local_pm2_config, pm2_config_path)
-        self.execute_command(f"sudo chown www-data:www-data {pm2_config_path}")
+        ecosystem_file = f"{app_dir}/ecosystem.config.json"
+        self.server.upload_file(temp_path, ecosystem_file)
         
         # Start with PM2
-        self.execute_command(f"cd {app_path} && sudo -u www-data pm2 start ecosystem.config.json")
-        self.execute_command("sudo -u www-data pm2 save")
+        commands = [
+            f"pm2 delete {project_config.project_name} || true",
+            f"pm2 start {ecosystem_file}",
+            "pm2 save"
+        ]
         
-        # Setup PM2 startup script
-        startup_output, _, _ = self.execute_command("sudo -u www-data pm2 startup", check_return_code=False)
-        if "sudo" in startup_output:
-            # Extract the startup command and run it
-            for line in startup_output.split('\n'):
-                if line.strip().startswith('sudo'):
-                    self.execute_command(line.strip(), check_return_code=False)
+        for cmd in commands:
+            self.server.execute_command(cmd, sudo=False)
         
-        # Clean up local temp file
-        os.remove(local_pm2_config)
-        
-        self.logger.info("PM2 configured successfully")
+        os.unlink(temp_path)
     
-    def start_application(self, app_path):
-        """Start application without PM2"""
-        self.logger.info("Starting application...")
+    def setup_ssl(self, project_config: ProjectConfig):
+        """Setup SSL certificate with Let's Encrypt"""
+        logger.info("Setting up SSL certificate...")
         
-        port = self.config['deployment']['port']
-        app_name = self.config['deployment']['app_name']
+        domain = project_config.domain
+        if project_config.subdomain:
+            domain = f"{project_config.subdomain}.{project_config.domain}"
         
-        # Create systemd service file
-        service_content = f"""
-[Unit]
-Description={app_name} Next.js Application
-After=network.target
-
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory={app_path}
-ExecStart=/usr/bin/npm start
-Restart=on-failure
-RestartSec=10
-Environment=NODE_ENV=production
-Environment=PORT={port}
-
-[Install]
-WantedBy=multi-user.target
-"""
+        # Request SSL certificate
+        cmd = f"certbot --nginx -d {domain} --non-interactive --agree-tos --email admin@{project_config.domain}"
+        exit_code, output, error = self.server.execute_command(cmd, sudo=True)
         
-        # Write service file
-        with open(f"/tmp/{app_name}.service", 'w') as f:
-            f.write(service_content.strip())
-        
-        # Upload and enable service
-        self.upload_file(f"/tmp/{app_name}.service", f"/tmp/{app_name}_upload.service")
-        self.execute_command(f"sudo mv /tmp/{app_name}_upload.service /etc/systemd/system/{app_name}.service")
-        
-        # Enable and start service
-        self.execute_command("sudo systemctl daemon-reload")
-        self.execute_command(f"sudo systemctl enable {app_name}")
-        self.execute_command(f"sudo systemctl start {app_name}")
-        
-        # Clean up
-        os.remove(f"/tmp/{app_name}.service")
-        
-        self.logger.info("Application started with systemd")
-    
-    def verify_deployment(self):
-        """Verify that the deployment is working"""
-        self.logger.info("Verifying deployment...")
-        
-        port = self.config['deployment']['port']
-        
-        # Wait for application to start
-        time.sleep(10)
-        
-        # Check if application is responding
-        stdout, stderr, return_code = self.execute_command(
-            f"curl -f http://localhost:{port}",
-            check_return_code=False,
-            timeout=30
-        )
-        
-        if return_code == 0:
-            self.logger.info("✅ Application is responding correctly")
+        if exit_code == 0:
+            logger.info("SSL certificate installed successfully")
         else:
-            self.logger.warning("⚠️ Application health check failed")
-            
-        # Check nginx status
-        if self.config['deployment']['nginx_enabled']:
-            self.execute_command("sudo systemctl status nginx --no-pager", check_return_code=False)
-        
-        # Check PM2 status
-        if self.config['deployment']['pm2_enabled']:
-            self.execute_command("sudo -u www-data pm2 status", check_return_code=False)
+            logger.warning(f"SSL setup failed: {error}")
     
-    def rollback_deployment(self, app_path):
-        """Rollback to previous deployment if it exists"""
-        self.logger.info("Attempting rollback...")
+    def get_nginx_site_config(self, project_config: ProjectConfig, domain: str) -> str:
+        """Generate nginx site configuration"""
+        return f"""
+server {{
+    listen 80;
+    server_name {domain};
+    
+    # Redirect to HTTPS
+    return 301 https://$server_name$request_uri;
+}}
+
+server {{
+    listen 443 ssl http2;
+    server_name {domain};
+    
+    # SSL Configuration (will be updated by certbot)
+    ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
+    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
+    
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied expired no-cache no-store private must-revalidate auth;
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss;
+    
+    # Static files
+    location /_next/static/ {{
+        alias /var/www/{project_config.project_name}/.next/static/;
+        expires 365d;
+        add_header Cache-Control "public, immutable";
+    }}
+    
+    location /static/ {{
+        alias /var/www/{project_config.project_name}/public/;
+        expires 365d;
+        add_header Cache-Control "public, immutable";
+    }}
+    
+    # Main application
+    location / {{
+        proxy_pass http://localhost:{project_config.port};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }}
+}}
+"""
+
+class DeploymentManager:
+    """Main deployment management class"""
+    
+    def __init__(self, config_file: str = "deployment_config.yaml"):
+        self.config_file = config_file
+        self.config = self.load_config()
+    
+    def load_config(self) -> dict:
+        """Load deployment configuration"""
+        if os.path.exists(self.config_file):
+            with open(self.config_file, 'r') as f:
+                return yaml.safe_load(f)
+        else:
+            # Create default config
+            default_config = {
+                'servers': {
+                    'production': {
+                        'host': 'your-server-ip',
+                        'username': 'deploy',
+                        'key_file': '~/.ssh/id_rsa',
+                        'port': 22,
+                        'os_type': 'ubuntu'
+                    }
+                },
+                'projects': {
+                    'example': {
+                        'domain': 'example.com',
+                        'ssl_enabled': True,
+                        'node_version': '18',
+                        'port': 3000,
+                        'env_vars': {
+                            'NODE_ENV': 'production'
+                        }
+                    }
+                }
+            }
+            
+            with open(self.config_file, 'w') as f:
+                yaml.dump(default_config, f, default_flow_style=False)
+            
+            logger.info(f"Created default config file: {self.config_file}")
+            return default_config
+    
+    def setup_server(self, server_name: str):
+        """Setup a new server"""
+        if server_name not in self.config['servers']:
+            raise ValueError(f"Server '{server_name}' not found in config")
+        
+        server_config = ServerConfig(**self.config['servers'][server_name])
+        server_manager = ServerManager(server_config)
         
         try:
-            # Find the most recent backup
-            stdout, _, return_code = self.execute_command(
-                f"ls -dt {app_path}_backup_* | head -1",
-                check_return_code=False
-            )
+            server_manager.connect()
+            setup = ServerSetup(server_manager)
+            setup.setup_server()
+        finally:
+            server_manager.disconnect()
+    
+    def deploy_project(self, server_name: str, project_name: str, project_path: str):
+        """Deploy a project to a server"""
+        if server_name not in self.config['servers']:
+            raise ValueError(f"Server '{server_name}' not found in config")
+        
+        if project_name not in self.config['projects']:
+            raise ValueError(f"Project '{project_name}' not found in config")
+        
+        server_config = ServerConfig(**self.config['servers'][server_name])
+        project_config = ProjectConfig(**self.config['projects'][project_name])
+        
+        server_manager = ServerManager(server_config)
+        deployer = ProjectDeployer(server_manager)
+        
+        try:
+            server_manager.connect()
+            deployer.deploy_project(project_config, project_path)
+        finally:
+            server_manager.disconnect()
+    
+    def list_deployments(self, server_name: str):
+        """List all deployments on a server"""
+        if server_name not in self.config['servers']:
+            raise ValueError(f"Server '{server_name}' not found in config")
+        
+        server_config = ServerConfig(**self.config['servers'][server_name])
+        server_manager = ServerManager(server_config)
+        
+        try:
+            server_manager.connect()
+            exit_code, output, _ = server_manager.execute_command("pm2 list")
+            if exit_code == 0:
+                print("PM2 Processes:")
+                print(output)
             
-            if return_code == 0 and stdout.strip():
-                backup_path = stdout.strip()
-                self.logger.info(f"Rolling back to: {backup_path}")
-                
-                # Remove failed deployment
-                self.execute_command(f"sudo rm -rf {app_path}", check_return_code=False)
-                
-                # Restore backup
-                self.execute_command(f"sudo mv {backup_path} {app_path}")
-                
-                # Restart services
-                if self.config['deployment']['pm2_enabled']:
-                    self.execute_command(f"cd {app_path} && sudo -u www-data pm2 restart all", check_return_code=False)
-                
-                self.logger.info("Rollback completed")
-            else:
-                self.logger.warning("No backup found for rollback")
-                
-        except Exception as e:
-            self.logger.error(f"Rollback failed: {e}")
-    
-    def print_deployment_info(self):
-        """Print deployment information"""
-        domain = self.config['deployment']['domain']
-        port = self.config['deployment']['port']
-        ssl_enabled = self.config['deployment']['ssl_enabled']
-        
-        protocol = "https" if ssl_enabled else "http"
-        url = f"{protocol}://{domain}"
-        
-        print("\n" + "="*50)
-        print("🚀 DEPLOYMENT SUCCESSFUL!")
-        print("="*50)
-        print(f"Application: {self.config['deployment']['app_name']}")
-        print(f"URL: {url}")
-        print(f"Server: {self.config['server']['host']}")
-        print(f"Port: {port}")
-        print(f"PM2 Enabled: {self.config['deployment']['pm2_enabled']}")
-        print(f"Nginx Enabled: {self.config['deployment']['nginx_enabled']}")
-        print("="*50)
-        
-        if self.config['deployment']['nginx_enabled']:
-            print(f"🌐 Access your application at: {url}")
-        else:
-            print(f"🌐 Access your application at: http://{domain}:{port}")
-        
-        print("\n📝 Useful commands:")
-        if self.config['deployment']['pm2_enabled']:
-            print("  pm2 status                    # Check PM2 status")
-            print("  pm2 logs                      # View application logs")
-            print("  pm2 restart all               # Restart application")
-        
-        if self.config['deployment']['nginx_enabled']:
-            print("  sudo systemctl status nginx   # Check nginx status")
-            print("  sudo nginx -t                 # Test nginx config")
-        
-        print("  tail -f deployment.log         # View deployment logs")
-        print("\n")
-    
-    def create_sample_config(self, output_path):
-        """Create a sample configuration file"""
-        sample_config = {
-            "server": {
-                "host": "your-server.com",
-                "port": 22,
-                "username": "ubuntu",
-                "key_file": "~/.ssh/id_rsa",
-                "password": None
-            },
-            "deployment": {
-                "base_path": "/var/www",
-                "app_name": "my-nextjs-app",
-                "node_version": "18",
-                "pm2_enabled": True,
-                "nginx_enabled": True,
-                "domain": "example.com",
-                "port": 3000,
-                "ssl_enabled": False,
-                "backup_previous": True,
-                "auto_restart": True
-            },
-            "build": {
-                "install_dependencies": True,
-                "run_build": True,
-                "run_tests": False,
-                "env_file": ".env.production",
-                "custom_build_script": None
-            }
-        }
-        
-        with open(output_path, 'w') as f:
-            json.dump(sample_config, f, indent=2)
-        
-        print(f"Sample configuration created at: {output_path}")
-        print("\nEdit the configuration file with your server details and run:")
-        print(f"python deploy.py your-project.zip -c {output_path}")
+            exit_code, output, _ = server_manager.execute_command("ls -la /var/www/", sudo=True)
+            if exit_code == 0:
+                print("\nDeployed Projects:")
+                print(output)
+        finally:
+            server_manager.disconnect()
 
 def main():
-    parser = argparse.ArgumentParser(
-        description='Deploy Next.js projects to Linux servers',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python deploy.py project.zip -c config.json
-  python deploy.py --create-config config.json
-  python deploy.py project.zip --config deployment-config.yaml
-        """
-    )
+    """Main CLI interface"""
+    import argparse
     
-    parser.add_argument('zip_file', nargs='?', help='Path to the Next.js project zip file')
-    parser.add_argument('-c', '--config', help='Configuration file path (JSON or YAML)')
-    parser.add_argument('--create-config', help='Create sample configuration file and exit')
+    parser = argparse.ArgumentParser(description='Automated Server Deployment System')
+    parser.add_argument('action', choices=['setup', 'deploy', 'list'], help='Action to perform')
+    parser.add_argument('--server', required=True, help='Server name from config')
+    parser.add_argument('--project', help='Project name from config (for deploy)')
+    parser.add_argument('--path', help='Project path (for deploy)')
+    parser.add_argument('--config', default='deployment_config.yaml', help='Config file path')
     
     args = parser.parse_args()
     
-    if args.create_config:
-        deployer = NextJSDeployer()
-        deployer.create_sample_config(args.create_config)
-        return
-    
-    if not args.zip_file:
-        parser.print_help()
-        sys.exit(1)
-    
-    if not os.path.exists(args.zip_file):
-        print(f"❌ Error: Zip file not found: {args.zip_file}")
-        sys.exit(1)
-    
-    if not args.config:
-        print("❌ Error: Configuration file is required")
-        print("Create one with: python deploy.py --create-config config.json")
-        sys.exit(1)
-    
     try:
-        deployer = NextJSDeployer(args.config)
-        deployer.deploy_project(args.zip_file)
-    except KeyboardInterrupt:
-        print("\n❌ Deployment cancelled by user")
-        sys.exit(1)
+        manager = DeploymentManager(args.config)
+        
+        if args.action == 'setup':
+            manager.setup_server(args.server)
+            
+        elif args.action == 'deploy':
+            if not args.project or not args.path:
+                print("Error: --project and --path are required for deploy action")
+                sys.exit(1)
+            manager.deploy_project(args.server, args.project, args.path)
+            
+        elif args.action == 'list':
+            manager.list_deployments(args.server)
+            
     except Exception as e:
-        print(f"❌ Deployment failed: {e}")
+        logger.error(f"Operation failed: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

@@ -19,11 +19,13 @@ import {
   Navigation,
   Menu,
   Settings,
-  ChevronDown
+  ChevronDown,
+  Server // Added Server icon import
 } from 'lucide-react'
 import GeneratorForm from './GeneratorForm'
 import DesignSelector from './DesignSelector'
 import TemplatePreview from './TemplatePreview'
+import DeploymentManager from './DeploymentManager'
 
 function ProjectGenerator() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -168,6 +170,7 @@ function ProjectGenerator() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [showDeployment, setShowDeployment] = useState(false)
 
   // Auto-populate header and footer data when business info changes
   useEffect(() => {
@@ -216,6 +219,13 @@ function ProjectGenerator() {
       description: 'Create your website files',
       icon: Code,
       component: 'generate'
+    },
+    {
+      id: 'deploy',
+      title: 'Deploy',
+      description: 'Deploy to server',
+      icon: Server,
+      component: 'deploy'
     }
   ]
 
@@ -232,6 +242,11 @@ function ProjectGenerator() {
   }
 
   const handleStepClick = (stepIndex) => {
+    // Allow access to deployment step only after successful generation
+    if (stepIndex === 4 && !result) {
+      return
+    }
+    
     if (stepIndex <= currentStep || isStepComplete(stepIndex - 1)) {
       setCurrentStep(stepIndex)
     }
@@ -287,7 +302,6 @@ function ProjectGenerator() {
         footerData: formData.footerData || {},
 
         // Pages and features
-        // Pages and features
         pages: Array.isArray(formData.pages) ? formData.pages.filter(page => page.enabled) : [],
         features: formData.features || [],
 
@@ -321,14 +335,7 @@ function ProjectGenerator() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          // Include design configuration in the generation request
-          designConfig: formData.design,
-          customRequirements: formData.businessDescription,
-          pages: Array.isArray(formData.pages) ? formData.pages.filter(page => page.enabled !== false) : [],
-          useDesignSystem: true // Flag to use design-aware generation
-        }),
+        body: JSON.stringify(payload),
       })
 
       console.log('📡 Response status:', response.status)
@@ -337,6 +344,7 @@ function ProjectGenerator() {
 
       if (data.success) {
         setResult(data.data)
+        setShowDeployment(true) // Enable deployment step
         console.log('✅ Generation successful with nested menu support')
       } else {
         setError(data.error || 'Failed to generate project')
@@ -348,6 +356,12 @@ function ProjectGenerator() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Handle deployment completion
+  const handleDeploymentComplete = (deploymentData) => {
+    console.log('Deployment completed:', deploymentData)
+    // Add success notification or additional logic here
   }
 
   const downloadProject = async () => {
@@ -394,6 +408,10 @@ function ProjectGenerator() {
         )
       case 2: // Preview
         return true
+      case 3: // Generate
+        return !!result
+      case 4: // Deploy
+        return !!result // Can only access deploy if generation is complete
       default:
         return false
     }
@@ -431,6 +449,58 @@ function ProjectGenerator() {
       ctaButton: formData.headerData.showCta,
       heroBackground: formData.heroData.backgroundType
     }
+  }
+
+  // Add deployment step rendering
+  const renderDeployStep = () => {
+    if (!result || !result.project) {
+      return (
+        <div className="text-center py-12">
+          <Server className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Project to Deploy</h3>
+          <p className="text-gray-600 mb-4">Please generate a website first before deploying.</p>
+          <button
+            onClick={() => setCurrentStep(3)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Back to Generate
+          </button>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Deploy Your Website</h2>
+          <p className="text-gray-600">Deploy your generated website to a live server with nginx multi-hosting</p>
+        </div>
+
+        <DeploymentManager 
+          project={result.project}
+          onDeploymentComplete={handleDeploymentComplete}
+        />
+
+        {/* Navigation */}
+        <div className="flex justify-between pt-6 border-t">
+          <button
+            onClick={() => setCurrentStep(3)}
+            className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Generate</span>
+          </button>
+          
+          <button
+            onClick={() => window.location.reload()}
+            className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <span>Start New Project</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    )
   }
 
   const renderStepContent = () => {
@@ -475,8 +545,12 @@ function ProjectGenerator() {
             onGenerate={handleGenerate}
             onDownload={downloadProject}
             onPrev={handlePrev}
+            onDeploy={() => setCurrentStep(4)} // Add deploy callback
           />
         )
+
+      case 'deploy':
+        return renderDeployStep()
 
       default:
         return null
@@ -491,7 +565,7 @@ function ProjectGenerator() {
           AI Website Generator
         </h1>
         <p className="text-gray-600 mb-6">
-          Create a professional website with custom header, nested menus, footer, and AI-powered content generation
+          Create and deploy professional websites with custom header, nested menus, footer, and AI-powered content generation
         </p>
 
         {/* Enhanced Step Progress */}
@@ -501,32 +575,43 @@ function ProjectGenerator() {
               const Icon = step.icon
               const isActive = currentStep === index
               const isCompleted = index < currentStep || (index === currentStep && isStepComplete(index))
-              const isAccessible = index <= currentStep || isStepComplete(index - 1)
+              const isAccessible = index <= currentStep || isStepComplete(index - 1) || (index === 4 && result)
+              const isDeploymentStep = index === 4
 
               return (
                 <div key={step.id} className="flex items-center">
                   <button
                     onClick={() => handleStepClick(index)}
                     disabled={!isAccessible}
-                    className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 ${isCompleted
-                      ? 'bg-green-500 text-white shadow-lg transform scale-105'
-                      : isActive
+                    className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 ${
+                      isCompleted
+                        ? 'bg-green-500 text-white shadow-lg transform scale-105'
+                        : isActive
                         ? 'bg-blue-600 text-white shadow-lg scale-110'
                         : isAccessible
-                          ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      }`}
+                        ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        : isDeploymentStep && !result
+                        ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                    title={isDeploymentStep && !result ? 'Generate a website first to enable deployment' : ''}
                   >
                     {isCompleted && index !== currentStep ? (
                       <CheckCircle className="w-6 h-6" />
                     ) : (
                       <Icon className="w-6 h-6" />
                     )}
+                    
+                    {/* Show deployment availability indicator */}
+                    {isDeploymentStep && result && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border border-white"></div>
+                    )}
                   </button>
 
                   <div className="ml-3 text-left">
-                    <div className={`text-sm font-medium ${isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
-                      }`}>
+                    <div className={`text-sm font-medium ${
+                      isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
+                    }`}>
                       {step.title}
                     </div>
                     <div className="text-xs text-gray-500">
@@ -535,8 +620,9 @@ function ProjectGenerator() {
                   </div>
 
                   {index < steps.length - 1 && (
-                    <div className={`w-16 h-1 mx-6 transition-colors duration-200 ${index < currentStep ? 'bg-green-500' : 'bg-gray-200'
-                      }`} />
+                    <div className={`w-16 h-1 mx-6 transition-colors duration-200 ${
+                      index < currentStep ? 'bg-green-500' : 'bg-gray-200'
+                    }`} />
                   )}
                 </div>
               )
@@ -686,8 +772,8 @@ function ProjectGenerator() {
   )
 }
 
-// Enhanced Generate Step Component with Nested Menu Support
-function GenerateStep({ config, loading, result, error, onGenerate, onDownload, onPrev }) {
+// Enhanced Generate Step Component with Deployment Integration
+function GenerateStep({ config, loading, result, error, onGenerate, onDownload, onPrev, onDeploy }) {
   const summary = getCustomizationSummary(config)
 
   return (
@@ -828,25 +914,18 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
         </div>
       )}
 
-      {/* Enhanced Success Display */}
+      {/* Enhanced Success Display with Deployment Option */}
       {result && (
         <div className="space-y-6">
           <div className="bg-green-50 border border-green-200 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                <span className="font-medium text-green-800">Website with Nested Navigation Generated Successfully!</span>
+                <span className="font-medium text-green-800">Website Generated Successfully! 🎉</span>
               </div>
-              <button
-                onClick={onDownload}
-                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download Project
-              </button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
               <div className="bg-white p-3 rounded-lg">
                 <div className="font-medium text-gray-900">Files Generated</div>
                 <div className="text-gray-600">{result.metadata?.fileCount || 0} files</div>
@@ -863,6 +942,32 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
                 <div className="font-medium text-gray-900">Processing Time</div>
                 <div className="text-gray-600">{result.metadata?.processingTime || 'N/A'}</div>
               </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <button
+                onClick={onDownload}
+                className="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download Project
+              </button>
+              
+              <button
+                onClick={onDeploy}
+                className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Server className="w-4 h-4 mr-2" />
+                Deploy to Server
+              </button>
+              
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Generate Another
+              </button>
             </div>
 
             {/* Detailed success message with nested menu info */}
@@ -894,13 +999,10 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
         </button>
 
         {result && (
-          <button
-            onClick={() => window.location.reload()}
-            className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <span>Generate Another</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          <div className="text-center">
+            <p className="text-sm text-gray-500 mb-2">✨ Ready for deployment</p>
+            <p className="text-xs text-blue-600">Click "Deploy to Server" to go live!</p>
+          </div>
         )}
       </div>
     </div>
