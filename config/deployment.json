@@ -1,0 +1,44 @@
+{
+  "servers": {
+    "production": {
+      "hostname": "75.119.141.162",
+      "username": "root",
+      "password": "your-password",
+      "port": 22,
+      "domain": "your-domain.com",
+      "ssl_email": "admin@your-domain.com"
+    },
+    "staging": {
+      "hostname": "your-staging-server.com", 
+      "username": "deploy",
+      "password": "your-password",
+      "port": 22,
+      "domain": "staging.your-domain.com",
+      "ssl_email": "admin@your-domain.com"
+    }
+  },
+  "server": {
+    "hostname": "75.119.141.162",
+    "username": "deploy", 
+    "password": "your-password",
+    "port": 22,
+    "domain": "localhost",
+    "ssl_email": "admin@your-domain.com"
+  },
+  "deploymentPath": "/var/www",
+  "backupPath": "/var/backups",
+  "pm2": {
+    "enabled": true,
+    "ecosystem": "/path/to/ecosystem.config.js"
+  },
+  "ssl": {
+    "enabled": true,
+    "certbot": true,
+    "email": "admin@yourdomain.com"
+  },
+  "optimization": {
+    "enabled": true,
+    "minification": true,
+    "compression": true
+  }
+}

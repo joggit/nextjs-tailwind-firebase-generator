@@ -1,5 +1,6 @@
-// Updated API Route with Nested Menu Support - app/api/generate/route.js
+// Updated API Route with Nested Menu Support and Temp Storage - app/api/generate/route.js
 import TemplatePathGenerator from '@/lib/generator/TemplatePathGenerator.js';
+import { DesignIntegratedGenerator } from '@/lib/generator/DesignIntegration.js';
 
 let templatePathGenerator = null;
 
@@ -391,6 +392,24 @@ export async function POST(request) {
     console.log('⚙️ Generating project with nested navigation structure...');
     const generatedProject = await templatePathGenerator.generateProject(config);
     
+    // IMMEDIATELY store project in temporary storage for package generation
+    if (typeof global !== 'undefined') {
+      global.tempProjects = global.tempProjects || {};
+      global.tempProjects[generatedProject.id] = generatedProject;
+      console.log(`💾 Stored project in temporary storage: ${generatedProject.id}`);
+      console.log(`📊 Temp storage now contains ${Object.keys(global.tempProjects).length} projects`);
+      
+      // Clean up after 2 hours to allow for package generation
+      setTimeout(() => {
+        if (global.tempProjects && global.tempProjects[generatedProject.id]) {
+          delete global.tempProjects[generatedProject.id];
+          console.log(`🗑️ Cleaned up temporary project: ${generatedProject.id}`);
+        }
+      }, 2 * 60 * 60 * 1000); // 2 hours
+    } else {
+      console.warn('⚠️ Global object not available for temporary storage');
+    }
+    
     const endTime = Date.now();
     const processingTime = endTime - startTime;
 
@@ -477,6 +496,13 @@ export async function POST(request) {
             processingTimeMs: processingTime,
             complexity: 'enhanced-with-nested-menus',
             featuresApplied: config.features.length
+          },
+
+          // Storage metadata for debugging
+          storage: {
+            tempStorageId: generatedProject.id,
+            storedInTempStorage: true,
+            tempStorageCount: typeof global !== 'undefined' && global.tempProjects ? Object.keys(global.tempProjects).length : 0
           }
         }
       }
@@ -498,7 +524,8 @@ export async function POST(request) {
           'X-Menu-Items': `${menuAnalysis.totalItems}`,
           'X-Dropdown-Count': `${menuAnalysis.dropdownCount}`,
           'X-Nested-Items': `${menuAnalysis.nestedItems}`,
-          'X-Has-Nested-Menus': menuAnalysis.hasNestedMenus.toString()
+          'X-Has-Nested-Menus': menuAnalysis.hasNestedMenus.toString(),
+          'X-Project-ID': generatedProject.id
         }
       }
     );

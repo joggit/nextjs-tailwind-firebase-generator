@@ -1,0 +1,40 @@
+{
+  "servers": {
+    "production": {
+      "hostname": "your-production-server.example.com",
+      "username": "deploy",
+      "password": "your-password",
+      "port": 22,
+      "domain": "your-domain.com",
+      "ssl_email": "admin@your-domain.com"
+    },
+    "staging": {
+      "hostname": "your-staging-server.example.com",
+      "username": "deploy", 
+      "password": "your-password",
+      "port": 22,
+      "domain": "staging.your-domain.com",
+      "ssl_email": "admin@your-domain.com"
+    }
+  },
+  "server": {
+    "hostname": "your-default-server.example.com",
+    "username": "deploy",
+    "password": "your-password",
+    "port": 22,
+    "domain": "your-domain.com",
+    "ssl_email": "admin@your-domain.com"
+  },
+  "project": {
+    "name": "my-nextjs-app",
+    "domain": "your-domain.com",
+    "port": 3000,
+    "node_version": "18",
+    "build_command": "npm run build",
+    "start_command": "npm start",
+    "env_vars": {
+      "NODE_ENV": "production",
+      "CUSTOM_VAR": "value"
+    }
+  }
+}

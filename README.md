@@ -1,67 +1,218 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+// File: README.md (Updated)
+# Full-Stack Website Generator & Deployer
 
-## Getting Started
+A comprehensive solution for generating professional websites with AI-powered design systems and deploying them instantly to Linux servers using automated Python deployment scripts.
 
-First, run the development server:
+## Features
 
+### 🎨 AI-Powered Website Generation
+- **Design System Integration**: Multiple themes, layouts, and customization options
+- **Vector RAG Enhancement**: Upload documents to enhance AI content generation
+- **Template Variety**: Ecommerce, SaaS, Blog, Portfolio, and more
+- **Component Library**: Modern UI components with Tailwind CSS
+
+### 🚀 Automated Deployment
+- **Multi-Server Support**: Deploy to production, staging, or custom servers
+- **Python + Paramiko**: Secure SSH-based deployment automation
+- **Nginx Configuration**: Automatic web server setup with optimization
+- **SSL Automation**: Let's Encrypt SSL certificates configured automatically
+- **PM2 Integration**: Process management for Node.js applications
+
+### 📊 Management & Monitoring
+- **Deployment Status**: Real-time monitoring of deployments
+- **Server Health**: Check server connectivity and status
+- **Vector Admin**: Manage documents and AI enhancement
+- **Troubleshooting**: Built-in diagnostic tools
+
+## Quick Start
+
+### 1. Setup Deployment Environment
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clone and install dependencies
+npm install
+
+# Setup deployment environment
+npm run setup-deployment
+
+# Generate SSH keys
+npm run generate-keys
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure Servers
+```bash
+# Update server configuration
+nano config/deployment.json
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+# Test server connections
+npm run test-connections
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Prepare Target Servers
+```bash
+# Run on each deployment server (as root)
+curl -fsSL https://your-domain.com/scripts/prepare_server.sh | sudo bash
+```
 
-## Learn More
+### 4. Start Generating & Deploying
+```bash
+# Start the development server
+npm run dev
 
-To learn more about Next.js, take a look at the following resources:
+# Access the application
+open http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Architecture
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Next.js App  │────│   Python Script  │────│  Linux Servers  │
+│                 │    │   (Paramiko)     │    │   (Nginx/PM2)   │
+├─────────────────┤    ├──────────────────┤    ├─────────────────┤
+│ • AI Generation │    │ • SSH Connection │    │ • Website Files │
+│ • Design System │    │ • File Upload    │    │ • Nginx Config  │
+│ • UI Components │    │ • Nginx Setup    │    │ • SSL Certs     │
+│ • Vector RAG    │    │ • SSL Config     │    │ • PM2 Processes │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
 
-## Deploy on Vercel
+## Deployment Process
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Generate Website**: AI creates custom website with design system
+2. **Package Files**: Bundle project files for deployment
+3. **SSH Connection**: Secure connection to target server
+4. **File Upload**: Transfer and extract project files
+5. **Nginx Setup**: Configure web server with optimization
+6. **SSL Configuration**: Automatic Let's Encrypt setup (optional)
+7. **PM2 Setup**: Process management for Node.js apps (optional)
+8. **Health Check**: Verify deployment success
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Server Requirements
 
-## LLM Prompts
-The goal of this project is to generate web applications using the Next js (App router),(javascript ESM) , Tailwind, Firebase stack. AI tools such as RAG (Retrieval-Augmented Generation) and LLMs (Large Language Models) can be used to enhance the development process, automate content generation, and improve user experience through an API driven system. We will start out with a GUI basic website generator and incrementally add modules such as e-commerce, crm, dashboard etc. The end goal is to develop the project into an agentic system that can quickly generate a full Next.js javascript application with Firebase integration, including authentication, database, and hosting setup, using AI tools to streamline the process. We should be able to go from a simple template to a fully functional application that can be deployed and used in production environments in a day or less. Start off with a basic approach and gradually add features and complexity as needed. Page generation must be in JSX format, and the application should be designed to be easily extendable with additional features and functionalities. 
+### Target Servers
+- Ubuntu 20.04+ or Debian 11+
+- SSH access with key-based authentication
+- sudo privileges for deployment user
+- Domain/subdomain pointing to server (for SSL)
 
+### Required Software (installed by setup script)
+- nginx
+- Node.js 18+
+- npm
+- PM2 (for Node.js apps)
+- certbot (for SSL)
+- UFW firewall
+- fail2ban (security)
 
-Add a setup and config section that we be displayed after installation , to setup firebase database, seed database, choose payment gateway, and other configurations required for the application to function correctly. This setup should be user-friendly and guide users through the necessary steps to get their application up and running. All matters for setup and configuration for a newly generated site will be handled from this section, ensuring that users can easily configure their applications without needing to dive into the codebase.
+## Configuration
 
-Use type module (esm - import or export syntax) for all JavaScript files to ensure compatibility with modern JavaScript standards and enable features like tree shaking and better module resolution. This will help in optimizing the application for performance and maintainability.
+### Deployment Configuration (`config/deployment.json`)
+```json
+{
+  "production": {
+    "production_host": "your-server.com",
+    "production_username": "deploy",
+    "production_key_file": "~/.ssh/production_deploy_key"
+  },
+  "staging": {
+    "staging_host": "staging.your-server.com",
+    "staging_username": "deploy", 
+    "staging_key_file": "~/.ssh/staging_deploy_key"
+  }
+}
+```
 
-### Platforms
-- **Next.js 13+**: For building the web application.
-- **Firebase**: For backend services including authentication, database, and hosting.
-- **JavaScript**: For building the frontend application.
-- **Tailwind CSS**: For styling the application.
-- **Python**: For prototyping AI models and data processing.
-- **Jupyter Notebooks**: For experimenting with AI models and data analysis.
-- **GitHub**: For version control and collaboration.
-- **Nginx**: For serving the application in production.
-- **AI Tools**: For enhancing the application with features like RAG and LLMs.
-- **API-Driven Architecture**: For integrating various AI services and data sources.
+### Environment Variables (`.env.local`)
+```bash
+# OpenAI API (for AI generation)
+OPENAI_API_KEY=your_openai_key
 
-- **Linux**: For deployment and hosting.
+# Firebase (for vector storage)
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_CLIENT_EMAIL=your_client_email
+FIREBASE_PRIVATE_KEY=your_private_key
 
-### Steps to Achieve the Goal
-1. **Use GitHub Templates**: Use an existing GitHub Next JS template repository to allow users to easily create new projects based on this template. The template should include all necessary configurations for Next.js and Firebase integration.
-2. **Retrieval-Augmented Generation (RAG)**: Implement RAG techniques to enhance the application with AI-driven content generation. This can include generating dynamic content based on user interactions or external data sources. The system must be API-driven to allow for flexible integration with various LLMs,AI services and data sources.
-3. **Large Language Models (LLMs)**: Integrate LLMs to provide advanced features such as natural language processing, content generation, and user interaction enhancements. This can include chatbots, content summarization, or personalized recommendations based on user behavior.
-4. **Agentic System Development**: Gradually evolve the application into an agentic system that can autonomously generate and manage Next.js applications with Firebase integration, leveraging AI tools for automation and optimization.
-5. **Documentation and Tutorials**: Provide comprehensive documentation and tutorials to help users understand how to use the template, integrate AI tools, and develop their applications effectively.
+# Optional: Deployment notifications
+SLACK_WEBHOOK_URL=https://hooks.slack.com/...
+```
 
-6. **Deployment and Hosting**: Set up deployment pipelines using Linux, Nginx, NPM to ensure the application is production-ready. This includes configuring the server, optimizing performance, and ensuring security best practices are followed.
+## Security
+
+### SSH Security
+- Key-based authentication only
+- Restricted deployment user permissions
+- Firewall configuration (UFW)
+- Intrusion detection (fail2ban)
+
+### Server Security
+- Automatic security headers in nginx
+- SSL/TLS encryption
+- Regular security updates
+- Log monitoring and rotation
+
+## Troubleshooting
+
+### Common Issues
+```bash
+# Run diagnostic script
+npm run troubleshoot
+
+# Test server connections
+npm run test-connections
+
+# Check deployment logs
+tail -f logs/deployment.log
+
+# Check nginx configuration
+sudo nginx -t
+
+# Monitor PM2 processes
+pm2 status
+pm2 logs
+```
+
+### Support Resources
+- 📖 [Deployment Setup Guide](./DEPLOYMENT_SETUP.md)
+- 🔧 Built-in troubleshooting script
+- 📊 Real-time deployment monitoring
+- 🚨 Automated error reporting
+
+## Development
+
+### Local Development
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run lint         # Run ESLint
+```
+
+### Deployment Scripts
+```bash
+npm run setup-deployment  # Setup deployment environment
+npm run generate-keys     # Generate SSH keys
+npm run test-connections  # Test server connections
+npm run troubleshoot      # Run diagnostics
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test deployment functionality
+5. Submit a pull request
+
+## License
+
+MIT License - see [LICENSE](./LICENSE) for details
+
+## Support
+
+For issues and questions:
+- 🐛 [GitHub Issues](https://github.com/your-repo/issues)
+- 📧 Email: support@your-domain.com
+- 💬 Discord: [Your Discord Server]
+
+---
+
+Built with ❤️ using Next.js, Python, and modern deployment practices.
