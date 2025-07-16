@@ -1,4 +1,4 @@
-// Template Preview Component - Fixed
+// Updated Template Preview Component
 // File: components/generator/TemplatePreview.jsx
 
 'use client'
@@ -16,76 +16,191 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
     }
   };
 
-  const theme = getStyle('styling.theme', 'light');
+  const theme = getStyle('design.theme', 'modern');
   const primaryColor = getStyle('styling.primaryColor', '#3B82F6');
   const features = config?.features || [];
-  const template = config?.template || 'modern';
-  const name = config?.name || config?.businessName || 'Your Application';
+  const template = config?.template || 'marketing';
+  const businessName = config?.businessName || config?.name || 'Your Business';
+  const industry = config?.industry || 'business';
+  const businessDescription = config?.businessDescription || 'Professional services and solutions';
+
+  // Map templates to their corresponding template paths and deployment types
+  const getTemplateDeploymentInfo = (templateId) => {
+    const templateMap = {
+      'ecommerce': {
+        pathType: 'ECOMMERCE_TEMPLATE_PATHS',
+        deploymentType: 'ecommerce',
+        description: 'Full e-commerce site with shopping cart and payment integration'
+      },
+      'marketing': {
+        pathType: 'BASE_TEMPLATE_PATHS',
+        deploymentType: 'base',
+        description: 'Professional marketing website with modern design'
+      },
+      'web-app': {
+        pathType: 'BASE_TEMPLATE_PATHS', 
+        deploymentType: 'base',
+        description: 'Interactive web application with user authentication'
+      },
+      'analytics': {
+        pathType: 'BASE_TEMPLATE_PATHS',
+        deploymentType: 'base', 
+        description: 'Data dashboard with charts and reporting features'
+      },
+      'ngo': {
+        pathType: 'BASE_TEMPLATE_PATHS',
+        deploymentType: 'base',
+        description: 'Non-profit website with donation and volunteer features'
+      },
+      'blog': {
+        pathType: 'BASE_TEMPLATE_PATHS',
+        deploymentType: 'base',
+        description: 'Content management system for blogs and articles'
+      },
+      'portfolio': {
+        pathType: 'BASE_TEMPLATE_PATHS',
+        deploymentType: 'base',
+        description: 'Professional portfolio to showcase work and projects'
+      }
+    };
+    
+    return templateMap[templateId] || templateMap['marketing'];
+  };
 
   const getPreviewData = () => {
+    const deploymentInfo = getTemplateDeploymentInfo(template);
     const baseData = {
-      title: name,
-      description: 'Generated with AI-powered Next.js generator'
-    }
+      title: businessName,
+      description: businessDescription,
+      deploymentType: deploymentInfo.deploymentType,
+      pathType: deploymentInfo.pathType
+    };
 
     switch (template) {
       case 'ecommerce':
         return {
           ...baseData,
-          hero: 'Discover Amazing Products',
-          sections: ['Featured Products', 'Categories', 'Customer Reviews'],
-          cta: 'Shop Now'
-        }
-      case 'saas':
+          hero: `Shop ${businessName}`,
+          sections: ['Featured Products', 'Categories', 'Customer Reviews', 'Shopping Cart'],
+          cta: 'Shop Now',
+          features: ['Product Catalog', 'Shopping Cart', 'Payment Integration', 'Order Management'],
+          bgGradient: 'from-emerald-50 to-teal-50',
+          darkBgGradient: 'from-emerald-900 to-teal-900'
+        };
+      
+      case 'marketing':
         return {
           ...baseData,
-          hero: 'Transform Your Business',
-          sections: ['Features', 'Pricing', 'Testimonials'],
-          cta: 'Start Free Trial'
-        }
+          hero: `Welcome to ${businessName}`,
+          sections: ['About Us', 'Services', 'Testimonials', 'Contact'],
+          cta: 'Get Started',
+          features: ['Responsive Design', 'Contact Forms', 'SEO Optimized', 'Analytics'],
+          bgGradient: 'from-blue-50 to-indigo-50',
+          darkBgGradient: 'from-blue-900 to-indigo-900'
+        };
+      
+      case 'web-app':
+        return {
+          ...baseData,
+          hero: `${businessName} Platform`,
+          sections: ['Dashboard', 'User Management', 'Settings', 'Analytics'],
+          cta: 'Sign In',
+          features: ['User Authentication', 'Data Management', 'Real-time Updates', 'API Integration'],
+          bgGradient: 'from-purple-50 to-pink-50',
+          darkBgGradient: 'from-purple-900 to-pink-900'
+        };
+      
+      case 'analytics':
+        return {
+          ...baseData,
+          hero: `${businessName} Analytics`,
+          sections: ['Dashboard', 'Reports', 'Data Export', 'User Insights'],
+          cta: 'View Reports',
+          features: ['Charts & Graphs', 'Data Export', 'User Roles', 'Real-time Data'],
+          bgGradient: 'from-orange-50 to-red-50',
+          darkBgGradient: 'from-orange-900 to-red-900'
+        };
+      
+      case 'ngo':
+        return {
+          ...baseData,
+          hero: `Support ${businessName}`,
+          sections: ['Our Mission', 'Programs', 'Volunteer','Contact', 'Donate'],
+          cta: 'Donate Now',
+          features: ['Donation Integration', 'Event Management', 'Volunteer Sign-up', 'Impact Stories'],
+          bgGradient: 'from-green-50 to-emerald-50',
+          darkBgGradient: 'from-green-900 to-emerald-900'
+        };
+      
       case 'blog':
         return {
           ...baseData,
-          hero: 'Stories Worth Reading',
-          sections: ['Latest Posts', 'Categories', 'Newsletter'],
-          cta: 'Read More'
-        }
+          hero: `${businessName} Blog`,
+          sections: ['Latest Posts', 'Categories', 'Archive', 'Subscribe'],
+          cta: 'Read More',
+          features: ['Post Management', 'Comments', 'Categories', 'Newsletter'],
+          bgGradient: 'from-yellow-50 to-orange-50',
+          darkBgGradient: 'from-yellow-900 to-orange-900'
+        };
+      
       case 'portfolio':
         return {
           ...baseData,
-          hero: 'Creative Excellence',
-          sections: ['Projects', 'About', 'Skills'],
-          cta: 'View Work'
-        }
-      case 'crm':
-        return {
-          ...baseData,
-          hero: 'Manage Your Customers',
-          sections: ['Dashboard', 'Contacts', 'Analytics'],
-          cta: 'Get Started'
-        }
+          hero: `${businessName} Portfolio`,
+          sections: ['Projects', 'About', 'Skills', 'Contact'],
+          cta: 'View Work',
+          features: ['Project Gallery', 'Testimonials', 'Contact Form', 'Resume Download'],
+          bgGradient: 'from-slate-50 to-gray-50',
+          darkBgGradient: 'from-slate-900 to-gray-900'
+        };
+      
       default:
         return {
           ...baseData,
-          hero: 'Welcome to the Future',
-          sections: ['About', 'Services', 'Contact'],
-          cta: 'Learn More'
-        }
+          hero: `Welcome to ${businessName}`,
+          sections: ['Home', 'About', 'Services', 'Contact'],
+          cta: 'Learn More',
+          features: ['Responsive Design', 'Modern UI', 'Fast Loading', 'SEO Ready'],
+          bgGradient: 'from-blue-50 to-purple-50',
+          darkBgGradient: 'from-blue-900 to-purple-900'
+        };
     }
-  }
+  };
 
-  const preview = getPreviewData()
+  const preview = getPreviewData();
+
+  // Get theme colors based on the selected design theme
+  const getThemeColors = () => {
+    const themes = {
+      modern: { primary: '#3B82F6', secondary: '#8B5CF6', accent: '#10B981' },
+      elegant: { primary: '#1F2937', secondary: '#D97706', accent: '#DC2626' },
+      creative: { primary: '#EC4899', secondary: '#8B5CF6', accent: '#F59E0B' },
+      tech: { primary: '#06B6D4', secondary: '#8B5CF6', accent: '#10B981' }
+    };
+    return themes[theme] || themes.modern;
+  };
+
+  const themeColors = getThemeColors();
+  const isDarkTheme = theme === 'tech';
 
   return (
     <div className="space-y-6">
       {/* Preview Header */}
       <div className="bg-white rounded-xl shadow-sm border p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Preview Your Application
+          Preview Your {template.charAt(0).toUpperCase() + template.slice(1).replace('-', ' ')} Website
         </h2>
         <p className="text-gray-600">
-          This is how your application will look with the selected configuration.
+          This preview shows how your {preview.deploymentType === 'ecommerce' ? 'e-commerce' : 'business'} website will look with the selected configuration.
         </p>
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+          <div className="flex items-start space-x-2">
+            <div className="text-blue-600 text-sm font-medium">Deployment Info:</div>
+            <div className="text-blue-700 text-sm">
+              Uses {preview.pathType} • Type: {preview.deploymentType}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Live Preview */}
@@ -100,51 +215,58 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
             </div>
             <div className="flex-1 mx-4">
               <div className="bg-white rounded px-3 py-1 text-sm text-gray-600">
-                localhost:3000
+                {businessName.toLowerCase().replace(/\s+/g, '')}.com
               </div>
             </div>
           </div>
         </div>
 
         {/* Preview Content */}
-        <div className="aspect-video bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
+        <div className="aspect-video bg-gradient-to-br overflow-hidden">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="h-full flex flex-col"
-            style={{
-              background: theme === 'dark' 
-                ? 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)'
-                : 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)'
-            }}
+            className={`h-full flex flex-col bg-gradient-to-br ${
+              isDarkTheme ? preview.darkBgGradient : preview.bgGradient
+            }`}
           >
             {/* Header */}
             <div className={`px-8 py-4 border-b ${
-              theme === 'dark' 
-                ? 'border-gray-700 bg-gray-800' 
-                : 'border-gray-200 bg-white'
+              isDarkTheme 
+                ? 'border-gray-700 bg-gray-800/90 backdrop-blur' 
+                : 'border-gray-200 bg-white/90 backdrop-blur'
             }`}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <div 
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-                    style={{ backgroundColor: primaryColor }}
+                    style={{ backgroundColor: themeColors.primary }}
                   >
-                    {name?.[0]?.toUpperCase() || 'A'}
+                    {businessName?.[0]?.toUpperCase() || 'B'}
                   </div>
-                  <span className={`font-bold ${
-                    theme === 'dark' ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {name || 'Your App'}
-                  </span>
+                  <div>
+                    <span className={`font-bold text-lg ${
+                      isDarkTheme ? 'text-white' : 'text-gray-900'
+                    }`}>
+                      {businessName}
+                    </span>
+                    <div className={`text-xs ${
+                      isDarkTheme ? 'text-gray-400' : 'text-gray-500'
+                    }`}>
+                      {industry.charAt(0).toUpperCase() + industry.slice(1)}
+                    </div>
+                  </div>
                 </div>
                 <nav className="hidden md:flex space-x-6">
-                  {preview.sections.map((section) => (
+                  {preview.sections.slice(0, 4).map((section, index) => (
                     <span 
                       key={section}
-                      className={`text-sm ${
-                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                      className={`text-sm font-medium transition-colors hover:opacity-80 ${
+                        index === 0 
+                          ? isDarkTheme ? 'text-white' : 'text-gray-900'
+                          : isDarkTheme ? 'text-gray-300' : 'text-gray-600'
                       }`}
+                      style={index === 0 ? { color: themeColors.primary } : {}}
                     >
                       {section}
                     </span>
@@ -157,56 +279,65 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
             <div className="flex-1 flex items-center justify-center px-8">
               <div className="text-center max-w-2xl">
                 <h1 className={`text-4xl font-bold mb-4 ${
-                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                  isDarkTheme ? 'text-white' : 'text-gray-900'
                 }`}>
                   {preview.hero}
                 </h1>
                 <p className={`text-lg mb-8 ${
-                  theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                  isDarkTheme ? 'text-gray-300' : 'text-gray-600'
                 }`}>
                   {preview.description}
                 </p>
-                <button
-                  className="px-6 py-3 text-white rounded-lg font-medium"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  {preview.cta}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    className="px-6 py-3 text-white rounded-lg font-medium transition-all hover:scale-105"
+                    style={{ backgroundColor: themeColors.primary }}
+                  >
+                    {preview.cta}
+                  </button>
+                  <button
+                    className={`px-6 py-3 rounded-lg font-medium border-2 transition-all hover:scale-105 ${
+                      isDarkTheme 
+                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Learn More
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Features Bar */}
-            {features.length > 0 && (
-              <div className={`px-8 py-4 border-t ${
-                theme === 'dark' 
-                  ? 'border-gray-700 bg-gray-800' 
-                  : 'border-gray-200 bg-gray-50'
-              }`}>
-                <div className="flex flex-wrap gap-2">
-                  {features.slice(0, 4).map((feature) => (
-                    <span
-                      key={feature}
-                      className="px-3 py-1 text-xs rounded-full"
-                      style={{ 
-                        backgroundColor: primaryColor + '20',
-                        color: primaryColor
-                      }}
-                    >
-                      {feature}
-                    </span>
-                  ))}
-                  {features.length > 4 && (
-                    <span className={`px-3 py-1 text-xs rounded-full ${
-                      theme === 'dark' 
-                        ? 'bg-gray-700 text-gray-300' 
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
-                      +{features.length - 4} more
-                    </span>
-                  )}
-                </div>
+            <div className={`px-8 py-4 border-t ${
+              isDarkTheme 
+                ? 'border-gray-700 bg-gray-800/90' 
+                : 'border-gray-200 bg-white/90'
+            }`}>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {preview.features.slice(0, 4).map((feature, index) => (
+                  <span
+                    key={feature}
+                    className="px-3 py-1 text-xs rounded-full font-medium"
+                    style={{ 
+                      backgroundColor: Object.values(themeColors)[index % 3] + '20',
+                      color: Object.values(themeColors)[index % 3]
+                    }}
+                  >
+                    ✓ {feature}
+                  </span>
+                ))}
+                {preview.features.length > 4 && (
+                  <span className={`px-3 py-1 text-xs rounded-full ${
+                    isDarkTheme 
+                      ? 'bg-gray-700 text-gray-300' 
+                      : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    +{preview.features.length - 4} more features
+                  </span>
+                )}
               </div>
-            )}
+            </div>
           </motion.div>
         </div>
       </div>
@@ -216,22 +347,45 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Configuration Summary
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+          <div className="flex justify-between">
             <span className="font-medium text-gray-700">Template:</span>
-            <span className="ml-2 capitalize">{template}</span>
+            <span className="capitalize">{template.replace('-', ' ')}</span>
           </div>
-          <div>
+          <div className="flex justify-between">
             <span className="font-medium text-gray-700">Theme:</span>
-            <span className="ml-2 capitalize">{theme}</span>
+            <span className="capitalize">{theme}</span>
           </div>
-          <div>
+          <div className="flex justify-between">
+            <span className="font-medium text-gray-700">Industry:</span>
+            <span className="capitalize">{industry}</span>
+          </div>
+          <div className="flex justify-between">
             <span className="font-medium text-gray-700">Features:</span>
-            <span className="ml-2">{features.length} selected</span>
+            <span>{features.length} selected</span>
           </div>
-          <div>
-            <span className="font-medium text-gray-700">AI Content:</span>
-            <span className="ml-2">{getStyle('content.useAI', false) ? 'Enabled' : 'Disabled'}</span>
+          <div className="flex justify-between">
+            <span className="font-medium text-gray-700">Deployment:</span>
+            <span className="capitalize">{preview.deploymentType}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="font-medium text-gray-700">Template Path:</span>
+            <span className="text-xs">{preview.pathType}</span>
+          </div>
+        </div>
+
+        {/* Template Features */}
+        <div className="mt-4 pt-4 border-t">
+          <h4 className="font-medium text-gray-700 mb-2">Template Features:</h4>
+          <div className="flex flex-wrap gap-2">
+            {preview.features.map((feature) => (
+              <span
+                key={feature}
+                className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+              >
+                {feature}
+              </span>
+            ))}
           </div>
         </div>
       </div>
@@ -247,13 +401,14 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
         </button>
         <button
           onClick={onGenerate}
-          className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors"
+          disabled={!businessName || !template}
+          className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Wand2 className="w-4 h-4" />
-          <span>Generate Application</span>
+          <span>Generate {template.charAt(0).toUpperCase() + template.slice(1).replace('-', ' ')} Site</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
-  )
+  );
 }

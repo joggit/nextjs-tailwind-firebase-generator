@@ -1,0 +1,48 @@
+import React from 'react'
+import Link from 'next/link' // ✅ Required for Link to work in Next.js
+
+export default function Hero() {
+  return (
+    <div className="w-full max-w-7xl mx-auto px-4 lg:px-8">
+      <div className="grid grid-cols-12 gap-8 mb-10 lg:mb-20">
+        {/* Optional: Add content here if needed */}
+      </div>
+      <div className="bg-box relative w-full">
+        <img
+          src="https://static.wixstatic.com/media/178e71_b60ce188e0da4d84a6099c145a3df477~mv2.jpeg"
+          alt="Masimanyane News Feature"
+          loading="eager"
+          decoding="async"
+          className="hidden min-[1140px]:block w-full h-[500px] relative top-0 left-0 z-0 object-cover"
+        />
+        <img
+          src="https://static.wixstatic.com/media/178e71_b60ce188e0da4d84a6099c145a3df477~mv2.jpeg/v1/fill/w_380,h_285,fp_0.50_0.50,q_90,enc_avif,quality_auto/178e71_b60ce188e0da4d84a6099c145a3df477~mv2.jpeg"
+          alt=""
+          className="min-[1140px]:hidden block w-full h-auto relative top-0 left-0 z-0 rounded-3xl object-cover"
+        />
+        <div className="flex flex-col md:flex-row items-center justify-center min-[1140px]:justify-end min-[1140px]:-mt-28 relative z-10 gap-4 xl:gap-8 py-8 xl:pr-3.5 xl:bg-transparent lg:mr-0">
+          <Link href="/volunteer" passHref>
+            <button className="rounded-full max-md:w-full max-md:justify-center border border-solid border-gray-800 py-3.5 pr-6 pl-8 flex items-center gap-2 group font-semibold text-base text-gray-900 whitespace-nowrap shadow-md shadow-transparent transition-all duration-300 hover:shadow-gray-200 hover:text-white hover:bg-black">
+              Volunteer
+              <svg
+                className="text-gray-900 transition-all duration-300 group-hover:text-white group-hover:duration-700"
+                xmlns="http://www.w3.org/2000/svg"
+                width="21"
+                height="20"
+                viewBox="0 0 21 20"
+                fill="none"
+              >
+                <path
+                  d="M15.551 12.4998L10.4999 17.5509M10.4999 17.5509L5.44873 12.4998M10.4999 17.5509L10.4999 2.55103"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -16,14 +16,48 @@ import {
 
 export default function GeneratorForm({ config, onChange, onNext }) {
   const [customFeature, setCustomFeature] = useState('')
-
   const templates = [
     {
-      id: 'modern',
-      name: 'Modern Website',
+      id: 'marketing',
+      name: 'Marketing Website',
       description: 'Clean, responsive business website',
       icon: Globe,
       features: ['Responsive Design', 'Contact Forms', 'SEO Optimized']
+    },
+    {
+      id: 'web-app',
+      name: 'Web Application',
+      description: 'Interactive web app with user accounts',
+      icon: Users,
+      features: ['User Authentication', 'Data Management', 'Real-time Updates']
+    },
+    {
+      id: 'analytics',
+      name: 'Analytics Dashboard',
+      description: 'Data visualization and reporting dashboard',
+      icon: BarChart3,
+      features: ['Charts & Graphs', 'Data Export', 'User Roles']
+    },
+    {
+      id: 'ngo',
+      name: 'Non-Profit Organization',
+      description: 'Website for NGOs and charities',
+      icon: Briefcase,
+      features: ['Donation Integration', 'Event Management', 'Volunteer Sign-up']
+    },
+    {
+      id: 'blog',
+      name: 'Blog Platform',
+      description: 'Content management system for blogs',
+      icon: FileText,
+      features: ['Post Management', 'Comments', 'Categories']
+    },
+    {
+      id: 'portfolio',
+      name: 'Portfolio Website',
+      description: 'Showcase your work and projects',
+      icon: Briefcase,
+      features: ['Project Gallery', 'Testimonials', 'Contact Form']
     },
     {
       id: 'ecommerce',
@@ -34,7 +68,6 @@ export default function GeneratorForm({ config, onChange, onNext }) {
     },
     
   ]
-
   const availableFeatures = [
     'Authentication',
     'SEO Tools',
@@ -79,7 +112,6 @@ export default function GeneratorForm({ config, onChange, onNext }) {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">
         Create Your Project
       </h2>
-
       <div className="space-y-8">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -130,6 +162,12 @@ export default function GeneratorForm({ config, onChange, onNext }) {
               <option value="education">Education</option>
               <option value="retail">Retail</option>
               <option value="consulting">Consulting</option>
+              <option value="real-estate">Real Estate</option>
+              <option value="hospitality">Hospitality</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="non-profit">Non-Profit</option>
+              <option value="e-commerce">E-Commerce</option>
+              <option value="logistics">Logistics</option>
               <option value="manufacturing">Manufacturing</option>  
               <option value="other">Other</option>
             </select>
@@ -168,7 +206,6 @@ export default function GeneratorForm({ config, onChange, onNext }) {
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
-
         {/* Template Selection */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">

@@ -1,0 +1,173 @@
+// ============================================
+
+// NGO Footer Component Template  
+// File: lib/generator/templates/base/components/ngo/Footer.js.template
+
+import Link from 'next/link'
+import { Heart, Phone, Mail, MapPin, Facebook, Twitter, Instagram, Youtube, FileText, Shield, Users } from 'lucide-react'
+
+export default function Footer() {
+  const currentYear = new Date().getFullYear()
+  const quickLinks = [
+    { name: 'About Us', href: '/about' },
+    { name: 'Get Involved', href: '/get-involved' },
+    { name: 'Impact Stories', href: '/stories' },
+    { name: 'News', href: '/news' },
+    { name: 'Contact Us', href: '/contact' }
+  ]
+  const supportLinks = [
+    { name: 'Donate Now', href: '/donate' },
+    { name: 'Volunteer', href: '/volunteer' },
+    
+  ]
+
+  const socialLinks = [
+    { name: 'Facebook', href: 'https://facebook.com/{{businessNameSlug}}', icon: Facebook },
+    { name: 'Twitter', href: 'https://twitter.com/{{businessNameSlug}}', icon: Twitter },
+    { name: 'Instagram', href: 'https://instagram.com/{{businessNameSlug}}', icon: Instagram },
+    { name: 'YouTube', href: 'https://youtube.com/{{businessNameSlug}}', icon: Youtube }
+  ]
+
+  return (
+    <footer className="bg-gray-900 text-white">
+      {/* Newsletter Section */}
+      <div className="bg-gradient-to-r from-green-600 to-blue-600 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h3 className="text-2xl font-bold text-white mb-4">Stay Connected with Our Mission</h3>
+          <p className="text-green-100 mb-6 max-w-2xl mx-auto">
+            Get updates on our impact, upcoming events, and ways you can make a difference in your community.
+          </p>
+          <form className="max-w-md mx-auto flex">
+            <input
+              type="email"
+              placeholder="Your email address"
+              className="flex-1 px-4 py-3 rounded-l-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+              required
+            />
+            <button
+              type="submit"
+              className="px-6 py-3 bg-white text-green-600 rounded-r-lg hover:bg-gray-100 transition-colors font-semibold"
+            >
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Main Footer Content */}
+      <div className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            {/* Organization Info */}
+            <div className="lg:col-span-1">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">{{businessName}}</h3>
+                </div>
+              </div>
+              {/* Contact Info */}
+              <div className="space-y-3">
+                <div className="flex items-center text-gray-300">
+                  <MapPin className="w-5 h-5 mr-3 text-green-400" />
+                  <span className="text-sm">{{contactAddress}}</span>
+                </div>
+                <div className="flex items-center text-gray-300">
+                  <Phone className="w-5 h-5 mr-3 text-green-400" />
+                  <span className="text-sm">{{contactPhone}}</span>
+                </div>
+                <div className="flex items-center text-gray-300">
+                  <Mail className="w-5 h-5 mr-3 text-green-400" />
+                  <span className="text-sm">{{contactEmail}}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
+              <ul className="space-y-3">
+                {quickLinks.map((link) => (
+                  <li key={link.name}>
+                    <Link 
+                      href={link.href}
+                      className="text-gray-300 hover:text-white transition-colors text-sm flex items-center group"
+                    >
+                      <span className="w-0 group-hover:w-2 h-0.5 bg-green-400 transition-all duration-200 mr-0 group-hover:mr-2"></span>
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Support & Get Involved */}
+            <div>
+              <h4 className="text-lg font-semibold mb-6">Support Our Cause</h4>
+              <ul className="space-y-3">
+                {supportLinks.map((link) => (
+                  <li key={link.name}>
+                    <Link 
+                      href={link.href}
+                      className="text-gray-300 hover:text-white transition-colors text-sm flex items-center group"
+                    >
+                      <span className="w-0 group-hover:w-2 h-0.5 bg-blue-400 transition-all duration-200 mr-0 group-hover:mr-2"></span>
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Transparency & Social */}
+            <div>
+             
+
+              {/* Social Media */}
+              <div>
+                <h5 className="font-semibold mb-4">Follow Our Impact</h5>
+                <div className="flex space-x-3">
+                  {socialLinks.map((social) => {
+                    const Icon = social.icon
+                    return (
+                      <a
+                        key={social.name}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-green-600 transition-all"
+                        title={social.name}
+                      >
+                        <Icon className="w-5 h-5" />
+                      </a>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    
+
+      {/* Bottom Bar */}
+      <div className="bg-black py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="text-gray-400 text-sm mb-4 md:mb-0">
+              © {currentYear} {{businessName}}. All rights reserved. 
+            </div>
+            <div className="flex items-center space-x-6 text-sm text-gray-400">
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}

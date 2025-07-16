@@ -1,6 +1,5 @@
 // Updated API Route with Nested Menu Support and Temp Storage - app/api/generate/route.js
 import TemplatePathGenerator from '@/lib/generator/TemplatePathGenerator.js';
-import { DesignIntegratedGenerator } from '@/lib/generator/DesignIntegration.js';
 
 let templatePathGenerator = null;
 
@@ -189,6 +188,8 @@ export async function POST(request) {
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
+
+    
 
     const { templatePathGenerator } = await initializeServices();
     const projectName = businessName || name;

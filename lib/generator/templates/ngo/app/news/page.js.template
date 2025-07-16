@@ -1,0 +1,65 @@
+// Error processing template: Template not found: ngo/app/generic/page.js.templateimport React from 'react'
+import Link from 'next/link'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+
+const articles = [
+  {
+    id: 1,
+    title: 'Empowering Women Through Education',
+    slug: 'empowering-women-education',
+    image: 'https://static.wixstatic.com/media/178e71_17e367205f844e5c8c6cb0822ff4680e~mv2.jpg/v1/fill/w_380,h_285,fp_0.50_0.50,q_90,enc_avif,quality_auto/178e71_17e367205f844e5c8c6cb0822ff4680e~mv2.jpg',
+    excerpt: 'Our recent outreach program is helping young women pursue higher education and leadership opportunities.',
+    date: 'July 10, 2025',
+  },
+  {
+    id: 2,
+    title: 'Health Initiative Launched in Rural Areas',
+    slug: 'health-initiative-rural',
+    image: 'https://static.wixstatic.com/media/178e71_b60ce188e0da4d84a6099c145a3df477~mv2.jpeg/v1/fill/w_380,h_285,fp_0.50_0.50,q_90,enc_avif,quality_auto/178e71_b60ce188e0da4d84a6099c145a3df477~mv2.jpeg',
+    excerpt: 'Masimanyane has launched a new health awareness program to reach underserved communities.',
+    date: 'July 1, 2025',
+  },
+  {
+    id: 3,
+    title: 'Ending Gender-Based Violence',
+    slug: 'gender-based-violence',
+    image: 'https://static.wixstatic.com/media/178e71_27b72eaf78714041b0ff1684561d9a31~mv2.jpeg/v1/fill/w_380,h_285,fp_0.50_0.50,q_90,enc_avif,quality_auto/178e71_27b72eaf78714041b0ff1684561d9a31~mv2.jpeg',
+    excerpt: 'A powerful community dialogue to address and end violence against women in our province.',
+    date: 'June 25, 2025',
+  },
+]
+
+export default function NewsPage() {
+  return (
+    <div className="min-h-screen bg-white text-gray-800">
+        <Header />
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-extrabold mb-4">News & Updates</h1>
+          <p className="text-lg text-gray-600">
+            Stay up to date with the latest stories, events, and initiatives from Masimanyane.
+          </p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {articles.map((article) => (
+            <Link key={article.id} href={`/news/${article.slug}`} className="group block rounded-lg overflow-hidden shadow hover:shadow-lg transition duration-300 bg-white">
+              <img
+                src={article.image}
+                alt={article.title}
+                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="p-6">
+                <h2 className="text-xl font-semibold mb-2 group-hover:text-blue-600">{article.title}</h2>
+                <p className="text-sm text-gray-500 mb-2">{article.date}</p>
+                <p className="text-gray-700 text-base">{article.excerpt}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+        <Footer />
+    </div>
+  )
+}

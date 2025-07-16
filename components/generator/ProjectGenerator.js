@@ -123,43 +123,6 @@ function ProjectGenerator() {
     // Features
     features: [],
 
-    // Pages Configuration
-    pages: [
-      {
-        id: 'home',
-        name: 'Home',
-        type: 'home',
-        enabled: true,
-        config: {
-          heroStyle: 'gradient',
-          heroContent: '',
-          showStats: true,
-          showTestimonials: true,
-          ctaText: 'Get Started'
-        }
-      },
-      {
-        id: 'about',
-        name: 'About',
-        type: 'about',
-        enabled: true,
-        config: {}
-      },
-      {
-        id: 'services',
-        name: 'Services',
-        type: 'services',
-        enabled: true,
-        config: {}
-      },
-      {
-        id: 'contact',
-        name: 'Contact',
-        type: 'contact',
-        enabled: true,
-        config: {}
-      }
-    ],
 
     // Advanced Options
     vectorEnhancement: true,
@@ -302,8 +265,10 @@ function ProjectGenerator() {
         footerData: formData.footerData || {},
 
         // Pages and features
-        pages: Array.isArray(formData.pages) ? formData.pages.filter(page => page.enabled) : [],
-        features: formData.features || [],
+
+        detailedPages: formData.detailedPages || [],
+       
+        
 
         // Options
         vectorEnhancement: formData.vectorEnhancement || false,
@@ -327,7 +292,8 @@ function ProjectGenerator() {
         businessName: payload.businessName,
         menuItemsCount: payload.headerData.menuItems.length,
         nestedItemsCount: payload.headerData.menuItems.reduce((sum, item) => sum + (item.children?.length || 0), 0),
-        dropdownMenus: payload.headerData.menuItems.filter(item => item.type === 'dropdown').length
+        dropdownMenus: payload.headerData.menuItems.filter(item => item.type === 'dropdown').length,
+        //Log full payload for debugging
       })
 
       const response = await fetch('/api/generate', {

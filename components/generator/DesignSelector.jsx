@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -25,10 +25,9 @@ import {
   ChevronRight,
   Folder,
   FolderOpen,
-  FileText  // Add this
+  FileText  
 } from 'lucide-react'
 import PageEditor from './PageEditor'
-
 
 // Design theme options (keeping existing)
 const DESIGN_THEMES = {
@@ -59,6 +58,59 @@ const DESIGN_THEMES = {
     },
     features: ['Serif fonts', 'Warm colors', 'Spacious layout', 'Classic'],
     preview: 'bg-gradient-to-br from-amber-600 to-orange-600'
+  },
+}
+
+// Layout options
+const LAYOUT_OPTIONS = {
+  standard: {
+    id: 'standard',
+    name: 'Standard',
+    description: 'Classic header, main content, footer layout',
+    icon: '□',
+    features: ['Header navigation', 'Full-width content', 'Footer']
+  },
+  sidebar: {
+    id: 'sidebar',
+    name: 'Sidebar',
+    description: 'Side navigation with main content area',
+    icon: '⫿',
+    features: ['Side navigation', 'Compact layout', 'Dashboard style']
+  },
+  centered: {
+    id: 'centered',
+    name: 'Centered',
+    description: 'Centered content with maximum focus',
+    icon: '▢',
+    features: ['Centered content', 'Reading focused', 'Minimal distractions']
+  },
+}
+
+// Hero style options
+const HERO_STYLES = {
+  centered: {
+    id: 'centered',
+    name: 'Centered',
+    description: 'Classic centered hero with call-to-action',
+    preview: 'text-center with large heading'
+  },
+  split: {
+    id: 'split',
+    name: 'Split',
+    description: 'Text on one side, image on the other',
+    preview: 'side-by-side content'
+  },
+  fullscreen: {
+    id: 'fullscreen',
+    name: 'Fullscreen',
+    description: 'Full viewport height hero section',
+    preview: 'immersive full-screen'
+  },
+  minimal: {
+    id: 'minimal',
+    name: 'Minimal',
+    description: 'Simple text-focused hero',
+    preview: 'clean and simple'
   },
 }
 
@@ -110,18 +162,6 @@ const HEADER_STYLES = {
     description: 'Sticky header that follows scroll',
     preview: 'bg-white/95 backdrop-blur-sm'
   },
-  centered: {
-    id: 'centered',
-    name: 'Centered',
-    description: 'Centered logo and navigation',
-    preview: 'bg-white text-center'
-  },
-  leftAligned: {
-    id: 'leftAligned',
-    name: 'Left Aligned',
-    description: 'Logo left, navigation right',
-    preview: 'bg-white justify-between'
-  }
 }
 
 // Footer style options
@@ -144,19 +184,101 @@ const FOOTER_STYLES = {
     description: 'Focus on newsletter signup',
     preview: 'Newsletter focused'
   },
-  contactFocused: {
-    id: 'contactFocused',
-    name: 'Contact Focused',
-    description: 'Emphasizes contact information',
-    preview: 'Contact information focus'
-  }
 }
 
 function DesignSelector({ config, onChange, onNext, onPrev }) {
   const [selectedSection, setSelectedSection] = useState('theme')
   const [expandedMenus, setExpandedMenus] = useState({})
+  const [isInitialized, setIsInitialized] = useState(false)
 
-  const updateDesign = (key, value) => {
+  // Initialize all required data structures
+  const initializeDataStructures = useCallback(() => {
+    if (isInitialized) return
+
+    console.log('Initializing DesignSelector data structures...')
+
+    const updates = {}
+
+    // Initialize design data
+    if (!config.design) {
+      updates.design = {
+        theme: '',
+        layout: '',
+        heroStyle: '',
+        graphics: ''
+      }
+    }
+
+    // Initialize hero data
+    if (!config.heroData) {
+      updates.heroData = {
+        headline: '',
+        subheadline: '',
+        primaryCta: 'Get Started',
+        secondaryCta: 'Learn More',
+        backgroundType: '',
+        backgroundImage: '',
+        backgroundVideo: ''
+      }
+    }
+
+    // Initialize header data
+    if (!config.headerData) {
+      updates.headerData = {
+        style: '',
+        logoType: 'text',
+        logoText: config.businessName || '',
+        menuItems: [
+          { name: 'Home', link: '/', type: 'link', children: [] },
+          { name: 'About', link: '/about', type: 'link', children: [] },
+          { name: 'Services', link: '/services', type: 'link', children: [] },
+          { name: 'Contact', link: '/contact', type: 'link', children: [] }
+        ],
+        showCta: false,
+        ctaText: 'Get Started',
+        ctaLink: '/contact'
+      }
+    }
+
+    // Initialize footer data
+    if (!config.footerData) {
+      updates.footerData = {
+        style: '',
+        companyName: config.businessName || '',
+        email: '',
+        phone: '',
+        address: '',
+        companyDescription: config.businessDescription || '',
+        showNewsletter: false,
+        newsletterTitle: 'Stay Updated',
+        socialLinks: {
+          facebook: '',
+          twitter: '',
+          linkedin: '',
+          instagram: ''
+        }
+      }
+    }
+
+    // Apply updates if any
+    if (Object.keys(updates).length > 0) {
+      setTimeout(() => {
+        onChange({ ...config, ...updates })
+        setIsInitialized(true)
+      }, 0)
+    } else {
+      setIsInitialized(true)
+    }
+  }, [config, onChange, isInitialized])
+
+  // Run initialization
+  useEffect(() => {
+    initializeDataStructures()
+    // Log the config when it changes
+    console.log('DesignSelector config initialized:', config)
+  }, [initializeDataStructures])
+
+  const updateDesign = useCallback((key, value) => {
     onChange({
       ...config,
       design: {
@@ -164,9 +286,9 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
         [key]: value
       }
     })
-  }
+  }, [config, onChange])
 
-  const updateHeroData = (key, value) => {
+  const updateHeroData = useCallback((key, value) => {
     onChange({
       ...config,
       heroData: {
@@ -174,9 +296,9 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
         [key]: value
       }
     })
-  }
+  }, [config, onChange])
 
-  const updateHeaderData = (key, value) => {
+  const updateHeaderData = useCallback((key, value) => {
     onChange({
       ...config,
       headerData: {
@@ -184,9 +306,9 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
         [key]: value
       }
     })
-  }
+  }, [config, onChange])
 
-  const updateFooterData = (key, value) => {
+  const updateFooterData = useCallback((key, value) => {
     onChange({
       ...config,
       footerData: {
@@ -194,17 +316,17 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
         [key]: value
       }
     })
-  }
+  }, [config, onChange])
 
   // Enhanced menu item functions with nested support
-  const updateMenuItem = (index, key, value) => {
-    const newMenuItems = [...(config.headerData.menuItems || [])]
+  const updateMenuItem = useCallback((index, key, value) => {
+    const newMenuItems = [...(config.headerData?.menuItems || [])]
     newMenuItems[index] = { ...newMenuItems[index], [key]: value }
     updateHeaderData('menuItems', newMenuItems)
-  }
+  }, [config.headerData?.menuItems, updateHeaderData])
 
-  const updateNestedMenuItem = (parentIndex, childIndex, key, value) => {
-    const newMenuItems = [...(config.headerData.menuItems || [])]
+  const updateNestedMenuItem = useCallback((parentIndex, childIndex, key, value) => {
+    const newMenuItems = [...(config.headerData?.menuItems || [])]
     if (!newMenuItems[parentIndex].children) {
       newMenuItems[parentIndex].children = []
     }
@@ -213,21 +335,21 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
       [key]: value 
     }
     updateHeaderData('menuItems', newMenuItems)
-  }
+  }, [config.headerData?.menuItems, updateHeaderData])
 
-  const addMenuItem = () => {
-    const newMenuItems = [...(config.headerData.menuItems || [])]
+  const addMenuItem = useCallback(() => {
+    const newMenuItems = [...(config.headerData?.menuItems || [])]
     newMenuItems.push({ 
       name: 'New Item', 
       link: '/',
-      type: 'link', // 'link' or 'dropdown'
+      type: 'link',
       children: []
     })
     updateHeaderData('menuItems', newMenuItems)
-  }
+  }, [config.headerData?.menuItems, updateHeaderData])
 
-  const addNestedMenuItem = (parentIndex) => {
-    const newMenuItems = [...(config.headerData.menuItems || [])]
+  const addNestedMenuItem = useCallback((parentIndex) => {
+    const newMenuItems = [...(config.headerData?.menuItems || [])]
     if (!newMenuItems[parentIndex].children) {
       newMenuItems[parentIndex].children = []
     }
@@ -236,58 +358,68 @@ function DesignSelector({ config, onChange, onNext, onPrev }) {
       link: '/',
       description: 'Sub menu description'
     })
-    // Make parent a dropdown type
     newMenuItems[parentIndex].type = 'dropdown'
     updateHeaderData('menuItems', newMenuItems)
-  }
+  }, [config.headerData?.menuItems, updateHeaderData])
 
-  const removeMenuItem = (index) => {
-    const newMenuItems = config.headerData.menuItems.filter((_, i) => i !== index)
+  const removeMenuItem = useCallback((index) => {
+    const newMenuItems = (config.headerData?.menuItems || []).filter((_, i) => i !== index)
     updateHeaderData('menuItems', newMenuItems)
-  }
+  }, [config.headerData?.menuItems, updateHeaderData])
 
-  const removeNestedMenuItem = (parentIndex, childIndex) => {
-    const newMenuItems = [...(config.headerData.menuItems || [])]
+  const removeNestedMenuItem = useCallback((parentIndex, childIndex) => {
+    const newMenuItems = [...(config.headerData?.menuItems || [])]
     newMenuItems[parentIndex].children = newMenuItems[parentIndex].children.filter((_, i) => i !== childIndex)
     
-    // If no children left, convert back to link type
     if (newMenuItems[parentIndex].children.length === 0) {
       newMenuItems[parentIndex].type = 'link'
     }
     
     updateHeaderData('menuItems', newMenuItems)
-  }
+  }, [config.headerData?.menuItems, updateHeaderData])
 
-  const toggleMenuExpansion = (index) => {
+  const toggleMenuExpansion = useCallback((index) => {
     setExpandedMenus(prev => ({
       ...prev,
       [index]: !prev[index]
     }))
-  }
+  }, [])
 
-  const updateSocialLink = (platform, value) => {
+  const updateSocialLink = useCallback((platform, value) => {
     updateFooterData('socialLinks', {
-      ...config.footerData.socialLinks,
+      ...config.footerData?.socialLinks,
       [platform]: value
     })
-  }
+  }, [config.footerData?.socialLinks, updateFooterData])
 
-// Update the isComplete function to include pages check:
-const isComplete = () => {
-  const hasPages = config.pages && Object.keys(config.pages).length > 0
-  const hasEnabledPages = hasPages && Object.values(config.pages).some(p => p.enabled !== false)
-  
-  return (
-    config.design.theme && 
-    config.design.layout && 
-    config.design.heroStyle && 
-    config.headerData.style && 
-    config.footerData.style &&
-    config.heroData.backgroundType &&
-    hasEnabledPages
-  )
-}
+  // Updated isComplete function to properly check aligned data structures
+  const isComplete = useCallback(() => {
+    // Check basic design selections
+    const hasDesignSettings = (
+      config.design?.theme && 
+      config.design?.layout && 
+      config.design?.heroStyle
+    )
+    
+    // Check detailed customization settings
+    const hasCustomizationSettings = (
+      config.headerData?.style && 
+      config.footerData?.style &&
+      config.heroData?.backgroundType
+    )
+    
+    // Check pages - both simple and detailed structures
+    const hasSimplePages = config.pages && Object.keys(config.pages).length > 0
+    const hasDetailedPages = config.detailedPages && Object.keys(config.detailedPages).length > 0
+    const hasEnabledPages = hasSimplePages && Object.values(config.pages).some(p => p.enabled !== false)
+    
+    // For pages, we need either structure to be valid
+    const hasValidPages = (hasSimplePages && hasEnabledPages) || hasDetailedPages
+    
+    return hasDesignSettings && hasCustomizationSettings && hasValidPages
+  }, [config])
 
+  // Render functions for each section
   const renderThemeSelector = () => (
     <div className="space-y-6">
       <div>
@@ -301,7 +433,7 @@ const isComplete = () => {
             key={theme.id}
             onClick={() => updateDesign('theme', theme.id)}
             className={`relative p-6 border-2 rounded-xl text-left transition-all hover:shadow-lg ${
-              config.design.theme === theme.id
+              config.design?.theme === theme.id
                 ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200'
                 : 'border-gray-200 hover:border-gray-300 bg-white'
             }`}
@@ -337,7 +469,7 @@ const isComplete = () => {
               ))}
             </div>
             
-            {config.design.theme === theme.id && (
+            {config.design?.theme === theme.id && (
               <div className="absolute top-2 right-2">
                 <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -346,6 +478,78 @@ const isComplete = () => {
                 </div>
               </div>
             )}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+
+  const renderLayoutSelector = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Choose Your Layout</h3>
+        <p className="text-gray-600 mb-6">Select how your content will be organized and presented</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Object.values(LAYOUT_OPTIONS).map((layout) => (
+          <button
+            key={layout.id}
+            onClick={() => updateDesign('layout', layout.id)}
+            className={`p-6 border-2 rounded-xl text-left transition-all hover:shadow-md ${
+              config.design?.layout === layout.id
+                ? 'border-blue-500 bg-blue-50 shadow-md'
+                : 'border-gray-200 hover:border-gray-300 bg-white'
+            }`}
+          >
+            <div className="flex items-center mb-4">
+              <span className="text-3xl mr-3">{layout.icon}</span>
+              <div>
+                <h4 className="font-semibold text-gray-900">{layout.name}</h4>
+                <p className="text-sm text-gray-600">{layout.description}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              {layout.features.map((feature) => (
+                <div key={feature} className="flex items-center text-sm text-gray-600">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
+                  {feature}
+                </div>
+              ))}
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+
+  const renderHeroSelector = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Choose Your Hero Style</h3>
+        <p className="text-gray-600 mb-6">Select how your main section will capture attention</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {Object.values(HERO_STYLES).map((hero) => (
+          <button
+            key={hero.id}
+            onClick={() => updateDesign('heroStyle', hero.id)}
+            className={`p-6 border-2 rounded-xl text-left transition-all hover:shadow-md ${
+              config.design?.heroStyle === hero.id
+                ? 'border-blue-500 bg-blue-50 shadow-md'
+                : 'border-gray-200 hover:border-gray-300 bg-white'
+            }`}
+          >
+            <div className="w-full h-20 bg-gray-100 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+              <div className={`text-xs text-gray-500 ${hero.preview}`}>
+                {hero.name} Preview
+              </div>
+            </div>
+            
+            <h4 className="font-semibold text-gray-900 mb-2">{hero.name}</h4>
+            <p className="text-sm text-gray-600">{hero.description}</p>
           </button>
         ))}
       </div>
@@ -367,7 +571,7 @@ const isComplete = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Main Headline</label>
             <input
               type="text"
-              value={config.heroData.headline || ''}
+              value={config.heroData?.headline || ''}
               onChange={(e) => updateHeroData('headline', e.target.value)}
               placeholder={`Transform Your ${config.industry || 'Business'} with ${config.businessName || 'Our Solutions'}`}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -376,7 +580,7 @@ const isComplete = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Sub-headline</label>
             <textarea
-              value={config.heroData.subheadline || ''}
+              value={config.heroData?.subheadline || ''}
               onChange={(e) => updateHeroData('subheadline', e.target.value)}
               placeholder={config.businessDescription || `Professional ${config.industry || 'business'} solutions designed for ${config.targetAudience || 'your success'}`}
               rows={3}
@@ -394,7 +598,7 @@ const isComplete = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Primary Button Text</label>
             <input
               type="text"
-              value={config.heroData.primaryCta || ''}
+              value={config.heroData?.primaryCta || ''}
               onChange={(e) => updateHeroData('primaryCta', e.target.value)}
               placeholder="Get Started"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -404,7 +608,7 @@ const isComplete = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Secondary Button Text</label>
             <input
               type="text"
-              value={config.heroData.secondaryCta || ''}
+              value={config.heroData?.secondaryCta || ''}
               onChange={(e) => updateHeroData('secondaryCta', e.target.value)}
               placeholder="Learn More"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -422,7 +626,7 @@ const isComplete = () => {
               key={bg.id}
               onClick={() => updateHeroData('backgroundType', bg.id)}
               className={`p-4 border-2 rounded-lg text-left transition-all ${
-                config.heroData.backgroundType === bg.id
+                config.heroData?.backgroundType === bg.id
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
@@ -440,12 +644,12 @@ const isComplete = () => {
         </div>
 
         {/* Background Image Upload */}
-        {config.heroData.backgroundType === 'image' && (
+        {config.heroData?.backgroundType === 'image' && (
           <div className="mt-4 p-4 bg-gray-50 rounded-lg">
             <label className="block text-sm font-medium text-gray-700 mb-2">Background Image URL</label>
             <input
               type="url"
-              value={config.heroData.backgroundImage || ''}
+              value={config.heroData?.backgroundImage || ''}
               onChange={(e) => updateHeroData('backgroundImage', e.target.value)}
               placeholder="https://example.com/your-image.jpg"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -455,12 +659,12 @@ const isComplete = () => {
         )}
 
         {/* Background Video */}
-        {config.heroData.backgroundType === 'video' && (
+        {config.heroData?.backgroundType === 'video' && (
           <div className="mt-4 p-4 bg-gray-50 rounded-lg">
             <label className="block text-sm font-medium text-gray-700 mb-2">Background Video URL</label>
             <input
               type="url"
-              value={config.heroData.backgroundVideo || ''}
+              value={config.heroData?.backgroundVideo || ''}
               onChange={(e) => updateHeroData('backgroundVideo', e.target.value)}
               placeholder="https://example.com/your-video.mp4"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -474,12 +678,12 @@ const isComplete = () => {
       <div className="space-y-4">
         <h4 className="text-lg font-medium text-gray-900">Hero Preview</h4>
         <div className={`relative w-full h-64 rounded-lg overflow-hidden ${
-          config.heroData.backgroundType === 'gradient' ? HERO_BACKGROUNDS.gradient.preview :
-          config.heroData.backgroundType === 'solid' ? 'bg-blue-600' :
-          config.heroData.backgroundType === 'image' ? 'bg-gray-400' :
+          config.heroData?.backgroundType === 'gradient' ? HERO_BACKGROUNDS.gradient.preview :
+          config.heroData?.backgroundType === 'solid' ? 'bg-blue-600' :
+          config.heroData?.backgroundType === 'image' ? 'bg-gray-400' :
           'bg-gray-800'
         }`}>
-          {config.heroData.backgroundImage && config.heroData.backgroundType === 'image' && (
+          {config.heroData?.backgroundImage && config.heroData?.backgroundType === 'image' && (
             <img
               src={config.heroData.backgroundImage}
               alt="Hero background"
@@ -492,17 +696,17 @@ const isComplete = () => {
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <div className="text-center text-white max-w-2xl px-4">
               <h1 className="text-3xl font-bold mb-4">
-                {config.heroData.headline || `Transform Your ${config.industry || 'Business'}`}
+                {config.heroData?.headline || `Transform Your ${config.industry || 'Business'}`}
               </h1>
               <p className="text-lg mb-6 opacity-90">
-                {config.heroData.subheadline || `Professional ${config.industry || 'business'} solutions for your success`}
+                {config.heroData?.subheadline || `Professional ${config.industry || 'business'} solutions for your success`}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold">
-                  {config.heroData.primaryCta || 'Get Started'}
+                  {config.heroData?.primaryCta || 'Get Started'}
                 </button>
                 <button className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold">
-                  {config.heroData.secondaryCta || 'Learn More'}
+                  {config.heroData?.secondaryCta || 'Learn More'}
                 </button>
               </div>
             </div>
@@ -528,7 +732,7 @@ const isComplete = () => {
               key={style.id}
               onClick={() => updateHeaderData('style', style.id)}
               className={`p-4 border-2 rounded-lg text-left transition-all ${
-                config.headerData.style === style.id
+                config.headerData?.style === style.id
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
@@ -550,7 +754,7 @@ const isComplete = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Logo Type</label>
             <select
-              value={config.headerData.logoType || 'text'}
+              value={config.headerData?.logoType || 'text'}
               onChange={(e) => updateHeaderData('logoType', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
@@ -562,7 +766,7 @@ const isComplete = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Logo Text</label>
             <input
               type="text"
-              value={config.headerData.logoText || ''}
+              value={config.headerData?.logoText || ''}
               onChange={(e) => updateHeaderData('logoText', e.target.value)}
               placeholder={config.businessName || "Your Business"}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -585,7 +789,7 @@ const isComplete = () => {
         </div>
         
         <div className="space-y-3">
-          {(config.headerData.menuItems || []).map((item, index) => (
+          {(config.headerData?.menuItems || []).map((item, index) => (
             <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
               {/* Main Menu Item */}
               <div className="p-4 bg-white">
@@ -707,7 +911,7 @@ const isComplete = () => {
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <h5 className="text-sm font-medium text-gray-700 mb-3">Menu Preview</h5>
           <div className="flex flex-wrap gap-2">
-            {(config.headerData.menuItems || []).map((item, index) => (
+            {(config.headerData?.menuItems || []).map((item, index) => (
               <div key={index} className="relative group">
                 <div className="flex items-center space-x-1 px-3 py-2 bg-white border border-gray-200 rounded text-sm">
                   <span>{item.name || 'Unnamed'}</span>
@@ -742,25 +946,25 @@ const isComplete = () => {
           <label className="flex items-center">
             <input
               type="checkbox"
-              checked={config.headerData.showCta || false}
+              checked={config.headerData?.showCta || false}
               onChange={(e) => updateHeaderData('showCta', e.target.checked)}
               className="mr-2 rounded border-gray-300"
             />
             <span className="text-sm text-gray-700">Show CTA button in header</span>
           </label>
           
-          {config.headerData.showCta && (
+          {config.headerData?.showCta && (
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="text"
-                value={config.headerData.ctaText || ''}
+                value={config.headerData?.ctaText || ''}
                 onChange={(e) => updateHeaderData('ctaText', e.target.value)}
                 placeholder="Button Text"
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
               <input
                 type="text"
-                value={config.headerData.ctaLink || ''}
+                value={config.headerData?.ctaLink || ''}
                 onChange={(e) => updateHeaderData('ctaLink', e.target.value)}
                 placeholder="Button Link"
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -788,7 +992,7 @@ const isComplete = () => {
               key={style.id}
               onClick={() => updateFooterData('style', style.id)}
               className={`p-4 border-2 rounded-lg text-left transition-all ${
-                config.footerData.style === style.id
+                config.footerData?.style === style.id
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
@@ -811,7 +1015,7 @@ const isComplete = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
             <input
               type="text"
-              value={config.footerData.companyName || ''}
+              value={config.footerData?.companyName || ''}
               onChange={(e) => updateFooterData('companyName', e.target.value)}
               placeholder={config.businessName || "Your Company"}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -821,7 +1025,7 @@ const isComplete = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
             <input
               type="email"
-              value={config.footerData.email || ''}
+              value={config.footerData?.email || ''}
               onChange={(e) => updateFooterData('email', e.target.value)}
               placeholder="contact@company.com"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -831,7 +1035,7 @@ const isComplete = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
             <input
               type="tel"
-              value={config.footerData.phone || ''}
+              value={config.footerData?.phone || ''}
               onChange={(e) => updateFooterData('phone', e.target.value)}
               placeholder="(555) 123-4567"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -841,7 +1045,7 @@ const isComplete = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
             <input
               type="text"
-              value={config.footerData.address || ''}
+              value={config.footerData?.address || ''}
               onChange={(e) => updateFooterData('address', e.target.value)}
               placeholder="123 Business St, City, State"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -852,7 +1056,7 @@ const isComplete = () => {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Company Description</label>
           <textarea
-            value={config.footerData.companyDescription || ''}
+            value={config.footerData?.companyDescription || ''}
             onChange={(e) => updateFooterData('companyDescription', e.target.value)}
             placeholder={config.businessDescription || "Brief description of your company"}
             rows={3}
@@ -868,19 +1072,19 @@ const isComplete = () => {
           <label className="flex items-center">
             <input
               type="checkbox"
-              checked={config.footerData.showNewsletter || false}
+              checked={config.footerData?.showNewsletter || false}
               onChange={(e) => updateFooterData('showNewsletter', e.target.checked)}
               className="mr-2 rounded border-gray-300"
             />
             <span className="text-sm text-gray-700">Include newsletter signup in footer</span>
           </label>
           
-          {config.footerData.showNewsletter && (
+          {config.footerData?.showNewsletter && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Newsletter Title</label>
               <input
                 type="text"
-                value={config.footerData.newsletterTitle || ''}
+                value={config.footerData?.newsletterTitle || ''}
                 onChange={(e) => updateFooterData('newsletterTitle', e.target.value)}
                 placeholder="Stay Updated"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -899,7 +1103,7 @@ const isComplete = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">{platform}</label>
               <input
                 type="url"
-                value={config.footerData.socialLinks?.[platform] || ''}
+                value={config.footerData?.socialLinks?.[platform] || ''}
                 onChange={(e) => updateSocialLink(platform, e.target.value)}
                 placeholder={`https://${platform}.com/yourcompany`}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -913,12 +1117,23 @@ const isComplete = () => {
 
   const sections = [
     { id: 'theme', label: 'Theme', icon: Palette, component: renderThemeSelector },
-    { id: 'hero', label: 'Hero', icon: Sparkles, component: renderHeroCustomization },
+    { id: 'layout', label: 'Layout', icon: Layout, component: renderLayoutSelector },
+    { id: 'heroStyle', label: 'Hero Style', icon: Eye, component: renderHeroSelector },
+    { id: 'hero', label: 'Hero Content', icon: Sparkles, component: renderHeroCustomization },
     { id: 'header', label: 'Header', icon: Navigation, component: renderHeaderCustomization },
     { id: 'footer', label: 'Footer', icon: Menu, component: renderFooterCustomization },
-    { id: 'layout', label: 'Layout', icon: Layout, component: () => <div>Layout selector (existing)</div> },
     { id: 'pages', label: 'Pages', icon: FileText, component: () => <PageEditor config={config} onChange={onChange} /> },
   ]
+
+  if (!isInitialized) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-gray-500">Initializing design system...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -961,18 +1176,18 @@ const isComplete = () => {
         
         {/* Header Preview with Nested Menus */}
         <div className="bg-white rounded-lg mb-4 overflow-hidden shadow-sm">
-          <div className={`px-6 py-4 ${HEADER_STYLES[config.headerData.style]?.preview || 'bg-white'} border-b`}>
+          <div className={`px-6 py-4 ${HEADER_STYLES[config.headerData?.style]?.preview || 'bg-white'} border-b`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                  {(config.headerData.logoText || config.businessName || 'L')[0].toUpperCase()}
+                  {(config.headerData?.logoText || config.businessName || 'L')[0].toUpperCase()}
                 </div>
                 <span className="font-bold text-gray-900">
-                  {config.headerData.logoText || config.businessName || 'Your Logo'}
+                  {config.headerData?.logoText || config.businessName || 'Your Logo'}
                 </span>
               </div>
               <nav className="hidden md:flex space-x-6">
-                {(config.headerData.menuItems || []).slice(0, 4).map((item, index) => (
+                {(config.headerData?.menuItems || []).slice(0, 4).map((item, index) => (
                   <div key={index} className="relative group">
                     <span className="text-sm text-gray-600 flex items-center space-x-1 cursor-pointer">
                       <span>{item.name}</span>
@@ -995,9 +1210,9 @@ const isComplete = () => {
                   </div>
                 ))}
               </nav>
-              {config.headerData.showCta && (
+              {config.headerData?.showCta && (
                 <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
-                  {config.headerData.ctaText || 'CTA'}
+                  {config.headerData?.ctaText || 'CTA'}
                 </button>
               )}
             </div>
@@ -1006,21 +1221,21 @@ const isComplete = () => {
 
         {/* Hero Preview */}
         <div className={`relative w-full h-32 rounded-lg overflow-hidden mb-4 ${
-          config.heroData.backgroundType === 'gradient' ? HERO_BACKGROUNDS.gradient.preview :
-          config.heroData.backgroundType === 'solid' ? 'bg-blue-600' :
+          config.heroData?.backgroundType === 'gradient' ? HERO_BACKGROUNDS.gradient.preview :
+          config.heroData?.backgroundType === 'solid' ? 'bg-blue-600' :
           'bg-gray-400'
         }`}>
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <div className="text-center text-white">
               <h3 className="text-lg font-bold mb-2">
-                {config.heroData.headline || `Welcome to ${config.businessName || 'Your Business'}`}
+                {config.heroData?.headline || `Welcome to ${config.businessName || 'Your Business'}`}
               </h3>
               <div className="flex gap-2 justify-center">
                 <span className="bg-blue-600 text-white px-3 py-1 rounded text-xs">
-                  {config.heroData.primaryCta || 'Get Started'}
+                  {config.heroData?.primaryCta || 'Get Started'}
                 </span>
                 <span className="border border-white text-white px-3 py-1 rounded text-xs">
-                  {config.heroData.secondaryCta || 'Learn More'}
+                  {config.heroData?.secondaryCta || 'Learn More'}
                 </span>
               </div>
             </div>
@@ -1028,28 +1243,47 @@ const isComplete = () => {
         </div>
 
         {/* Design Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
           <div>
             <span className="text-gray-600">Theme:</span>
-            <div className="font-medium text-gray-900 capitalize">{config.design.theme || 'Not selected'}</div>
+            <div className="font-medium text-gray-900 capitalize">{config.design?.theme || 'Not selected'}</div>
           </div>
           <div>
-            <span className="text-gray-600">Hero:</span>
-            <div className="font-medium text-gray-900 capitalize">{config.heroData.backgroundType || 'Not selected'}</div>
+            <span className="text-gray-600">Layout:</span>
+            <div className="font-medium text-gray-900 capitalize">{config.design?.layout || 'Not selected'}</div>
+          </div>
+          <div>
+            <span className="text-gray-600">Hero Style:</span>
+            <div className="font-medium text-gray-900 capitalize">{config.design?.heroStyle || 'Not selected'}</div>
+          </div>
+          <div>
+            <span className="text-gray-600">Hero BG:</span>
+            <div className="font-medium text-gray-900 capitalize">{config.heroData?.backgroundType || 'Not selected'}</div>
           </div>
           <div>
             <span className="text-gray-600">Header:</span>
-            <div className="font-medium text-gray-900 capitalize">{config.headerData.style || 'Not selected'}</div>
+            <div className="font-medium text-gray-900 capitalize">{config.headerData?.style || 'Not selected'}</div>
           </div>
           <div>
             <span className="text-gray-600">Footer:</span>
-            <div className="font-medium text-gray-900 capitalize">{config.footerData.style || 'Not selected'}</div>
+            <div className="font-medium text-gray-900 capitalize">{config.footerData?.style || 'Not selected'}</div>
           </div>
-          <div>
-            <span className="text-gray-600">Menu Items:</span>
-            <div className="font-medium text-gray-900">
-              {config.headerData.menuItems?.length || 0} 
-              ({(config.headerData.menuItems || []).reduce((sum, item) => sum + (item.children?.length || 0), 0)} nested)
+        </div>
+        
+        {/* Pages Summary */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600">Pages:</span>
+            <div className="space-x-4">
+              <span className="font-medium text-gray-900">
+                Simple: {config.pages ? Object.keys(config.pages).length : 0}
+              </span>
+              <span className="font-medium text-gray-900">
+                Detailed: {config.detailedPages ? Object.keys(config.detailedPages).length : 0}
+              </span>
+              <span className="font-medium text-green-600">
+                Enabled: {config.pages ? Object.values(config.pages).filter(p => p.enabled !== false).length : 0}
+              </span>
             </div>
           </div>
         </div>
@@ -1067,16 +1301,22 @@ const isComplete = () => {
 
         <div className="text-center">
           <div className="text-sm text-gray-600 mb-2">
-            Customization {isComplete() ? 'Complete' : 'In Progress'}
+            Configuration {isComplete() ? 'Complete' : 'In Progress'}
           </div>
           <div className="flex space-x-1">
             {sections.map((section) => {
               let isCompleted = false
-              if (section.id === 'theme') isCompleted = !!config.design.theme
-              if (section.id === 'hero') isCompleted = !!config.heroData.backgroundType
-              if (section.id === 'header') isCompleted = !!config.headerData.style
-              if (section.id === 'footer') isCompleted = !!config.footerData.style
-              if (section.id === 'layout') isCompleted = !!config.design.layout
+              if (section.id === 'theme') isCompleted = !!config.design?.theme
+              if (section.id === 'layout') isCompleted = !!config.design?.layout
+              if (section.id === 'heroStyle') isCompleted = !!config.design?.heroStyle
+              if (section.id === 'hero') isCompleted = !!config.heroData?.backgroundType
+              if (section.id === 'header') isCompleted = !!config.headerData?.style
+              if (section.id === 'footer') isCompleted = !!config.footerData?.style
+              if (section.id === 'pages') {
+                const hasSimplePages = config.pages && Object.keys(config.pages).length > 0
+                const hasDetailedPages = config.detailedPages && Object.keys(config.detailedPages).length > 0
+                isCompleted = hasSimplePages || hasDetailedPages
+              }
               
               return (
                 <div

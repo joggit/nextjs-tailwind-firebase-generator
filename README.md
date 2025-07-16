@@ -1,6 +1,5 @@
 // File: README.md (Updated)
 # Full-Stack Website Generator & Deployer
-
 A comprehensive solution for generating professional websites with AI-powered design systems and deploying them instantly to Linux servers using automated Python deployment scripts.
 
 ## Features

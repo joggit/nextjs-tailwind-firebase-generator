@@ -1,0 +1,47 @@
+import React from 'react'
+
+export default function Hero() {
+  return (
+    <>
+      <div className="w-full max-w-7xl mx-auto px-4 lg:px-8">
+        <div className="grid grid-cols-12 gap-8 mb-10 lg:mb-20">
+          <div className="col-span-12 lg:col-span-8">
+            <h1 className="font-manrope font-semibold text-5xl leading-tight text-gray-900 ">
+              Strategic Solutions for Sustainable Success
+            </h1>
+          </div>
+          <div className="col-span-12 lg:col-span-4 font-normal text-lg leading-8 text-gray-900">
+            Empower your success with strategic solutions that stand the test of time, fostering sustainability and continuous growth.
+          </div>
+        </div>
+        <div className="bg-box relative w-full">
+          <img src="https://pagedone.io/asset/uploads/1709270463.png" alt="" className="hidden min-[1140px]:block w-full h-auto relative top-0 left-0 z-0 object-cover" />
+          <img src="https://pagedone.io/asset/uploads/1709270482.png" alt="" className="min-[1140px]:hidden block w-full h-auto relative top-0 left-0 z-0 rounded-3xl object-cover" />
+          <div className="flex flex-col md:flex-row items-center justify-center min-[1140px]:justify-end min-[1140px]:-mt-28 relative z-10 gap-4 xl:gap-8 py-8 xl:pr-3.5 xl:bg-transparent lg:mr-0 " >
+            <button className="rounded-full max-md:w-full max-md:justify-center border border-solid border-gray-800 py-3.5 pr-6 pl-8 flex items-center gap-2 group font-semibold text-base text-gray-900 whitespace-nowrap shadow-md shadow-transparent transition-all duration-300 hover:shadow-gray-200 hover:text-white hover:bg-black">
+              Review strategy
+              <svg className="text-gray-900 transition-all duration-300 group-hover:text-white group-hover:duration-700"
+                xmlns="http://www.w3.org/2000/svg" width="21" height="20" viewBox="0 0 21 20" fill="none">
+                <path d="M15.551 12.4998L10.4999 17.5509M10.4999 17.5509L5.44873 12.4998M10.4999 17.5509L10.4999 2.55103" stroke="currentcolor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button className="rounded-full max-md:w-full max-md:justify-center border border-solid border-gray-800 py-3.5 pr-6 pl-8 flex items-center gap-2 group font-semibold text-base text-gray-900 whitespace-nowrap shadow-md shadow-transparent transition-all duration-300 hover:shadow-gray-200 hover:text-white hover:bg-black">
+              Assess every aid
+              <svg className="text-gray-900 transition-all duration-300 group-hover:text-white group-hover:duration-700"
+                xmlns="http://www.w3.org/2000/svg" width="21" height="20" viewBox="0 0 21 20" fill="none">
+                <path d="M15.551 12.4998L10.4999 17.5509M10.4999 17.5509L5.44873 12.4998M10.4999 17.5509L10.4999 2.55103" stroke="currentcolor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button className="rounded-full max-md:w-full max-md:justify-center border border-solid border-gray-800 py-3.5 pr-6 pl-8 flex items-center gap-2 group font-semibold text-base text-gray-900 whitespace-nowrap shadow-md shadow-transparent transition-all duration-300 hover:shadow-gray-200 hover:text-white hover:bg-black">
+              Handling costs
+              <svg className="text-gray-900 transition-all duration-300 group-hover:text-white group-hover:duration-700"
+                xmlns="http://www.w3.org/2000/svg" width="21" height="20" viewBox="0 0 21 20" fill="none">
+                <path d="M15.551 12.4998L10.4999 17.5509M10.4999 17.5509L5.44873 12.4998M10.4999 17.5509L10.4999 2.55103" stroke="currentcolor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
