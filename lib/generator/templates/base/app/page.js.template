@@ -1,391 +1,172 @@
-// lib/generator/templates/base/app/page.js.template
-import Header from '@/components/Header'
-import Hero from '@/components/Hero'
-import Footer from '@/components/Footer'
-import { ArrowRight, CheckCircle, Star, Users, Award, TrendingUp } from 'lucide-react'
+// Complete Page Layout Template for ProjectGenerator
+// File: lib/generator/templates/base/app/page.js.template
 
-export const metadata = {
-  title: '{{metaTitle}}',
-  description: '{{metaDescription}}',
-}
+import Header from '../components/Header'
+import Hero from '../components/Hero'
+import Footer from '../components/Footer'
 
 export default function HomePage() {
-  const features = [
-    {
-      icon: CheckCircle,
-      title: 'Quality Assurance',
-      description: 'We ensure the highest quality in every project we deliver for our clients.'
-    },
-    {
-      icon: Users,
-      title: 'Expert Team',
-      description: 'Work with experienced professionals who understand your {{industry}} needs.'
-    },
-    {
-      icon: Award,
-      title: 'Proven Results',
-      description: 'Track record of successful projects and satisfied clients across industries.'
-    },
-    {
-      icon: TrendingUp,
-      title: 'Growth Focused',
-      description: 'Solutions designed to scale with your business and drive sustainable growth.'
-    }
-  ]
-
-  const stats = [
-    { number: '500+', label: 'Happy Clients' },
-    { number: '99%', label: 'Success Rate' },
-    { number: '5+', label: 'Years Experience' },
-    { number: '24/7', label: 'Support' }
-  ]
-
-  const testimonials = [
-    {
-      quote: "{{businessName}} transformed our operations completely. Outstanding results!",
-      author: "Sarah Johnson",
-      company: "TechCorp",
-      rating: 5
-    },
-    {
-      quote: "Professional, reliable, and results-driven. Highly recommended!",
-      author: "Michael Chen",
-      company: "InnovateCo", 
-      rating: 5
-    },
-    {
-      quote: "The ROI we've seen has exceeded all our expectations.",
-      author: "Emily Rodriguez",
-      company: "GrowthLabs",
-      rating: 5
-    }
-  ]
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow">
-        {/* Hero Section */}
+      <main className="flex-1">
         <Hero />
-
-        {/* Features Section */}
-        <section className="py-16 px-4 bg-white">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 
-                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
-                style={{ fontFamily: 'var(--font-heading)' }}
-              >
-                Why Choose {{businessName}}
+        
+        {/* About Section */}
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                About {{businessName}}
               </h2>
-              <p 
-                className="text-lg text-gray-600 max-w-2xl mx-auto"
-                style={{ fontFamily: 'var(--font-body)' }}
-              >
-                Discover what makes us the perfect choice for your {{industry}} needs
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                {{businessDescription}}
               </p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {features.map((feature, index) => {
-                const Icon = feature.icon
-                return (
-                  <div key={index} className="text-center p-6 hover:shadow-lg transition-shadow rounded-xl">
-                    <div 
-                      className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                      style={{ backgroundColor: 'var(--color-primary)20' }}
-                    >
-                      <Icon 
-                        className="w-8 h-8"
-                        style={{ color: 'var(--color-primary)' }}
-                      />
-                    </div>
-                    <h3 
-                      className="text-lg font-semibold text-gray-900 mb-3"
-                      style={{ fontFamily: 'var(--font-heading)' }}
-                    >
-                      {feature.title}
-                    </h3>
-                    <p 
-                      className="text-gray-600 leading-relaxed"
-                      style={{ fontFamily: 'var(--font-body)' }}
-                    >
-                      {feature.description}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="py-16 px-4 bg-gray-50">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 
-                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
-                style={{ fontFamily: 'var(--font-heading)' }}
-              >
-                Our Impact in Numbers
-              </h2>
-              <p 
-                className="text-lg text-gray-600"
-                style={{ fontFamily: 'var(--font-body)' }}
-              >
-                Results that speak for themselves
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center p-6 bg-white rounded-xl shadow-lg">
-                  <div 
-                    className="text-4xl font-bold mb-2"
-                    style={{ 
-                      color: 'var(--color-primary)',
-                      fontFamily: 'var(--font-heading)'
-                    }}
-                  >
-                    {stat.number}
-                  </div>
-                  <div 
-                    className="text-gray-600 font-medium"
-                    style={{ fontFamily: 'var(--font-body)' }}
-                  >
-                    {stat.label}
-                  </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-6">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Services Preview */}
-        <section className="py-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 
-                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
-                style={{ fontFamily: 'var(--font-heading)' }}
-              >
-                Our Services
-              </h2>
-              <p 
-                className="text-lg text-gray-600"
-                style={{ fontFamily: 'var(--font-body)' }}
-              >
-                Comprehensive {{industry}} solutions for your business
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                <h3 
-                  className="text-xl font-semibold text-gray-900 mb-3"
-                  style={{ fontFamily: 'var(--font-heading)' }}
-                >
-                  Consulting
-                </h3>
-                <p 
-                  className="text-gray-600 mb-4"
-                  style={{ fontFamily: 'var(--font-body)' }}
-                >
-                  Expert guidance and strategic advice for your {{industry}} challenges.
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Fast & Reliable</h3>
+                <p className="text-gray-600">
+                  We deliver high-quality {{industry}} services with speed and reliability that you can count on.
                 </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center">
-                    <CheckCircle 
-                      className="w-4 h-4 mr-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    />
-                    Strategic Planning
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle 
-                      className="w-4 h-4 mr-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    />
-                    Business Analysis
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle 
-                      className="w-4 h-4 mr-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    />
-                    Risk Assessment
-                  </li>
-                </ul>
               </div>
-
-              <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                <h3 
-                  className="text-xl font-semibold text-gray-900 mb-3"
-                  style={{ fontFamily: 'var(--font-heading)' }}
-                >
-                  Implementation
-                </h3>
-                <p 
-                  className="text-gray-600 mb-4"
-                  style={{ fontFamily: 'var(--font-body)' }}
-                >
-                  Full-service implementation tailored to your specific needs.
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center">
-                    <CheckCircle 
-                      className="w-4 h-4 mr-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    />
-                    Custom Solutions
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle 
-                      className="w-4 h-4 mr-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    />
-                    System Integration
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle 
-                      className="w-4 h-4 mr-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    />
-                    Quality Assurance
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                <h3 
-                  className="text-xl font-semibold text-gray-900 mb-3"
-                  style={{ fontFamily: 'var(--font-heading)' }}
-                >
-                  Support
-                </h3>
-                <p 
-                  className="text-gray-600 mb-4"
-                  style={{ fontFamily: 'var(--font-body)' }}
-                >
-                  Ongoing support and maintenance to ensure smooth operations.
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center">
-                    <CheckCircle 
-                      className="w-4 h-4 mr-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    />
-                    24/7 Support
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle 
-                      className="w-4 h-4 mr-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    />
-                    Regular Updates
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle 
-                      className="w-4 h-4 mr-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    />
-                    Issue Resolution
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <a 
-                href="/services"
-                className="btn-primary"
-              >
-                View All Services
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </a>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials Section */}
-        <section className="py-16 px-4 bg-gray-50">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 
-                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
-                style={{ fontFamily: 'var(--font-heading)' }}
-              >
-                What Our Clients Say
-              </h2>
-              <p 
-                className="text-lg text-gray-600"
-                style={{ fontFamily: 'var(--font-body)' }}
-              >
-                Real feedback from businesses we've helped succeed
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <div key={index} className="bg-white rounded-xl shadow-lg p-6">
-                  <div className="flex items-center mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <blockquote 
-                    className="text-gray-600 mb-4 italic leading-relaxed"
-                    style={{ fontFamily: 'var(--font-body)' }}
-                  >
-                    "{testimonial.quote}"
-                  </blockquote>
-                  <div className="border-t pt-4">
-                    <div 
-                      className="font-semibold text-gray-900"
-                      style={{ fontFamily: 'var(--font-heading)' }}
-                    >
-                      {testimonial.author}
-                    </div>
-                    <div 
-                      className="text-sm"
-                      style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-body)' }}
-                    >
-                      {testimonial.company}
-                    </div>
-                  </div>
+              
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-6">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
-              ))}
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Expert Team</h3>
+                <p className="text-gray-600">
+                  Our experienced professionals are dedicated to providing exceptional service to {{targetAudience}}.
+                </p>
+              </div>
+              
+              <div className="bg-white p-8 rounded-xl shadow-sm border md:col-span-2 lg:col-span-1">
+                <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-6">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Customer First</h3>
+                <p className="text-gray-600">
+                  Your satisfaction is our priority. We go above and beyond to ensure your success.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Services Section */}
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                Our {{industry}} Services
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Comprehensive solutions tailored for {{targetAudience}} in the {{industry}} industry.
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="group relative bg-gradient-to-br from-blue-50 to-indigo-100 p-8 rounded-xl hover:shadow-lg transition-all duration-300">
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Consulting Services</h3>
+                <p className="text-gray-600 mb-6">
+                  Expert consultation to help you make informed decisions and optimize your {{industry}} operations.
+                </p>
+                <ul className="space-y-2 text-gray-600">
+                  <li className="flex items-center">
+                    <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Strategic planning and analysis
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Process optimization
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Performance monitoring
+                  </li>
+                </ul>
+              </div>
+
+              <div className="group relative bg-gradient-to-br from-purple-50 to-pink-100 p-8 rounded-xl hover:shadow-lg transition-all duration-300">
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Support Services</h3>
+                <p className="text-gray-600 mb-6">
+                  Ongoing support and maintenance to ensure your {{industry}} operations run smoothly.
+                </p>
+                <ul className="space-y-2 text-gray-600">
+                  <li className="flex items-center">
+                    <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    24/7 technical support
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Regular maintenance
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Training and documentation
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 
-              className="text-3xl md:text-4xl font-bold text-gray-900 mb-6"
-              style={{ fontFamily: 'var(--font-heading)' }}
-            >
-              Ready to Transform Your {{industry}}?
+        <section className="py-20 bg-blue-600">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-4xl font-bold text-white mb-4">
+              Ready to Get Started?
             </h2>
-            <p 
-              className="text-lg text-gray-600 mb-8"
-              style={{ fontFamily: 'var(--font-body)' }}
-            >
-              Let's discuss how we can help you achieve your business goals
+            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+              Contact {{businessName}} today and discover how our {{industry}} expertise can benefit your business.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
+              <a
                 href="/contact"
-                className="btn-primary"
+                className="inline-flex items-center px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
               >
                 Get Started Today
-                <ArrowRight className="ml-2 w-5 h-5" />
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
               </a>
-              <a 
+              <a
                 href="/about"
-                className="btn-secondary"
+                className="inline-flex items-center px-8 py-4 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
               >
                 Learn More About Us
               </a>
@@ -397,4 +178,16 @@ export default function HomePage() {
       <Footer />
     </div>
   )
+}
+
+// SEO metadata using configuration
+export const metadata = {
+  title: '{{businessName}} - Professional {{industry}} Services',
+  description: '{{businessDescription}}',
+  keywords: '{{industry}}, {{targetAudience}}, {{businessName}}',
+  openGraph: {
+    title: '{{businessName}} - Professional {{industry}} Services',
+    description: '{{businessDescription}}',
+    type: 'website'
+  }
 }

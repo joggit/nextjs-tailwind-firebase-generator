@@ -1,4 +1,4 @@
-// Working Header Template for TemplatePathGenerator
+// Updated Header Template with Pages Menu
 // File: lib/generator/templates/base/components/Header.js.template
 
 'use client'
@@ -12,8 +12,10 @@ export default function Header() {
   const [activeDropdown, setActiveDropdown] = useState(null)
   const dropdownRefs = useRef({})
 
-  // Navigation items from template configuration
-  const navigationItems = {{navigationItemsJSON}}
+  // Navigation items generated from config.pages
+  const navigationItems = [
+    {{menuItems}}
+  ]
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
   
@@ -40,9 +42,9 @@ export default function Header() {
 
   // Logo component
   const renderLogo = () => {
-    const logoType = '{{logoType}}'
-    const logoImage = '{{logoImage}}'
-    const logoText = '{{logoText}}'
+    const logoType = '{{header.logoType}}'
+    const logoImage = '{{header.logoImage}}'
+    const logoText = '{{header.logoText}}'
     
     if (logoType === 'image' && logoImage) {
       return (
@@ -63,7 +65,7 @@ export default function Header() {
 
   // Render desktop menu item
   const renderDesktopMenuItem = (item) => {
-    if (item.hasChildren && item.children.length > 0) {
+    if (item.children && item.children.length > 0) {
       return (
         <div
           key={item.name}
@@ -90,7 +92,7 @@ export default function Header() {
               {item.children.map((child, index) => (
                 <Link
                   key={index}
-                  href={child.link}
+                  href={child.href}
                   onClick={() => closeDropdown()}
                   className="block px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
                 >
@@ -109,22 +111,18 @@ export default function Header() {
     return (
       <Link
         key={item.name}
-        href={item.link}
-        className={`px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors font-medium relative group ${
-          item.isActive ? 'text-blue-600' : ''
-        }`}
+        href={item.href}
+        className="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors font-medium relative group"
       >
         {item.name}
-        <span className={`absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200 ${
-          item.isActive ? 'scale-x-100' : ''
-        }`}></span>
+        <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
       </Link>
     )
   }
 
   // Render mobile menu item
   const renderMobileMenuItem = (item) => {
-    if (item.hasChildren && item.children.length > 0) {
+    if (item.children && item.children.length > 0) {
       return (
         <div key={item.name} className="w-full">
           <button
@@ -145,7 +143,7 @@ export default function Header() {
               {item.children.map((child, index) => (
                 <Link
                   key={index}
-                  href={child.link}
+                  href={child.href}
                   onClick={() => {
                     closeDropdown()
                     setIsMenuOpen(false)
@@ -164,34 +162,40 @@ export default function Header() {
     return (
       <Link
         key={item.name}
-        href={item.link}
+        href={item.href}
         onClick={() => setIsMenuOpen(false)}
-        className={`block w-full text-left px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors font-medium ${
-          item.isActive ? 'text-blue-600' : ''
-        }`}
+        className="block w-full text-left px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors font-medium"
       >
         {item.name}
       </Link>
     )
   }
 
-  // Header style classes
+  // Header style classes based on configuration
   const getHeaderClasses = () => {
-    const headerStyle = '{{headerStyle}}'
+    const headerStyle = '{{header.style}}'
+    const baseClasses = 'sticky top-0 z-50 border-b border-gray-100'
+    
     switch (headerStyle) {
       case 'transparent':
-        return 'bg-transparent absolute top-0 left-0 right-0 z-50'
+        return `${baseClasses} bg-transparent absolute top-0 left-0 right-0`
       case 'solid':
-        return 'bg-white shadow-sm'
+        return `${baseClasses} bg-white shadow-sm`
       case 'blur':
-        return 'bg-white/95 backdrop-blur-sm'
+        return `${baseClasses} bg-white/95 backdrop-blur-sm`
+      case 'gradient':
+        return `${baseClasses} bg-gradient-to-r from-blue-600 to-purple-600 text-white`
       default:
-        return 'bg-white shadow-sm'
+        return `${baseClasses} bg-white shadow-sm`
     }
   }
 
+  const showCta = {{header.showCta}}
+  const ctaText = '{{header.ctaText}}'
+  const ctaLink = '{{header.ctaLink}}'
+
   return (
-    <header className={`${getHeaderClasses()} sticky top-0 z-50 border-b border-gray-100`}>
+    <header className={getHeaderClasses()}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
@@ -208,12 +212,12 @@ export default function Header() {
           {/* Desktop CTA and Mobile Menu Button */}
           <div className="flex items-center space-x-4">
             {/* Desktop CTA */}
-            {{{showHeaderCTA}} && (
+            {showCta && (
               <Link
-                href="{{headerCTALink}}"
-                className="hidden md:inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                href={ctaLink}
+                className="hidden md:inline-flex bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
-                {{headerCTAText}}
+                {ctaText}
               </Link>
             )}
             
@@ -235,14 +239,14 @@ export default function Header() {
               {navigationItems.map((item) => renderMobileMenuItem(item))}
               
               {/* Mobile CTA */}
-              {{{showHeaderCTA}} && (
+              {showCta && (
                 <div className="pt-4 border-t border-gray-100 mt-4">
                   <Link
-                    href="{{headerCTALink}}"
+                    href={ctaLink}
                     onClick={() => setIsMenuOpen(false)}
-                    className="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    className="block w-full text-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                   >
-                    {{headerCTAText}}
+                    {ctaText}
                   </Link>
                 </div>
               )}

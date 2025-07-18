@@ -1,184 +1,122 @@
+// About Us Page Template - Simple Version
+// File: lib/generator/templates/base/app/about/page.js.template
+
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import { Users, Target, Award, Heart, Zap, Shield } from 'lucide-react'
-
-export const metadata = {
-  title: 'About Us - Masimanyane',
-  description: 'Learn more about Masimanyane and our mission to deliver exceptional non-profit services.',
-}
+import { Mail, Linkedin, Calendar, User } from 'lucide-react'
 
 export default function AboutPage() {
-  const values = [
-    {
-      icon: Heart,
-      title: 'Compassion',
-      description: 'We care deeply about the communities we serve and put people first in everything we do.',
-    },
-    {
-      icon: Zap,
-      title: 'Innovation',
-      description: 'We adopt bold and creative approaches to solving persistent social challenges.',
-    },
-    {
-      icon: Shield,
-      title: 'Integrity',
-      description: 'We are honest, transparent, and committed to doing what’s right.',
-    },
-    {
-      icon: Users,
-      title: 'Collaboration',
-      description: 'We believe in partnerships and collective efforts to create lasting impact.',
-    },
-  ]
-
-  const team = [
-    {
-      name: 'Sarah Johnson',
-      role: 'Founder & CEO',
-      bio: 'With over 10 years in non-profit work, Sarah leads our vision with passion and dedication.',
-      image: '/team-sarah.jpg',
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Program Director',
-      bio: 'Michael ensures our initiatives are well-executed and reach the people who need them most.',
-      image: '/team-michael.jpg',
-    },
-    {
-      name: 'Emily Rodriguez',
-      role: 'Operations Manager',
-      bio: 'Emily keeps the team running smoothly and ensures every detail is handled with care.',
-      image: '/team-emily.jpg',
-    },
-  ]
-
   return (
-    <div className="min-h-screen flex flex-col bg-white text-gray-800">
+    <div className="min-h-screen bg-white">
       <Header />
-
-      <main className="flex-grow">
-        {/* Our Story */}
-        <section className="py-16 px-4">
-          <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold mb-6">Our Story</h2>
-              <div className="prose prose-lg text-gray-600">
-                <p>
-                  Masimanyane was founded with a vision to uplift women and vulnerable groups across South Africa. From humble beginnings, we’ve grown into a leading voice for gender justice, health rights, and community development.
-                </p>
-                <p>
-                  Today, we continue to break barriers and support thousands of individuals every year — staying true to our roots and values.
-                </p>
-              </div>
-            </div>
-
-            <div className="relative">
-              <img
-                src="https://source.unsplash.com/600x400/?community,women"
-                alt="Our Story"
-                className="rounded-2xl shadow-xl w-full h-auto object-cover"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Impact Stats */}
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 text-center">
-            <h2 className="text-4xl font-bold mb-4">Our Impact</h2>
-            <p className="text-gray-600 mb-12">Some of the ways we’ve made a difference</p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-gray-800">
-              <div>
-                <div className="text-3xl font-bold text-green-500">25,000+</div>
-                <p className="text-sm mt-1">Lives Impacted</p>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-blue-500">150+</div>
-                <p className="text-sm mt-1">Programs Delivered</p>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-purple-500">500+</div>
-                <p className="text-sm mt-1">Active Volunteers</p>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-yellow-500">15</div>
-                <p className="text-sm mt-1">Years of Service</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Our Values */}
-        <section className="py-16 px-4">
-          <div className="max-w-6xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6">Our Values</h2>
-            <p className="text-gray-600 mb-12 max-w-2xl mx-auto">
-              These are the guiding principles that shape our work and interactions every day.
+      
+      <main>
+        {/* Hero Section */}
+        <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-purple-50">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              {{aboutHeroTitle}}
+            </h1>
+            <p className="text-xl text-gray-600 leading-relaxed">
+              {{aboutHeroSubtitle}}
             </p>
+          </div>
+        </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {values.map((value, idx) => {
-                const Icon = value.icon
-                return (
-                  <div key={idx} className="p-6 rounded-xl border hover:shadow-lg transition">
-                    <div className="mb-4 inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-100">
-                      <Icon className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">{value.title}</h3>
-                    <p className="text-gray-600 text-sm">{value.description}</p>
-                  </div>
-                )
-              })}
+        {/* Company Story Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                  {{aboutStoryTitle}}
+                </h2>
+                
+                <div className="flex items-center mb-4 text-gray-600">
+                  <Calendar className="w-5 h-5 mr-2" />
+                  <span>{{aboutFoundedInfo}}</span>
+                </div>
+                
+                <div className="prose prose-lg text-gray-700">
+                  <p>{{aboutCompanyStory}}</p>
+                </div>
+              </div>
+              
+              <div className="relative">
+                <div className="w-full h-96 bg-gray-200 rounded-lg shadow-lg flex items-center justify-center">
+                  <span className="text-gray-500">{{aboutStoryImagePlaceholder}}</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Our Team */}
+        {/* Mission & Vision Section */}
         <section className="py-16 px-4 bg-gray-50">
-          <div className="max-w-6xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6">Meet Our Team</h2>
-            <p className="text-gray-600 mb-12">Dedicated individuals driving our mission forward</p>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+              <div className="bg-white p-8 rounded-lg shadow-sm">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  {{aboutMission}}
+                </p>
+              </div>
+              
+              <div className="bg-white p-8 rounded-lg shadow-sm">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  {{aboutVision}}
+                </p>
+              </div>
+            </div>
+
+            {/* Company Values */}
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Our Values</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {{aboutValuesCards}}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Team Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                {{aboutTeamTitle}}
+              </h2>
+              <p className="text-xl text-gray-600">
+                The talented people behind {{businessName}}
+              </p>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {team.map((member, idx) => (
-                <div key={idx} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition">
-                  {member.image ? (
-                    <img src={member.image} alt={member.name} className="h-64 w-full object-cover" />
-                  ) : (
-                    <div className="h-64 flex items-center justify-center text-5xl text-white font-bold" style={{ background: 'linear-gradient(to right, #22D3EE, #0F172A)' }}>
-                      {member.name.charAt(0)}
-                    </div>
-                  )}
-                  <div className="p-6 text-left">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-1">{member.name}</h3>
-                    <p className="text-sm font-medium text-blue-600 mb-2">{member.role}</p>
-                    <p className="text-sm text-gray-600">{member.bio}</p>
-                  </div>
-                </div>
-              ))}
+              {{aboutTeamCards}}
             </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="py-16 px-4">
+        {/* Contact CTA Section */}
+        <section className="py-16 px-4 bg-blue-600 text-white">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6">Ready to Work Together?</h2>
-            <p className="text-lg text-gray-600 mb-8">
-              Whether you're looking to partner, volunteer, or support our cause — we’d love to hear from you.
+            <h2 className="text-3xl font-bold mb-4">
+              Ready to Work with {{businessName}}?
+            </h2>
+            <p className="text-xl mb-8 text-blue-100">
+              Let's discuss how we can help you achieve your goals
             </p>
             <a
               href="/contact"
-              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
-              aria-label="Contact us"
+              className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
             >
               Get In Touch
             </a>
           </div>
         </section>
       </main>
-
+      
       <Footer />
     </div>
   )

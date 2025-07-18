@@ -1,101 +1,295 @@
+// Complete Footer Template for ProjectGenerator
+// File: lib/generator/templates/base/components/Footer.js.template
+
 'use client'
 
-export default function Footer({
-  logo = '/logo.svg',
-  sections = {},
-  socialLinks = [],
-  newsletter = {
-    title: 'Subscribe to our newsletter',
-    description: 'The latest news, articles, and resources, sent to your inbox weekly.',
-  },
-  copyright = '© 2024 Your Company, Inc. All rights reserved.',
-}) {
-  return (
-    <footer className="bg-gray-900">
-      <div className="mx-auto max-w-7xl px-6 pt-16 pb-8 sm:pt-24 lg:px-8 lg:pt-32">
-        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
-          <img src={logo} alt="Company logo" className="h-9" />
+import { useState } from 'react'
+import Link from 'next/link'
+import { 
+  Facebook, 
+  Twitter, 
+  Linkedin, 
+  Instagram, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Send,
+  ArrowRight
+} from 'lucide-react'
 
-          <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
-            {Object.entries(sections).slice(0, 2).map(([sectionTitle, links]) => (
-              <div key={sectionTitle} className="md:grid md:grid-cols-2 md:gap-8">
-                <div>
-                  <h3 className="text-sm font-semibold text-white capitalize">{sectionTitle}</h3>
-                  <ul role="list" className="mt-6 space-y-4">
-                    {links.map((item) => (
-                      <li key={item.name}>
-                        <a href={item.href} className="text-sm text-gray-400 hover:text-white">
-                          {item.name}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-            {Object.entries(sections).slice(2).map(([sectionTitle, links]) => (
-              <div key={sectionTitle} className="md:grid md:grid-cols-2 md:gap-8">
-                <div>
-                  <h3 className="text-sm font-semibold text-white capitalize">{sectionTitle}</h3>
-                  <ul role="list" className="mt-6 space-y-4">
-                    {links.map((item) => (
-                      <li key={item.name}>
-                        <a href={item.href} className="text-sm text-gray-400 hover:text-white">
-                          {item.name}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+export default function Footer() {
+  const [email, setEmail] = useState('')
+  const [isSubscribing, setIsSubscribing] = useState(false)
 
-        {/* Newsletter */}
-        {newsletter && (
-          <div className="mt-16 border-t border-white/10 pt-8 sm:mt-20 lg:mt-24 lg:flex lg:items-center lg:justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-white">{newsletter.title}</h3>
-              <p className="mt-2 text-sm text-gray-400">{newsletter.description}</p>
+  // Company information from configuration
+  const companyInfo = {
+    name: '{{footer.companyName}}',
+    description: '{{footer.companyDescription}}',
+    email: '{{footer.email}}',
+    phone: '{{footer.phone}}',
+    address: '{{footer.address}}'
+  }
+
+  // Social links from configuration
+  const socialLinks = {
+    facebook: '{{footer.socialLinks.facebook}}',
+    twitter: '{{footer.socialLinks.twitter}}',
+    linkedin: '{{footer.socialLinks.linkedin}}',
+    instagram: '{{footer.socialLinks.instagram}}'
+  }
+
+  // Quick links from configuration
+  const quickLinks = [
+    {{#each footerData.quickLinks}}
+    {
+      name: '{{this.name}}',
+      href: '{{this.link}}'
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+  ]
+
+  // Newsletter configuration
+  const showNewsletter = {{footer.showNewsletter}}
+  const newsletterTitle = '{{footer.newsletterTitle}}'
+
+  // Handle newsletter subscription
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault()
+    setIsSubscribing(true)
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubscribing(false)
+      setEmail('')
+      // You can replace this with actual newsletter signup logic
+      alert('Thank you for subscribing!')
+    }, 1000)
+  }
+
+  // Get footer style classes
+  const getFooterClasses = () => {
+    const footerStyle = '{{footer.style}}'
+    const baseClasses = 'bg-gray-900 text-white'
+    
+    switch (footerStyle) {
+      case 'simple':
+        return `${baseClasses} py-8`
+      case 'multiColumn':
+        return `${baseClasses} py-12`
+      case 'minimal':
+        return `${baseClasses} py-6 border-t border-gray-800`
+      case 'gradient':
+        return 'bg-gradient-to-r from-blue-900 to-purple-900 text-white py-12'
+      default:
+        return `${baseClasses} py-12`
+    }
+  }
+
+  // Render social icon
+  const renderSocialIcon = (platform, url) => {
+    if (!url) return null
+
+    const iconMap = {
+      facebook: Facebook,
+      twitter: Twitter,
+      linkedin: Linkedin,
+      instagram: Instagram
+    }
+
+    const Icon = iconMap[platform]
+    if (!Icon) return null
+
+    return (
+      <a
+        key={platform}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors group"
+        aria-label={`Follow us on ${platform}`}
+      >
+        <Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+      </a>
+    )
+  }
+
+  // Render different footer layouts based on style
+  const renderFooterContent = () => {
+    const footerStyle = '{{footer.style}}'
+
+    switch (footerStyle) {
+      case 'simple':
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="mb-4 md:mb-0">
+                <h3 className="text-xl font-bold">{companyInfo.name}</h3>
+                <p className="text-gray-400 mt-1">{companyInfo.description}</p>
+              </div>
+              
+              {/* Social Links */}
+              <div className="flex space-x-3">
+                {Object.entries(socialLinks).map(([platform, url]) => 
+                  renderSocialIcon(platform, url)
+                )}
+              </div>
             </div>
-            <form className="mt-6 sm:flex sm:max-w-md lg:mt-0">
-              <label htmlFor="email-address" className="sr-only">Email address</label>
-              <input
-                id="email-address"
-                type="email"
-                required
-                autoComplete="email"
-                placeholder="Enter your email"
-                className="w-full rounded-md bg-white/5 px-3 py-1.5 text-white placeholder:text-gray-500 focus:outline-2 focus:outline-indigo-500 sm:w-56 sm:text-sm"
-              />
-              <div className="mt-4 sm:mt-0 sm:ml-4 sm:flex-shrink-0">
-                <button
-                  type="submit"
-                  className="w-full rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
-                >
-                  Subscribe
-                </button>
-              </div>
-            </form>
+            
+            <div className="border-t border-gray-800 mt-6 pt-6 text-center text-gray-400">
+              <p>&copy; {{currentYear}} {companyInfo.name}. All rights reserved.</p>
+            </div>
           </div>
-        )}
+        )
 
-        {/* Bottom Bar */}
-        <div className="mt-8 border-t border-white/10 pt-8 md:flex md:items-center md:justify-between">
-          <div className="flex gap-x-6 md:order-2">
-            {socialLinks.map((item) => (
-              <a key={item.name} href={item.href} className="text-gray-400 hover:text-white">
-                <span className="sr-only">{item.name}</span>
-                <item.icon className="size-6" aria-hidden="true" />
-              </a>
-            ))}
+      case 'minimal':
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row justify-between items-center text-sm">
+              <p className="text-gray-400 mb-2 md:mb-0">
+                &copy; {{currentYear}} {companyInfo.name}. All rights reserved.
+              </p>
+              
+              <div className="flex space-x-6">
+                {quickLinks.map((link, index) => (
+                  <Link
+                    key={index}
+                    href={link.href}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
-          <p className="mt-8 text-sm text-gray-400 md:order-1 md:mt-0">
-            {copyright}
-          </p>
-        </div>
-      </div>
+        )
+
+      case 'multiColumn':
+      default:
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              
+              {/* Company Info */}
+              <div className="lg:col-span-2">
+                <h3 className="text-xl font-bold mb-4">{companyInfo.name}</h3>
+                <p className="text-gray-400 mb-6 max-w-md">
+                  {companyInfo.description}
+                </p>
+                
+                {/* Contact Info */}
+                <div className="space-y-3">
+                  {companyInfo.email && (
+                    <div className="flex items-center space-x-3">
+                      <Mail className="w-5 h-5 text-gray-400" />
+                      <a 
+                        href={`mailto:${companyInfo.email}`}
+                        className="text-gray-400 hover:text-white transition-colors"
+                      >
+                        {companyInfo.email}
+                      </a>
+                    </div>
+                  )}
+                  
+                  {companyInfo.phone && (
+                    <div className="flex items-center space-x-3">
+                      <Phone className="w-5 h-5 text-gray-400" />
+                      <a 
+                        href={`tel:${companyInfo.phone}`}
+                        className="text-gray-400 hover:text-white transition-colors"
+                      >
+                        {companyInfo.phone}
+                      </a>
+                    </div>
+                  )}
+                  
+                  {companyInfo.address && (
+                    <div className="flex items-start space-x-3">
+                      <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                      <span className="text-gray-400">
+                        {companyInfo.address}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick Links */}
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+                <ul className="space-y-2">
+                  {quickLinks.map((link, index) => (
+                    <li key={index}>
+                      <Link
+                        href={link.href}
+                        className="text-gray-400 hover:text-white transition-colors group flex items-center"
+                      >
+                        <span>{link.name}</span>
+                        <ArrowRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Newsletter */}
+              {{#if footer.showNewsletter}}
+              <div>
+                <h4 className="text-lg font-semibold mb-4">{newsletterTitle}</h4>
+                <p className="text-gray-400 mb-4 text-sm">
+                  Subscribe to our newsletter for updates and exclusive offers.
+                </p>
+                
+                <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+                  <div className="flex">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      required
+                      className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSubscribing}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-r-lg transition-colors flex items-center"
+                    >
+                      {isSubscribing ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+              {{/if}}
+            </div>
+
+            {/* Bottom Section */}
+            <div className="border-t border-gray-800 mt-8 pt-8">
+              <div className="flex flex-col md:flex-row justify-between items-center">
+                <p className="text-gray-400 text-sm mb-4 md:mb-0">
+                  &copy; {{currentYear}} {companyInfo.name}. All rights reserved.
+                </p>
+                
+                {/* Social Links */}
+                <div className="flex space-x-3">
+                  {Object.entries(socialLinks).map(([platform, url]) => 
+                    renderSocialIcon(platform, url)
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+    }
+  }
+
+  return (
+    <footer className={getFooterClasses()}>
+      {renderFooterContent()}
     </footer>
   )
 }

@@ -1,76 +1,296 @@
+// Enhanced Hero Section Template for ProjectGenerator
+// File: lib/generator/templates/base/components/Hero.js.template
+
 'use client'
 
-export default function Hero({
-  variant = 'centered', // 'centered' | 'split' | 'background'
-  headline = 'Your Headline Here',
-  description = 'A brief paragraph describing your product or service.',
-  ctaPrimary = { text: 'Get Started', href: '#' },
-  ctaSecondary = { text: 'Learn More', href: '#' },
-  image = '/placeholder.svg',
-  backgroundImage = '/background.jpg',
-}) {
-  const renderCTA = () => (
-    <div className="mt-6 flex flex-wrap justify-center gap-4 sm:justify-start">
-      <a
-        href={ctaPrimary.href}
-        className="rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500"
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Play, ArrowRight, Star, CheckCircle } from 'lucide-react'
+
+export default function Hero() {
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Hero configuration from template
+  const heroConfig = {
+    headline: '{{hero.headline}}',
+    subheadline: '{{hero.subheadline}}',
+    primaryCta: '{{hero.primaryCta}}',
+    secondaryCta: '{{hero.secondaryCta}}',
+    backgroundType: '{{hero.backgroundType}}',
+    backgroundImage: '{{hero.backgroundImage}}',
+    backgroundVideo: '{{hero.backgroundVideo}}'
+  }
+
+  const heroStyle = '{{design.heroStyle}}'
+  const businessName = '{{businessName}}'
+  const industry = '{{industry}}'
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Get hero container classes based on style
+  const getHeroClasses = () => {
+    const baseClasses = 'relative overflow-hidden'
+    
+    switch (heroStyle) {
+      case 'centered':
+        return `${baseClasses} min-h-screen flex items-center justify-center text-center`
+      case 'left-aligned':
+        return `${baseClasses} min-h-screen flex items-center`
+      case 'split':
+        return `${baseClasses} min-h-screen`
+      case 'minimal':
+        return `${baseClasses} py-20`
+      case 'full-height':
+        return `${baseClasses} h-screen flex items-center justify-center text-center`
+      default:
+        return `${baseClasses} min-h-screen flex items-center justify-center text-center`
+    }
+  }
+
+  // Get background styling
+  const getBackgroundStyle = () => {
+    switch (heroConfig.backgroundType) {
+      case 'gradient':
+        return 'bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800'
+      case 'solid':
+        return 'bg-blue-600'
+      case 'image':
+        return heroConfig.backgroundImage 
+          ? `bg-cover bg-center bg-no-repeat` 
+          : 'bg-gradient-to-br from-blue-600 to-purple-600'
+      case 'video':
+        return 'bg-black'
+      default:
+        return 'bg-gradient-to-br from-blue-600 to-purple-600'
+    }
+  }
+
+  // Render background media
+  const renderBackground = () => {
+    if (heroConfig.backgroundType === 'image' && heroConfig.backgroundImage) {
+      return (
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url(${heroConfig.backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+      )
+    }
+
+    if (heroConfig.backgroundType === 'video' && heroConfig.backgroundVideo) {
+      return (
+        <div className="absolute inset-0 z-0">
+          <video
+            autoPlay
+            muted
+            loop
+            className="w-full h-full object-cover"
+          >
+            <source src={heroConfig.backgroundVideo} type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+      )
+    }
+
+    return null
+  }
+
+  // Render CTA buttons
+  const renderCTAs = () => (
+    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <Link
+        href="/contact"
+        className="inline-flex items-center px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
       >
-        {ctaPrimary.text}
-      </a>
-      <a
-        href={ctaSecondary.href}
-        className="text-sm font-semibold text-gray-900"
-      >
-        {ctaSecondary.text} <span aria-hidden="true">→</span>
-      </a>
+        <span>{heroConfig.primaryCta}</span>
+        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+      </Link>
+      
+      {heroConfig.secondaryCta && (
+        <button
+          onClick={() => setIsVideoPlaying(true)}
+          className="inline-flex items-center px-8 py-4 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-all group"
+        >
+          <Play className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
+          <span>{heroConfig.secondaryCta}</span>
+        </button>
+      )}
     </div>
   )
 
-  if (variant === 'split') {
-    return (
-      <section className="bg-white px-6 py-24 sm:py-32 lg:px-8">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              {headline}
+  // Render different hero layouts
+  const renderHeroContent = () => {
+    switch (heroStyle) {
+      case 'split':
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div className="grid lg:grid-cols-2 gap-12 items-center h-full">
+              {/* Left Content */}
+              <div className="text-white z-10">
+                <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                  {heroConfig.headline}
+                </h1>
+                <p className="text-xl lg:text-2xl mb-8 text-gray-200 leading-relaxed">
+                  {heroConfig.subheadline}
+                </p>
+                
+                {/* Features List */}
+                <div className="mb-8 space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-6 h-6 text-green-400" />
+                    <span className="text-lg">Professional {industry} services</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-6 h-6 text-green-400" />
+                    <span className="text-lg">Expert team with proven results</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-6 h-6 text-green-400" />
+                    <span className="text-lg">24/7 customer support</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                  {renderCTAs()}
+                </div>
+              </div>
+
+              {/* Right Content - Visual Element */}
+              <div className="relative z-10 hidden lg:block">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+                  <div className="text-center">
+                    <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Star className="w-12 h-12 text-blue-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">
+                      Trusted by thousands
+                    </h3>
+                    <p className="text-gray-200">
+                      Join the growing community of satisfied customers who trust {businessName}.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 'left-aligned':
+        return (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl text-white z-10">
+              <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
+                {heroConfig.headline}
+              </h1>
+              <p className="text-xl lg:text-2xl mb-8 text-gray-200 leading-relaxed">
+                {heroConfig.subheadline}
+              </p>
+              {renderCTAs()}
+            </div>
+          </div>
+        )
+
+      case 'minimal':
+        return (
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              {heroConfig.headline}
             </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600">{description}</p>
-            {renderCTA()}
+            <p className="text-lg lg:text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+              {heroConfig.subheadline}
+            </p>
+            {renderCTAs()}
           </div>
-          <div>
-            <img src={image} alt="" className="w-full max-w-md mx-auto lg:max-w-none" />
+        )
+
+      case 'centered':
+      case 'full-height':
+      default:
+        return (
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="text-white z-10">
+              <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
+                {heroConfig.headline}
+              </h1>
+              <p className="text-xl lg:text-2xl mb-8 text-gray-200 leading-relaxed max-w-3xl mx-auto">
+                {heroConfig.subheadline}
+              </p>
+              
+              {/* Stats or Trust Indicators */}
+              <div className="mb-12 flex flex-wrap justify-center gap-8 text-center">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <div className="text-3xl font-bold">500+</div>
+                  <div className="text-sm text-gray-300">Happy Clients</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <div className="text-3xl font-bold">99%</div>
+                  <div className="text-sm text-gray-300">Satisfaction Rate</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <div className="text-3xl font-bold">24/7</div>
+                  <div className="text-sm text-gray-300">Support</div>
+                </div>
+              </div>
+
+              {renderCTAs()}
+            </div>
           </div>
-        </div>
-      </section>
-    )
+        )
+    }
   }
 
-  if (variant === 'background') {
-    return (
-      <section
-        className="relative bg-cover bg-center text-white px-6 py-36 sm:py-48 lg:px-8"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
-      >
-        <div className="absolute inset-0 bg-black/40 mix-blend-multiply"></div>
-        <div className="relative z-10 mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">{headline}</h1>
-          <p className="mt-6 text-lg leading-8 text-gray-100">{description}</p>
-          {renderCTA()}
-        </div>
-      </section>
-    )
+  if (!mounted) {
+    return null
   }
 
-  // Default: 'centered'
   return (
-    <section className="bg-white px-6 py-24 sm:py-32 lg:px-8">
-      <div className="mx-auto max-w-3xl text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-          {headline}
-        </h1>
-        <p className="mt-6 text-lg leading-8 text-gray-600">{description}</p>
-        {renderCTA()}
+    <section className={`${getHeroClasses()} ${getBackgroundStyle()}`}>
+      {/* Background Media */}
+      {renderBackground()}
+      
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-10 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-500" />
       </div>
+      
+      {/* Content */}
+      <div className="relative z-10 w-full">
+        {renderHeroContent()}
+      </div>
+
+      {/* Video Modal */}
+      {isVideoPlaying && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsVideoPlaying(false)}
+        >
+          <div className="relative max-w-4xl w-full aspect-video bg-black rounded-lg overflow-hidden">
+            <button
+              onClick={() => setIsVideoPlaying(false)}
+              className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+            >
+              ×
+            </button>
+            <iframe
+              src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+              className="w-full h-full"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
     </section>
   )
 }
