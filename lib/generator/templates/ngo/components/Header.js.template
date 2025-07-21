@@ -1,98 +1,243 @@
-// NGO Header Component Template with Dynamic Navigation
-// File: lib/generator/templates/base/components/ngo/Header.js.template
-
+// lib/generator/templates/ngo/components/Header.js.template
 'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X, Heart, Phone, Mail } from 'lucide-react'
+import { 
+  Menu, 
+  X, 
+  Heart, 
+  Users, 
+  Phone, 
+  Mail,
+  ChevronDown,
+  Search
+} from 'lucide-react'
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState({})
 
-  const toggleMenu = () => setIsOpen(!isOpen)
+  const navigation = [
+    {{menuItems}}
+  ]
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+  
+  const toggleDropdown = (itemName) => {
+    setDropdownOpen(prev => ({
+      ...prev,
+      [itemName]: !prev[itemName]
+    }))
+  }
 
   return (
-    <>
-      {/* Top Contact Bar */}
-      <div className="bg-green-600 text-white py-2">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <Phone className="w-4 h-4" />
-                <span>{{contactPhone}}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Mail className="w-4 h-4" />
-                <span>{{contactEmail}}</span>
-              </div>
+    <header className="bg-white shadow-lg sticky top-0 z-50">
+      {/* Top Info Bar */}
+      <div className="bg-green-600 text-white py-2 px-4 hidden md:block">
+        <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
+              <Phone className="w-4 h-4" />
+              <span>{{footer.phone}}</span>
             </div>
-
+            <div className="flex items-center space-x-2">
+              <Mail className="w-4 h-4" />
+              <span>{{footer.email}}</span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <span>🌍 Making a global impact</span>
+            <Link href="/volunteer" className="hover:text-green-200 flex items-center space-x-1">
+              <Users className="w-4 h-4" />
+              <span>Join Our Mission</span>
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Main Header */}
-      <header className="bg-white shadow-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+              <Heart className="w-6 h-6 text-white fill-current" />
+            </div>
+            <div>
+              <span className="text-2xl font-bold text-gray-900">{{businessName}}</span>
+              <div className="text-sm text-green-600 font-medium">{{businessDescription}}</div>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-1">
+            {navigation.map((item) => (
+              <div key={item.name} className="relative group">
+                <Link
+                  href={item.href}
+                  className="flex items-center px-4 py-2 text-gray-700 hover:text-green-600 font-medium transition-colors rounded-lg hover:bg-green-50"
+                >
+                  {item.name}
+                  {item.children && item.children.length > 0 && (
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  )}
+                </Link>
+                
+                {/* Dropdown Menu */}
+                {item.children && item.children.length > 0 && (
+                  <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="py-2">
+                      {item.children.map((dropdownItem) => (
+                        <Link
+                          key={dropdownItem.name}
+                          href={dropdownItem.href}
+                          className="block px-4 py-3 text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors"
+                        >
+                          <div className="font-medium">{dropdownItem.name}</div>
+                          {dropdownItem.description && (
+                            <div className="text-sm text-gray-500">{dropdownItem.description}</div>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </nav>
+
+          {/* Action Buttons */}
+          <div className="hidden lg:flex items-center space-x-3">
+            <button className="p-2 text-gray-600 hover:text-green-600 transition-colors">
+              <Search className="w-5 h-5" />
+            </button>
             
-            {/* Logo and Organization Name */}
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center">
-                <Heart className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{{businessName}}</h1>
-              </div>
-            </div>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex space-x-1">
-              {{navigationMenu}}
-            </nav>
-
-            {/* Donate Button & Mobile Menu */}
-            <div className="flex items-center space-x-4">
-              <Link 
-                href="/donate"
-                className="hidden md:inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg hover:from-green-600 hover:to-blue-600 transition-all shadow-lg hover:shadow-xl font-semibold"
-              >
-                <Heart className="w-4 h-4 mr-2" />
-                Donate Now
-              </Link>
-
-              {/* Mobile Menu Button */}
-              <button
-                onClick={toggleMenu}
-                className="lg:hidden p-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-green-50"
-              >
-                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
+            <Link 
+              href="/donate" 
+              className="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md hover:shadow-lg flex items-center space-x-2"
+            >
+              <Heart className="w-4 h-4 fill-current" />
+              <span>Donate Now</span>
+            </Link>
+            
+            <Link 
+              href="{{header.ctaLink}}" 
+              className="border-2 border-green-500 text-green-500 px-6 py-3 rounded-lg font-semibold hover:bg-green-500 hover:text-white transition-all flex items-center space-x-2"
+            >
+              <Users className="w-4 h-4" />
+              <span>{{header.ctaText}}</span>
+            </Link>
           </div>
 
-          {/* Mobile Navigation */}
-          {isOpen && (
-            <nav className="lg:hidden bg-white border-t border-gray-200 py-4">
-              <div className="space-y-2">
-                {{mobileNavigationMenu}}
-                <div className="px-4 pt-4 border-t border-gray-200">
-                  <Link
-                    href="/donate"
-                    className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg hover:from-green-600 hover:to-blue-600 transition-all font-semibold"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Heart className="w-4 h-4 mr-2" />
-                    Donate Now
-                  </Link>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={toggleMenu}
+            className="lg:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          >
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="lg:hidden border-t border-gray-200 py-4">
+            <nav className="space-y-2">
+              {navigation.map((item) => (
+                <div key={item.name}>
+                  <div className="flex items-center justify-between">
+                    <Link
+                      href={item.href}
+                      className="flex-1 px-4 py-3 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors font-medium"
+                      onClick={() => {
+                        if (!item.children || item.children.length === 0) {
+                          setIsMenuOpen(false)
+                        }
+                      }}
+                    >
+                      {item.name}
+                    </Link>
+                    {item.children && item.children.length > 0 && (
+                      <button
+                        onClick={() => toggleDropdown(item.name)}
+                        className="p-2 text-gray-500 hover:text-green-600"
+                      >
+                        <ChevronDown 
+                          className={`w-4 h-4 transition-transform ${
+                            dropdownOpen[item.name] ? 'rotate-180' : ''
+                          }`} 
+                        />
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Mobile Dropdown */}
+                  {item.children && item.children.length > 0 && dropdownOpen[item.name] && (
+                    <div className="ml-4 space-y-1">
+                      {item.children.map((dropdownItem) => (
+                        <Link
+                          key={dropdownItem.name}
+                          href={dropdownItem.href}
+                          className="block px-4 py-2 text-gray-600 hover:text-green-600 transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          {dropdownItem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              ))}
+              
+              {/* Mobile Action Buttons */}
+              <div className="pt-4 border-t border-gray-200 space-y-3">
+                <Link
+                  href="/donate"
+                  className="flex items-center justify-center space-x-2 w-full bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Heart className="w-4 h-4 fill-current" />
+                  <span>Donate Now</span>
+                </Link>
+                
+                <Link
+                  href="{{header.ctaLink}}"
+                  className="flex items-center justify-center space-x-2 w-full border-2 border-green-500 text-green-500 px-6 py-3 rounded-lg font-semibold hover:bg-green-500 hover:text-white transition-all"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Users className="w-4 h-4" />
+                  <span>{{header.ctaText}}</span>
+                </Link>
               </div>
             </nav>
-          )}
+          </div>
+        )}
+      </div>
+
+      {/* Impact Banner */}
+      <div className="bg-gradient-to-r from-green-50 to-blue-50 border-t border-gray-200 py-3 px-4 hidden md:block">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center space-x-8 text-sm">
+            <div className="flex items-center space-x-2 text-green-700">
+              <span className="font-semibold">🎯 Lives Impacted:</span>
+              <span className="text-green-800 font-bold">Growing Daily</span>
+            </div>
+            <div className="flex items-center space-x-2 text-blue-700">
+              <span className="font-semibold">💧 Communities Served:</span>
+              <span className="text-blue-800 font-bold">Worldwide</span>
+            </div>
+            <div className="flex items-center space-x-2 text-orange-700">
+              <span className="font-semibold">📚 Programs Active:</span>
+              <span className="text-orange-800 font-bold">{{industry}} Focus</span>
+            </div>
+            <div className="flex items-center space-x-2 text-purple-700">
+              <span className="font-semibold">🤝 Join {{businessName}}:</span>
+              <span className="text-purple-800 font-bold">Make a Difference</span>
+            </div>
+          </div>
         </div>
-      </header>
-    </>
+      </div>
+    </header>
   )
 }

@@ -5,8 +5,8 @@ import { CheckCircle } from 'lucide-react'
 
 export default function ProgressSteps({ steps, currentStep, onStepClick }) {
   return (
-    <div className="flex items-center justify-center px-4 sm:px-6">
-      <div className="flex flex-wrap justify-center gap-y-6 gap-x-4 sm:flex-nowrap sm:gap-x-6">
+    <div className="w-full flex justify-center px-4 sm:px-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full gap-6">
         {steps.map((step, index) => {
           const Icon = step.icon
           const isCompleted = index < currentStep
@@ -14,18 +14,17 @@ export default function ProgressSteps({ steps, currentStep, onStepClick }) {
           const isAccessible = index <= currentStep
 
           return (
-            <div key={step.id} className="flex items-center">
+            <div key={step.id} className="flex flex-col sm:flex-row items-center w-full sm:w-auto">
               <motion.button
                 onClick={() => isAccessible && onStepClick(index)}
-                className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-colors ${
-                  isCompleted
+                className={`relative flex items-center justify-center w-12 h-12 mx-auto sm:mx-0 rounded-full transition-colors ${isCompleted
                     ? 'bg-green-500 text-white'
                     : isCurrent
-                    ? 'bg-blue-600 text-white'
-                    : isAccessible
-                    ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                }`}
+                      ? 'bg-blue-600 text-white'
+                      : isAccessible
+                        ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
                 whileHover={isAccessible ? { scale: 1.05 } : {}}
                 whileTap={isAccessible ? { scale: 0.95 } : {}}
                 disabled={!isAccessible}
@@ -37,18 +36,35 @@ export default function ProgressSteps({ steps, currentStep, onStepClick }) {
                 )}
 
                 {/* Step label */}
-                <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-600 whitespace-nowrap">
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-600 whitespace-nowrap">
                   {step.title}
                 </span>
               </motion.button>
 
-              {/* Connector line */}
+              {/* Connector: animate color and size */}
               {index < steps.length - 1 && (
-                <div className="hidden sm:block w-16 h-1 mx-2 bg-gray-200 transition-colors"
-                  style={{
-                    backgroundColor: index < currentStep ? '#22c55e' : undefined,
-                  }}
-                />
+                <>
+                  {/* Desktop (horizontal line) */}
+                  <motion.div
+                    className="hidden sm:block mx-2 h-1 rounded"
+                    initial={{ width: 64, backgroundColor: '#e5e7eb' }}
+                    animate={{
+                      width: 64,
+                      backgroundColor: index < currentStep ? '#22c55e' : '#e5e7eb',
+                    }}
+                    transition={{ duration: 0.4 }}
+                  />
+
+                  {/* Mobile (vertical line) */}
+                  <motion.div
+                    className="block sm:hidden w-1 h-6 mx-auto my-2 rounded"
+                    initial={{ backgroundColor: '#e5e7eb' }}
+                    animate={{
+                      backgroundColor: index < currentStep ? '#22c55e' : '#e5e7eb',
+                    }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </>
               )}
             </div>
           )

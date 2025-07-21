@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  Globe, 
-  ShoppingBag, 
-  Users, 
-  BarChart3, 
-  FileText, 
+import {
+  Globe,
+  ShoppingBag,
+  Users,
+  BarChart3,
+  FileText,
   Briefcase,
   ArrowRight,
   Plus,
@@ -31,13 +31,7 @@ export default function GeneratorForm({ config, onChange, onNext }) {
       icon: Users,
       features: ['User Authentication', 'Data Management', 'Real-time Updates']
     },
-    {
-      id: 'analytics',
-      name: 'Analytics Dashboard',
-      description: 'Data visualization and reporting dashboard',
-      icon: BarChart3,
-      features: ['Charts & Graphs', 'Data Export', 'User Roles']
-    },
+
     {
       id: 'ngo',
       name: 'Non-Profit Organization',
@@ -45,20 +39,7 @@ export default function GeneratorForm({ config, onChange, onNext }) {
       icon: Briefcase,
       features: ['Donation Integration', 'Event Management', 'Volunteer Sign-up']
     },
-    {
-      id: 'blog',
-      name: 'Blog Platform',
-      description: 'Content management system for blogs',
-      icon: FileText,
-      features: ['Post Management', 'Comments', 'Categories']
-    },
-    {
-      id: 'portfolio',
-      name: 'Portfolio Website',
-      description: 'Showcase your work and projects',
-      icon: Briefcase,
-      features: ['Project Gallery', 'Testimonials', 'Contact Form']
-    },
+
     {
       id: 'ecommerce',
       name: 'E-commerce Store',
@@ -66,7 +47,7 @@ export default function GeneratorForm({ config, onChange, onNext }) {
       icon: ShoppingBag,
       features: ['Product Catalog', 'Shopping Cart', 'Payment Integration']
     },
-    
+
   ]
   const availableFeatures = [
     'Authentication',
@@ -86,7 +67,7 @@ export default function GeneratorForm({ config, onChange, onNext }) {
     const newFeatures = config.features?.includes(feature)
       ? config.features.filter(f => f !== feature)
       : [...(config.features || []), feature]
-    
+
     onChange({ ...config, features: newFeatures })
   }
 
@@ -122,8 +103,8 @@ export default function GeneratorForm({ config, onChange, onNext }) {
             value={config.businessName || ''}
             onChange={(e) => {
               console.log('📝 Business name changed to:', e.target.value);
-              onChange({ 
-                ...config, 
+              onChange({
+                ...config,
                 businessName: e.target.value,
                 name: e.target.value // Also set name for compatibility
               });
@@ -134,63 +115,12 @@ export default function GeneratorForm({ config, onChange, onNext }) {
           />
           {/* Debug info */}
           <div className="text-xs text-gray-500 mt-1">
-            Current: "{config.businessName}" 
+            Current: "{config.businessName}"
             {config.businessName ? (
               <span className="text-green-600 ml-2">✓ Set</span>
             ) : (
               <span className="text-red-600 ml-2">⚠ Required</span>
             )}
-          </div>
-        </div>
-
-        {/* Add basic business info fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Industry *
-            </label>
-            <select
-              value={config.industry || ''}
-              onChange={(e) => onChange({ ...config, industry: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Industry</option>
-              <option value="technology">Technology</option>
-              <option value="healthcare">Healthcare</option>
-              <option value="finance">Finance</option>
-              <option value="education">Education</option>
-              <option value="retail">Retail</option>
-              <option value="consulting">Consulting</option>
-              <option value="real-estate">Real Estate</option>
-              <option value="hospitality">Hospitality</option>
-              <option value="entertainment">Entertainment</option>
-              <option value="non-profit">Non-Profit</option>
-              <option value="e-commerce">E-Commerce</option>
-              <option value="logistics">Logistics</option>
-              <option value="manufacturing">Manufacturing</option>  
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Business Type *
-            </label>
-            <select
-              value={config.businessType || ''}
-              onChange={(e) => onChange({ ...config, businessType: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Type</option>
-              <option value="startup">Startup</option>
-              <option value="small-business">Small Business</option>
-              <option value="enterprise">Enterprise</option>
-              <option value="nonprofit">Non-Profit</option>
-              <option value="freelancer">Freelancer</option>
-              <option value="agency">Agency</option>
-            </select>
           </div>
         </div>
 
@@ -218,11 +148,10 @@ export default function GeneratorForm({ config, onChange, onNext }) {
                 <motion.button
                   key={template.id}
                   onClick={() => handleTemplateSelect(template)}
-                  className={`p-4 border-2 rounded-lg text-left transition-colors ${
-                    config.template === template.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`p-4 border-2 rounded-lg text-left transition-colors ${config.template === template.id
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                    }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -265,7 +194,7 @@ export default function GeneratorForm({ config, onChange, onNext }) {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Additional Features
           </h3>
-          
+
           {/* Selected Features */}
           {(config.features || []).length > 0 && (
             <div className="mb-4">
@@ -334,7 +263,7 @@ export default function GeneratorForm({ config, onChange, onNext }) {
         <div className="flex justify-end pt-6 border-t">
           <button
             onClick={onNext}
-            disabled={!config.businessName || !config.industry || !config.businessType || !config.template}
+            disabled={!config.template}
             className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span>Next: Design</span>

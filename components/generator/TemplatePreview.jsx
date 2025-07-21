@@ -1,79 +1,120 @@
-// Updated Template Preview Component
-// File: components/generator/TemplatePreview.jsx
-
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, ArrowLeft, Wand2 } from 'lucide-react'
+import {
+  ArrowRight,
+  ArrowLeft,
+  Wand2,
+  Monitor,
+  Smartphone,
+  ChevronDown,
+  Star,
+  CheckCircle,
+  Mail,
+  Phone,
+  MapPin,
+  Eye,
+  Palette,
+  Type,
+  Layout as LayoutIcon
+} from 'lucide-react'
 
 export default function TemplatePreview({ config, onGenerate, onPrev }) {
-  // Safely get styling properties with defaults
-  const getStyle = (path, defaultValue) => {
+  const [previewMode, setPreviewMode] = useState('desktop')
+
+  // Safe property access with fallbacks
+  const safeGet = (obj, path, defaultValue = null) => {
     try {
-      return path.split('.').reduce((obj, key) => obj?.[key], config) || defaultValue;
+      return path.split('.').reduce((current, key) => {
+        return current && typeof current === 'object' && key in current ? current[key] : undefined;
+      }, obj) ?? defaultValue;
     } catch {
       return defaultValue;
     }
   };
 
-  const theme = getStyle('design.theme', 'modern');
-  const primaryColor = getStyle('styling.primaryColor', '#3B82F6');
-  const features = config?.features || [];
+  // Get design configuration with comprehensive fallbacks
+  const getDesignConfig = () => {
+    const design = config?.design || {};
+
+    return {
+      name: safeGet(design, 'name', 'Modern Design'),
+      colors: {
+        primary: safeGet(design, 'colors.primary', '#3B82F6'),
+        secondary: safeGet(design, 'colors.secondary', '#8B5CF6'),
+        background: safeGet(design, 'colors.background', '#FFFFFF'),
+        surface: safeGet(design, 'colors.surface', '#F9FAFB'),
+        text: safeGet(design, 'colors.text', '#1F2937'),
+        accent: safeGet(design, 'colors.accent', '#10B981')
+      },
+      fonts: {
+        heading: safeGet(design, 'fonts.heading', 'Inter'),
+        body: safeGet(design, 'fonts.body', 'Inter')
+      },
+      layout: {
+        type: safeGet(design, 'layout.type', 'standard'),
+        container: safeGet(design, 'layout.container', 'max-w-7xl')
+      },
+      effects: {
+        shadow: safeGet(design, 'effects.shadow', 'md'),
+        hoverAnimation: safeGet(design, 'effects.hoverAnimation', 'scale')
+      }
+    };
+  };
+
+  // Get header configuration with fallbacks
+  const getHeaderConfig = () => {
+    const headerData = config?.headerData || {};
+
+    return {
+      style: safeGet(headerData, 'style', 'solid'),
+      logoText: safeGet(headerData, 'logoText', config?.businessName || 'Your Business'),
+      menuItems: safeGet(headerData, 'menuItems', [
+        { name: 'Home', link: '/', type: 'link', children: [] },
+        { name: 'About', link: '/about', type: 'link', children: [] },
+        {
+          name: 'Services', link: '/services', type: 'dropdown', children: [
+            { name: 'Consulting', link: '/services/consulting' },
+            { name: 'Support', link: '/services/support' }
+          ]
+        },
+        { name: 'Contact', link: '/contact', type: 'link', children: [] }
+      ]),
+      showCta: safeGet(headerData, 'showCta', true),
+      ctaText: safeGet(headerData, 'ctaText', 'Get Started'),
+      ctaLink: safeGet(headerData, 'ctaLink', '/contact')
+    };
+  };
+
+  // Get footer configuration with fallbacks
+  const getFooterConfig = () => {
+    const footerData = config?.footerData || {};
+    const businessName = config?.businessName || 'Your Business';
+
+    return {
+      style: safeGet(footerData, 'style', 'multiColumn'),
+      companyName: safeGet(footerData, 'companyName', businessName),
+      email: safeGet(footerData, 'email', `contact@${businessName.toLowerCase().replace(/\s+/g, '')}.com`),
+      phone: safeGet(footerData, 'phone', '(555) 123-4567'),
+      showNewsletter: safeGet(footerData, 'showNewsletter', true)
+    };
+  };
+
+  const design = getDesignConfig();
+  const headerData = getHeaderConfig();
+  const footerData = getFooterConfig();
+
   const template = config?.template || 'marketing';
   const businessName = config?.businessName || config?.name || 'Your Business';
   const industry = config?.industry || 'business';
   const businessDescription = config?.businessDescription || 'Professional services and solutions';
 
-  // Map templates to their corresponding template paths and deployment types
-  const getTemplateDeploymentInfo = (templateId) => {
-    const templateMap = {
-      'ecommerce': {
-        pathType: 'ECOMMERCE_TEMPLATE_PATHS',
-        deploymentType: 'ecommerce',
-        description: 'Full e-commerce site with shopping cart and payment integration'
-      },
-      'marketing': {
-        pathType: 'BASE_TEMPLATE_PATHS',
-        deploymentType: 'base',
-        description: 'Professional marketing website with modern design'
-      },
-      'web-app': {
-        pathType: 'BASE_TEMPLATE_PATHS', 
-        deploymentType: 'base',
-        description: 'Interactive web application with user authentication'
-      },
-      'analytics': {
-        pathType: 'BASE_TEMPLATE_PATHS',
-        deploymentType: 'base', 
-        description: 'Data dashboard with charts and reporting features'
-      },
-      'ngo': {
-        pathType: 'BASE_TEMPLATE_PATHS',
-        deploymentType: 'base',
-        description: 'Non-profit website with donation and volunteer features'
-      },
-      'blog': {
-        pathType: 'BASE_TEMPLATE_PATHS',
-        deploymentType: 'base',
-        description: 'Content management system for blogs and articles'
-      },
-      'portfolio': {
-        pathType: 'BASE_TEMPLATE_PATHS',
-        deploymentType: 'base',
-        description: 'Professional portfolio to showcase work and projects'
-      }
-    };
-    
-    return templateMap[templateId] || templateMap['marketing'];
-  };
-
+  // Get template-specific preview data
   const getPreviewData = () => {
-    const deploymentInfo = getTemplateDeploymentInfo(template);
     const baseData = {
       title: businessName,
-      description: businessDescription,
-      deploymentType: deploymentInfo.deploymentType,
-      pathType: deploymentInfo.pathType
+      description: businessDescription
     };
 
     switch (template) {
@@ -81,107 +122,68 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
         return {
           ...baseData,
           hero: `Shop ${businessName}`,
-          sections: ['Featured Products', 'Categories', 'Customer Reviews', 'Shopping Cart'],
+          sections: ['Featured Products', 'Categories', 'Reviews', 'Cart'],
           cta: 'Shop Now',
-          features: ['Product Catalog', 'Shopping Cart', 'Payment Integration', 'Order Management'],
-          bgGradient: 'from-emerald-50 to-teal-50',
-          darkBgGradient: 'from-emerald-900 to-teal-900'
+          features: ['Product Catalog', 'Shopping Cart', 'Secure Checkout', 'Order Tracking'],
+          bgGradient: 'from-emerald-50 to-teal-50'
         };
-      
+
       case 'marketing':
         return {
           ...baseData,
           hero: `Welcome to ${businessName}`,
-          sections: ['About Us', 'Services', 'Testimonials', 'Contact'],
+          sections: ['About', 'Services', 'Testimonials', 'Contact'],
           cta: 'Get Started',
           features: ['Responsive Design', 'Contact Forms', 'SEO Optimized', 'Analytics'],
-          bgGradient: 'from-blue-50 to-indigo-50',
-          darkBgGradient: 'from-blue-900 to-indigo-900'
+          bgGradient: 'from-blue-50 to-indigo-50'
         };
-      
+
       case 'web-app':
         return {
           ...baseData,
           hero: `${businessName} Platform`,
-          sections: ['Dashboard', 'User Management', 'Settings', 'Analytics'],
+          sections: ['Dashboard', 'Analytics', 'Settings', 'Profile'],
           cta: 'Sign In',
-          features: ['User Authentication', 'Data Management', 'Real-time Updates', 'API Integration'],
-          bgGradient: 'from-purple-50 to-pink-50',
-          darkBgGradient: 'from-purple-900 to-pink-900'
+          features: ['User Auth', 'Real-time Data', 'API Integration', 'Admin Panel'],
+          bgGradient: 'from-purple-50 to-pink-50'
         };
-      
-      case 'analytics':
-        return {
-          ...baseData,
-          hero: `${businessName} Analytics`,
-          sections: ['Dashboard', 'Reports', 'Data Export', 'User Insights'],
-          cta: 'View Reports',
-          features: ['Charts & Graphs', 'Data Export', 'User Roles', 'Real-time Data'],
-          bgGradient: 'from-orange-50 to-red-50',
-          darkBgGradient: 'from-orange-900 to-red-900'
-        };
-      
-      case 'ngo':
-        return {
-          ...baseData,
-          hero: `Support ${businessName}`,
-          sections: ['Our Mission', 'Programs', 'Volunteer','Contact', 'Donate'],
-          cta: 'Donate Now',
-          features: ['Donation Integration', 'Event Management', 'Volunteer Sign-up', 'Impact Stories'],
-          bgGradient: 'from-green-50 to-emerald-50',
-          darkBgGradient: 'from-green-900 to-emerald-900'
-        };
-      
-      case 'blog':
-        return {
-          ...baseData,
-          hero: `${businessName} Blog`,
-          sections: ['Latest Posts', 'Categories', 'Archive', 'Subscribe'],
-          cta: 'Read More',
-          features: ['Post Management', 'Comments', 'Categories', 'Newsletter'],
-          bgGradient: 'from-yellow-50 to-orange-50',
-          darkBgGradient: 'from-yellow-900 to-orange-900'
-        };
-      
-      case 'portfolio':
-        return {
-          ...baseData,
-          hero: `${businessName} Portfolio`,
-          sections: ['Projects', 'About', 'Skills', 'Contact'],
-          cta: 'View Work',
-          features: ['Project Gallery', 'Testimonials', 'Contact Form', 'Resume Download'],
-          bgGradient: 'from-slate-50 to-gray-50',
-          darkBgGradient: 'from-slate-900 to-gray-900'
-        };
-      
+
       default:
         return {
           ...baseData,
           hero: `Welcome to ${businessName}`,
           sections: ['Home', 'About', 'Services', 'Contact'],
           cta: 'Learn More',
-          features: ['Responsive Design', 'Modern UI', 'Fast Loading', 'SEO Ready'],
-          bgGradient: 'from-blue-50 to-purple-50',
-          darkBgGradient: 'from-blue-900 to-purple-900'
+          features: ['Modern Design', 'Fast Loading', 'Mobile Ready', 'SEO Optimized'],
+          bgGradient: 'from-blue-50 to-purple-50'
         };
     }
   };
 
   const preview = getPreviewData();
 
-  // Get theme colors based on the selected design theme
-  const getThemeColors = () => {
-    const themes = {
-      modern: { primary: '#3B82F6', secondary: '#8B5CF6', accent: '#10B981' },
-      elegant: { primary: '#1F2937', secondary: '#D97706', accent: '#DC2626' },
-      creative: { primary: '#EC4899', secondary: '#8B5CF6', accent: '#F59E0B' },
-      tech: { primary: '#06B6D4', secondary: '#8B5CF6', accent: '#10B981' }
-    };
-    return themes[theme] || themes.modern;
+  // Check if configuration is complete
+  const isComplete = () => {
+    return !!(
+      config?.businessName &&
+      config?.template &&
+      design?.colors?.primary
+    );
   };
 
-  const themeColors = getThemeColors();
-  const isDarkTheme = theme === 'tech';
+  // Get header style classes
+  const getHeaderClasses = () => {
+    const baseClasses = 'px-6 py-4 border-b';
+
+    switch (headerData.style) {
+      case 'transparent':
+        return `${baseClasses} bg-transparent border-transparent`;
+      case 'sticky':
+        return `${baseClasses} bg-white/95 backdrop-blur-sm`;
+      default:
+        return `${baseClasses} bg-white`;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -190,16 +192,60 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Preview Your {template.charAt(0).toUpperCase() + template.slice(1).replace('-', ' ')} Website
         </h2>
-        <p className="text-gray-600">
-          This preview shows how your {preview.deploymentType === 'ecommerce' ? 'e-commerce' : 'business'} website will look with the selected configuration.
+        <p className="text-gray-600 mb-4">
+          This preview shows how your website will look with your custom design configuration.
         </p>
-        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-          <div className="flex items-start space-x-2">
-            <div className="text-blue-600 text-sm font-medium">Deployment Info:</div>
-            <div className="text-blue-700 text-sm">
-              Uses {preview.pathType} • Type: {preview.deploymentType}
+
+        {/* Design Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+            <Palette className="w-5 h-5 text-blue-600" />
+            <div>
+              <div className="font-medium text-blue-900">{design.name}</div>
+              <div className="text-xs text-blue-700">Design Theme</div>
             </div>
           </div>
+
+          <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
+            <Type className="w-5 h-5 text-purple-600" />
+            <div>
+              <div className="font-medium text-purple-900">{design.fonts.heading}</div>
+              <div className="text-xs text-purple-700">Typography</div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+            <LayoutIcon className="w-5 h-5 text-green-600" />
+            <div>
+              <div className="font-medium text-green-900 capitalize">{design.layout.type}</div>
+              <div className="text-xs text-green-700">Layout Style</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Preview Controls */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900">Live Preview</h3>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setPreviewMode('desktop')}
+            className={`p-2 rounded-lg transition-colors ${previewMode === 'desktop'
+              ? 'bg-blue-100 text-blue-600'
+              : 'text-gray-500 hover:bg-gray-100'
+              }`}
+          >
+            <Monitor className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setPreviewMode('mobile')}
+            className={`p-2 rounded-lg transition-colors ${previewMode === 'mobile'
+              ? 'bg-blue-100 text-blue-600'
+              : 'text-gray-500 hover:bg-gray-100'
+              }`}
+          >
+            <Smartphone className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -222,121 +268,273 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
         </div>
 
         {/* Preview Content */}
-        <div className="aspect-video bg-gradient-to-br overflow-hidden">
+        <div className={`${previewMode === 'mobile' ? 'max-w-sm mx-auto' : ''}`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`h-full flex flex-col bg-gradient-to-br ${
-              isDarkTheme ? preview.darkBgGradient : preview.bgGradient
-            }`}
+            className={`bg-gradient-to-br ${preview.bgGradient} min-h-96`}
+            style={{ backgroundColor: design.colors.background }}
           >
-            {/* Header */}
-            <div className={`px-8 py-4 border-b ${
-              isDarkTheme 
-                ? 'border-gray-700 bg-gray-800/90 backdrop-blur' 
-                : 'border-gray-200 bg-white/90 backdrop-blur'
-            }`}>
+            {/* Header Preview */}
+            <div
+              className={getHeaderClasses()}
+              style={{ borderColor: design.colors.primary + '20' }}
+            >
               <div className="flex items-center justify-between">
+                {/* Logo */}
                 <div className="flex items-center space-x-3">
-                  <div 
+                  <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-                    style={{ backgroundColor: themeColors.primary }}
+                    style={{ backgroundColor: design.colors.primary }}
                   >
-                    {businessName?.[0]?.toUpperCase() || 'B'}
+                    {headerData.logoText?.[0]?.toUpperCase() || 'B'}
                   </div>
                   <div>
-                    <span className={`font-bold text-lg ${
-                      isDarkTheme ? 'text-white' : 'text-gray-900'
-                    }`}>
-                      {businessName}
+                    <span
+                      className="font-bold text-lg"
+                      style={{
+                        fontFamily: design.fonts.heading,
+                        color: design.colors.primary
+                      }}
+                    >
+                      {headerData.logoText}
                     </span>
-                    <div className={`text-xs ${
-                      isDarkTheme ? 'text-gray-400' : 'text-gray-500'
-                    }`}>
-                      {industry.charAt(0).toUpperCase() + industry.slice(1)}
+                    <div className="text-xs text-gray-500 capitalize">
+                      {industry}
                     </div>
                   </div>
                 </div>
-                <nav className="hidden md:flex space-x-6">
-                  {preview.sections.slice(0, 4).map((section, index) => (
-                    <span 
-                      key={section}
-                      className={`text-sm font-medium transition-colors hover:opacity-80 ${
-                        index === 0 
-                          ? isDarkTheme ? 'text-white' : 'text-gray-900'
-                          : isDarkTheme ? 'text-gray-300' : 'text-gray-600'
-                      }`}
-                      style={index === 0 ? { color: themeColors.primary } : {}}
-                    >
-                      {section}
-                    </span>
+
+                {/* Navigation Menu */}
+                <nav className={`${previewMode === 'mobile' ? 'hidden' : 'flex'} space-x-6`}>
+                  {headerData.menuItems?.slice(0, 4).map((item, index) => (
+                    <div key={index} className="relative group">
+                      <span
+                        className="flex items-center space-x-1 text-sm font-medium cursor-pointer"
+                        style={{ color: design.colors.text }}
+                      >
+                        <span>{item.name}</span>
+                        {item.children && item.children.length > 0 && (
+                          <ChevronDown className="w-3 h-3" />
+                        )}
+                      </span>
+
+                      {/* Dropdown Preview */}
+                      {item.children && item.children.length > 0 && (
+                        <div className="absolute top-full left-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <div
+                            className="bg-white rounded-lg shadow-lg border py-2 min-w-48"
+                            style={{ borderColor: design.colors.primary + '20' }}
+                          >
+                            {item.children.slice(0, 3).map((child, childIndex) => (
+                              <div key={childIndex} className="px-4 py-2 hover:bg-gray-50">
+                                <div className="font-medium text-sm" style={{ color: design.colors.text }}>
+                                  {child.name}
+                                </div>
+                                {child.description && (
+                                  <div className="text-xs text-gray-500">{child.description}</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </nav>
+
+                {/* CTA Button */}
+                {headerData.showCta && (
+                  <button
+                    className="px-4 py-2 text-sm font-medium rounded-lg transition-all hover:scale-105"
+                    style={{
+                      backgroundColor: design.colors.primary,
+                      color: design.colors.surface
+                    }}
+                  >
+                    {headerData.ctaText}
+                  </button>
+                )}
+
+                {/* Mobile Menu Button */}
+                {previewMode === 'mobile' && (
+                  <button className="p-2">
+                    <div className="w-5 h-0.5 bg-gray-600 mb-1"></div>
+                    <div className="w-5 h-0.5 bg-gray-600 mb-1"></div>
+                    <div className="w-5 h-0.5 bg-gray-600"></div>
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Hero Section */}
-            <div className="flex-1 flex items-center justify-center px-8">
-              <div className="text-center max-w-2xl">
-                <h1 className={`text-4xl font-bold mb-4 ${
-                  isDarkTheme ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {preview.hero}
-                </h1>
-                <p className={`text-lg mb-8 ${
-                  isDarkTheme ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  {preview.description}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    className="px-6 py-3 text-white rounded-lg font-medium transition-all hover:scale-105"
-                    style={{ backgroundColor: themeColors.primary }}
-                  >
-                    {preview.cta}
-                  </button>
-                  <button
-                    className={`px-6 py-3 rounded-lg font-medium border-2 transition-all hover:scale-105 ${
-                      isDarkTheme 
-                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    Learn More
-                  </button>
-                </div>
+            <div className="px-6 py-16 text-center">
+              <h1
+                className="text-3xl md:text-5xl font-bold mb-6"
+                style={{
+                  fontFamily: design.fonts.heading,
+                  color: design.colors.text
+                }}
+              >
+                {preview.hero}
+              </h1>
+              <p
+                className="text-lg md:text-xl mb-8 max-w-2xl mx-auto"
+                style={{
+                  fontFamily: design.fonts.body,
+                  color: design.colors.text + 'CC'
+                }}
+              >
+                {preview.description}
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <button
+                  className="px-8 py-3 font-semibold rounded-lg transition-all hover:scale-105"
+                  style={{
+                    backgroundColor: design.colors.primary,
+                    color: design.colors.surface
+                  }}
+                >
+                  {preview.cta}
+                </button>
+                <button
+                  className="px-8 py-3 font-semibold rounded-lg border-2 transition-all hover:scale-105"
+                  style={{
+                    borderColor: design.colors.primary,
+                    color: design.colors.primary
+                  }}
+                >
+                  Learn More
+                </button>
               </div>
             </div>
 
-            {/* Features Bar */}
-            <div className={`px-8 py-4 border-t ${
-              isDarkTheme 
-                ? 'border-gray-700 bg-gray-800/90' 
-                : 'border-gray-200 bg-white/90'
-            }`}>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {preview.features.slice(0, 4).map((feature, index) => (
-                  <span
-                    key={feature}
-                    className="px-3 py-1 text-xs rounded-full font-medium"
-                    style={{ 
-                      backgroundColor: Object.values(themeColors)[index % 3] + '20',
-                      color: Object.values(themeColors)[index % 3]
+            {/* Features Section */}
+            <div className="px-6 pb-16">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {preview.features.map((feature, index) => (
+                  <div
+                    key={index}
+                    className="p-4 rounded-lg text-center"
+                    style={{
+                      backgroundColor: design.colors.surface,
+                      boxShadow: design.effects.shadow === 'none' ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                     }}
                   >
-                    ✓ {feature}
-                  </span>
+                    <div
+                      className="w-12 h-12 rounded-lg mx-auto mb-3 flex items-center justify-center"
+                      style={{ backgroundColor: design.colors.accent }}
+                    >
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <h3
+                      className="font-semibold mb-2"
+                      style={{
+                        fontFamily: design.fonts.heading,
+                        color: design.colors.text
+                      }}
+                    >
+                      {feature}
+                    </h3>
+                    <p
+                      className="text-sm"
+                      style={{
+                        fontFamily: design.fonts.body,
+                        color: design.colors.text + '99'
+                      }}
+                    >
+                      Description for {feature.toLowerCase()}
+                    </p>
+                  </div>
                 ))}
-                {preview.features.length > 4 && (
-                  <span className={`px-3 py-1 text-xs rounded-full ${
-                    isDarkTheme 
-                      ? 'bg-gray-700 text-gray-300' 
-                      : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    +{preview.features.length - 4} more features
-                  </span>
-                )}
               </div>
+            </div>
+
+            {/* Footer Preview */}
+            <div
+              className="px-6 py-8 border-t"
+              style={{
+                backgroundColor: design.colors.text,
+                borderColor: design.colors.primary + '20'
+              }}
+            >
+              {footerData.style === 'multiColumn' ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Company Info */}
+                  <div>
+                    <h4
+                      className="font-semibold mb-3"
+                      style={{ color: design.colors.surface }}
+                    >
+                      {footerData.companyName}
+                    </h4>
+                    <div className="space-y-2 text-sm" style={{ color: design.colors.surface + 'CC' }}>
+                      <div className="flex items-center space-x-2">
+                        <Mail className="w-4 h-4" />
+                        <span>{footerData.email}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Phone className="w-4 h-4" />
+                        <span>{footerData.phone}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Links */}
+                  <div>
+                    <h4
+                      className="font-semibold mb-3"
+                      style={{ color: design.colors.surface }}
+                    >
+                      Quick Links
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      {preview.sections.map((section, index) => (
+                        <div key={index}>
+                          <span style={{ color: design.colors.surface + 'CC' }}>{section}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Newsletter */}
+                  {footerData.showNewsletter && (
+                    <div>
+                      <h4
+                        className="font-semibold mb-3"
+                        style={{ color: design.colors.surface }}
+                      >
+                        Stay Updated
+                      </h4>
+                      <div className="flex">
+                        <input
+                          type="email"
+                          placeholder="Your email"
+                          className="flex-1 px-3 py-2 rounded-l-lg text-sm"
+                          style={{ backgroundColor: design.colors.surface }}
+                        />
+                        <button
+                          className="px-4 py-2 rounded-r-lg text-sm font-medium"
+                          style={{
+                            backgroundColor: design.colors.primary,
+                            color: design.colors.surface
+                          }}
+                        >
+                          Subscribe
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center">
+                  <span style={{ color: design.colors.surface + 'CC' }}>
+                    © 2024 {footerData.companyName}. All rights reserved.
+                  </span>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
@@ -347,51 +545,61 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Configuration Summary
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-          <div className="flex justify-between">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+          <div>
             <span className="font-medium text-gray-700">Template:</span>
-            <span className="capitalize">{template.replace('-', ' ')}</span>
+            <div className="capitalize">{template.replace('-', ' ')}</div>
           </div>
-          <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Theme:</span>
-            <span className="capitalize">{theme}</span>
+          <div>
+            <span className="font-medium text-gray-700">Design Theme:</span>
+            <div>{design.name}</div>
           </div>
-          <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Industry:</span>
-            <span className="capitalize">{industry}</span>
+          <div>
+            <span className="font-medium text-gray-700">Header Style:</span>
+            <div className="capitalize">{headerData.style}</div>
           </div>
-          <div className="flex justify-between">
+          <div>
+            <span className="font-medium text-gray-700">Footer Style:</span>
+            <div className="capitalize">{footerData.style.replace(/([A-Z])/g, ' $1').trim()}</div>
+          </div>
+          <div>
+            <span className="font-medium text-gray-700">Menu Items:</span>
+            <div>{headerData.menuItems?.length || 0}</div>
+          </div>
+          <div>
+            <span className="font-medium text-gray-700">Nested Menus:</span>
+            <div>{headerData.menuItems?.filter(item => item.children?.length > 0).length || 0}</div>
+          </div>
+          <div>
             <span className="font-medium text-gray-700">Features:</span>
-            <span>{features.length} selected</span>
+            <div>{config?.features?.length || preview.features.length}</div>
           </div>
-          <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Deployment:</span>
-            <span className="capitalize">{preview.deploymentType}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="font-medium text-gray-700">Template Path:</span>
-            <span className="text-xs">{preview.pathType}</span>
+          <div>
+            <span className="font-medium text-gray-700">CTA Button:</span>
+            <div>{headerData.showCta ? 'Yes' : 'No'}</div>
           </div>
         </div>
 
-        {/* Template Features */}
+        {/* Color Palette Display */}
         <div className="mt-4 pt-4 border-t">
-          <h4 className="font-medium text-gray-700 mb-2">Template Features:</h4>
+          <h4 className="font-medium text-gray-700 mb-2">Color Palette:</h4>
           <div className="flex flex-wrap gap-2">
-            {preview.features.map((feature) => (
-              <span
-                key={feature}
-                className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-              >
-                {feature}
-              </span>
+            {Object.entries(design.colors).map(([name, color]) => (
+              <div key={name} className="flex items-center space-x-2">
+                <div
+                  className="w-4 h-4 rounded-full border border-gray-300"
+                  style={{ backgroundColor: color }}
+                ></div>
+                <span className="text-xs text-gray-600 capitalize">{name}</span>
+              </div>
             ))}
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <button
           onClick={onPrev}
           className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
@@ -399,16 +607,17 @@ export default function TemplatePreview({ config, onGenerate, onPrev }) {
           <ArrowLeft className="w-4 h-4" />
           <span>Previous</span>
         </button>
+
         <button
           onClick={onGenerate}
-          disabled={!businessName || !template}
+          disabled={!isComplete()}
           className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Wand2 className="w-4 h-4" />
-          <span>Generate {template.charAt(0).toUpperCase() + template.slice(1).replace('-', ' ')} Site</span>
+          <span>Generate {template.charAt(0).toUpperCase() + template.slice(1).replace('-', ' ')} Website</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
-  );
+  )
 }
