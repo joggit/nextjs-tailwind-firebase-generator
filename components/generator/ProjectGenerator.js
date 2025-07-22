@@ -137,6 +137,17 @@ const DOMAIN_STRUCTURE = [
   { domain: 'support.smartwave.co.za', port: 3026, type: 'subdomain' }
 ]
 
+// Helper functions to safely get array lengths
+const getEnabledPagesCount = (pages) => {
+  if (!pages || !Array.isArray(pages)) return 0
+  return pages.filter(p => p && p.enabled).length
+}
+
+const getEnabledMenuItemsCount = (menuItems) => {
+  if (!menuItems || !Array.isArray(menuItems)) return 0
+  return menuItems.filter(m => m && m.enabled).length
+}
+
 function ProjectGenerator() {
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({
@@ -477,8 +488,8 @@ function ProjectGenerator() {
         designSystem: generationConfig.design ? 'configured' : 'missing',
         headerStyle: generationConfig.headerData?.style,
         footerStyle: generationConfig.footerData?.style,
-        menuItems: generationConfig.headerData?.menuItems?.length || 0,
-        pages: generationConfig.pages?.length || 0
+        menuItems: getEnabledMenuItemsCount(generationConfig.headerData?.menuItems),
+        pages: getEnabledPagesCount(generationConfig.pages)
       })
 
       // Use the correct API endpoint (without download parameter for JSON response)
@@ -605,7 +616,7 @@ function ProjectGenerator() {
           formData.design.layout &&
           formData.headerData?.style &&
           formData.footerData?.style &&
-          formData.pages?.length > 0
+          formData.pages && Array.isArray(formData.pages) && formData.pages.length > 0
         )
       case 2: // Preview
         return true
@@ -812,7 +823,7 @@ function ProjectGenerator() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-orange-600">Pages</p>
-                  <p className="text-lg font-bold text-orange-900">{formData.pages?.filter(p => p.enabled).length || 0}</p>
+                  <p className="text-lg font-bold text-orange-900">{getEnabledPagesCount(formData.pages)}</p>
                 </div>
                 <Zap className="w-8 h-8 text-orange-600" />
               </div>
@@ -836,11 +847,11 @@ function ProjectGenerator() {
               </div>
               <div>
                 <span className="text-gray-600">Pages:</span>
-                <span className="ml-2 font-medium">{formData.pages?.filter(p => p.enabled).length || 0} enabled</span>
+                <span className="ml-2 font-medium">{getEnabledPagesCount(formData.pages)} enabled</span>
               </div>
               <div>
                 <span className="text-gray-600">Menu Items:</span>
-                <span className="ml-2 font-medium">{formData.headerData?.menuItems?.filter(m => m.enabled).length || 0} items</span>
+                <span className="ml-2 font-medium">{getEnabledMenuItemsCount(formData.headerData?.menuItems)} items</span>
               </div>
               <div>
                 <span className="text-gray-600">Footer Style:</span>
@@ -862,7 +873,7 @@ function ProjectGenerator() {
             <div>Design System: {formData.design ? 'Configured' : 'Missing'}</div>
             <div>Header Data: {formData.headerData ? 'Configured' : 'Missing'}</div>
             <div>Footer Data: {formData.footerData ? 'Configured' : 'Missing'}</div>
-            <div>Pages: {formData.pages?.length || 0} total, {formData.pages?.filter(p => p.enabled).length || 0} enabled</div>
+            <div>Pages: {formData.pages?.length || 0} total, {getEnabledPagesCount(formData.pages)} enabled</div>
             <div>Step Complete: {isStepComplete(currentStep) ? 'Yes' : 'No'}</div>
             <div>Result: {result ? 'Available' : 'None'}</div>
           </div>
@@ -975,7 +986,7 @@ function GenerateStep(props) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-orange-600">Pages</p>
-              <p className="text-lg font-bold text-orange-900">{config.pages?.filter(p => p.enabled)?.length || 4}</p>
+              <p className="text-lg font-bold text-orange-900">{getEnabledPagesCount(config.pages)}</p>
             </div>
             <Eye className="w-8 h-8 text-orange-600" />
           </div>
@@ -1087,7 +1098,7 @@ function GenerateStep(props) {
               </div>
               <div className="bg-white p-4 rounded-lg">
                 <div className="font-medium text-gray-900">Pages Created</div>
-                <div className="text-gray-600">{config.pages?.filter(p => p.enabled)?.length || 4} pages</div>
+                <div className="text-gray-600">{getEnabledPagesCount(config.pages)} pages</div>
               </div>
               <div className="bg-white p-4 rounded-lg">
                 <div className="font-medium text-gray-900">Processing Time</div>

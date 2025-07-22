@@ -23,23 +23,11 @@ import {
     RefreshCw,
     Loader,
     CheckCircle,
-    AlertCircle,
-    Edit,
-    Search,
-    Filter,
-    Star,
-    Heart,
-    User,
-    Mail,
-    Phone,
-    Calendar,
-    Info,
-    X,
-    Grid3X3
+    AlertCircle
 } from 'lucide-react'
 
-// Import the advanced PageEditor component (this would be imported in real app)
-// import PageEditor from './PageEditor'
+// Import the advanced PageEditor component
+import PageEditor from './PageEditor'
 
 const DEFAULT_PAGES = [
     { id: 'home', title: 'Home', url: '/', type: 'home', enabled: true, sections: ['hero', 'features', 'testimonials'] },
@@ -160,10 +148,9 @@ function DesignCustomizationStep({ config, onChange, onNext, onPrev }) {
         console.log('Logos generated and stored in config:', logos)
     }
 
-    // Updated tabs to include the components preview
+    // Updated tabs to include the AI-enhanced page editor
     const tabs = [
         { id: 'design', label: 'Design System', icon: Palette },
-        { id: 'components', label: 'Components Preview', icon: Grid3X3, badge: 'Live' },
         { id: 'pages', label: 'Pages & Content', icon: FileText, badge: 'AI Enhanced' },
         { id: 'navigation', label: 'Navigation', icon: Navigation }
     ]
@@ -186,7 +173,7 @@ function DesignCustomizationStep({ config, onChange, onNext, onPrev }) {
                     Design System & Content Configuration
                 </h2>
                 <p className="text-gray-600">
-                    Customize your design system, preview components, configure pages, and navigation structure with AI-powered content generation
+                    Customize your design system, pages, and navigation structure with AI-powered content generation
                 </p>
             </div>
 
@@ -232,10 +219,6 @@ function DesignCustomizationStep({ config, onChange, onNext, onPrev }) {
                     />
                 )}
 
-                {activeTab === 'components' && (
-                    <ComponentsPreviewTab design={design} />
-                )}
-
                 {activeTab === 'pages' && (
                     <div className="space-y-6">
                         <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
@@ -248,14 +231,10 @@ function DesignCustomizationStep({ config, onChange, onNext, onPrev }) {
                             </p>
                         </div>
 
-                        {/* Placeholder for PageEditor - replace with actual import */}
-                        <div className="bg-gray-50 rounded-lg p-8 text-center">
-                            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold text-gray-700 mb-2">Page Editor</h3>
-                            <p className="text-gray-600">
-                                Advanced page configuration with AI-powered content generation would be implemented here.
-                            </p>
-                        </div>
+                        <PageEditor
+                            config={config}
+                            onChange={onChange}
+                        />
                     </div>
                 )}
 
@@ -288,7 +267,6 @@ function DesignCustomizationStep({ config, onChange, onNext, onPrev }) {
                         {tabs.map((tab) => {
                             let isCompleted = false
                             if (tab.id === 'design') isCompleted = !!(design.colors && design.typography)
-                            if (tab.id === 'components') isCompleted = true // Always complete as it's just preview
                             if (tab.id === 'pages') isCompleted = !!(config.detailedPages && Object.keys(config.detailedPages).length > 0)
                             if (tab.id === 'navigation') isCompleted = !!(headerData.style && footerData.style)
 
@@ -316,102 +294,7 @@ function DesignCustomizationStep({ config, onChange, onNext, onPrev }) {
     )
 }
 
-// Components Preview Tab
-function ComponentsPreviewTab({ design }) {
-    const [activeComponent, setActiveComponent] = useState('buttons')
-
-    const componentTypes = [
-        { id: 'buttons', label: 'Buttons', count: 6 },
-        { id: 'cards', label: 'Cards', count: 4 },
-        { id: 'forms', label: 'Form Elements', count: 8 },
-        { id: 'alerts', label: 'Alerts & Messages', count: 4 }
-    ]
-
-    return (
-        <div className="space-y-6">
-            <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    Components Preview
-                </h3>
-                <p className="text-gray-600 mb-6">
-                    See how your design system affects all UI components in real-time
-                </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Component Navigation */}
-                <div className="lg:col-span-1">
-                    <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 sticky top-6">
-                        <h4 className="font-semibold text-gray-900 mb-4">Components</h4>
-                        <nav className="space-y-1">
-                            {componentTypes.map((type) => (
-                                <button
-                                    key={type.id}
-                                    onClick={() => setActiveComponent(type.id)}
-                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-colors ${activeComponent === type.id
-                                        ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                        }`}
-                                >
-                                    <span>{type.label}</span>
-                                    <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
-                                        {type.count}
-                                    </span>
-                                </button>
-                            ))}
-                        </nav>
-
-                        {/* Design System Summary */}
-                        <div className="mt-6 pt-6 border-t border-gray-200">
-                            <h5 className="font-medium text-gray-900 mb-3">Current Theme</h5>
-                            <div className="space-y-2">
-                                <div className="flex space-x-2">
-                                    <div
-                                        className="w-4 h-4 rounded border border-gray-300"
-                                        style={{ backgroundColor: design.colors.primary }}
-                                    />
-                                    <div
-                                        className="w-4 h-4 rounded border border-gray-300"
-                                        style={{ backgroundColor: design.colors.secondary }}
-                                    />
-                                    <div
-                                        className="w-4 h-4 rounded border border-gray-300"
-                                        style={{ backgroundColor: design.colors.accent }}
-                                    />
-                                </div>
-                                <div className="text-sm text-gray-600">
-                                    <p>Font: {design.typography.headingFont}</p>
-                                    <p>Style: {design.components.buttonStyle}</p>
-                                    <p>Spacing: {design.layout.spacing}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Component Preview Area */}
-                <div className="lg:col-span-3">
-                    <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        {activeComponent === 'buttons' && (
-                            <ButtonShowcase design={design} />
-                        )}
-                        {activeComponent === 'cards' && (
-                            <CardShowcase design={design} />
-                        )}
-                        {activeComponent === 'forms' && (
-                            <FormShowcase design={design} />
-                        )}
-                        {activeComponent === 'alerts' && (
-                            <AlertShowcase design={design} />
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-// Design System Tab Component
+// Design System Tab Component with Integrated Logo Generator
 function DesignSystemTab({ design, onUpdate, businessName, industry, logos, onLogoGenerated }) {
     const [activeSection, setActiveSection] = useState('colors')
 
@@ -485,490 +368,7 @@ function DesignSystemTab({ design, onUpdate, businessName, industry, logos, onLo
     )
 }
 
-// Button Components Showcase
-function ButtonShowcase({ design }) {
-    const Button = ({ variant = 'primary', size = 'md', children, disabled = false, icon, ...props }) => {
-        const baseClasses = `inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed`
-
-        const variants = {
-            primary: `text-white shadow-sm hover:shadow-md`,
-            secondary: `text-white shadow-sm hover:shadow-md`,
-            outline: `border-2 bg-transparent shadow-sm hover:shadow-md`,
-            ghost: `bg-transparent hover:bg-gray-100`,
-            danger: `bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md`
-        }
-
-        const sizes = {
-            sm: 'px-3 py-2 text-sm',
-            md: 'px-4 py-2 text-sm',
-            lg: 'px-6 py-3 text-base',
-            xl: 'px-8 py-4 text-lg'
-        }
-
-        const getVariantStyles = () => {
-            const radius = design.layout.borderRadius
-            const style = {
-                borderRadius: radius,
-                fontFamily: design.typography.bodyFont,
-                fontWeight: design.typography.bodyWeight
-            }
-
-            switch (variant) {
-                case 'primary':
-                    style.backgroundColor = design.colors.primary
-                    return style
-                case 'secondary':
-                    style.backgroundColor = design.colors.secondary
-                    return style
-                case 'outline':
-                    style.borderColor = design.colors.primary
-                    style.color = design.colors.primary
-                    return style
-                case 'ghost':
-                    style.color = design.colors.primary
-                    return style
-                case 'danger':
-                    return style
-                default:
-                    style.backgroundColor = design.colors.primary
-                    return style
-            }
-        }
-
-        return (
-            <button
-                className={`${baseClasses} ${variants[variant]} ${sizes[size]}`}
-                style={getVariantStyles()}
-                disabled={disabled}
-                {...props}
-            >
-                {icon && <span className="mr-2">{icon}</span>}
-                {children}
-            </button>
-        )
-    }
-
-    return (
-        <div className="space-y-8">
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Button Components</h2>
-
-                {/* Button Variants */}
-                <div className="space-y-6">
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Button Variants</h3>
-                        <div className="flex flex-wrap gap-4">
-                            <Button variant="primary">Primary</Button>
-                            <Button variant="secondary">Secondary</Button>
-                            <Button variant="outline">Outline</Button>
-                            <Button variant="ghost">Ghost</Button>
-                            <Button variant="danger">Danger</Button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Button Sizes</h3>
-                        <div className="flex flex-wrap items-center gap-4">
-                            <Button size="sm">Small</Button>
-                            <Button size="md">Medium</Button>
-                            <Button size="lg">Large</Button>
-                            <Button size="xl">Extra Large</Button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Buttons with Icons</h3>
-                        <div className="flex flex-wrap gap-4">
-                            <Button icon={<Plus className="w-4 h-4" />}>Add Item</Button>
-                            <Button variant="outline" icon={<Download className="w-4 h-4" />}>Download</Button>
-                            <Button variant="ghost" icon={<Edit className="w-4 h-4" />}>Edit</Button>
-                            <Button variant="danger" icon={<Trash2 className="w-4 h-4" />}>Delete</Button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Button States</h3>
-                        <div className="flex flex-wrap gap-4">
-                            <Button>Normal</Button>
-                            <Button disabled>Disabled</Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-// Card Components Showcase
-function CardShowcase({ design }) {
-    const Card = ({ variant = 'default', children, className = '', padding = 'md', ...props }) => {
-        const baseClasses = `bg-white transition-all duration-200`
-
-        const variants = {
-            default: 'border border-gray-200',
-            elevated: 'shadow-lg hover:shadow-xl',
-            outlined: 'border-2 border-gray-300',
-            filled: 'bg-gray-50 border border-gray-200'
-        }
-
-        const paddings = {
-            sm: 'p-4',
-            md: 'p-6',
-            lg: 'p-8'
-        }
-
-        const cardStyle = {
-            borderRadius: design.layout.borderRadius,
-            fontFamily: design.typography.bodyFont
-        }
-
-        if (variant === 'filled') {
-            cardStyle.backgroundColor = design.colors.surface
-        }
-
-        return (
-            <div
-                className={`${baseClasses} ${variants[variant]} ${paddings[padding]} ${className}`}
-                style={cardStyle}
-                {...props}
-            >
-                {children}
-            </div>
-        )
-    }
-
-    return (
-        <div className="space-y-8">
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Card Components</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card variant="default">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Default Card</h3>
-                        <p className="text-gray-600 mb-4">
-                            This is a default card with border styling. Perfect for content organization.
-                        </p>
-                        <div className="flex items-center space-x-2">
-                            <Heart className="w-4 h-4 text-red-500" />
-                            <span className="text-sm text-gray-500">125 likes</span>
-                        </div>
-                    </Card>
-
-                    <Card variant="elevated">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Elevated Card</h3>
-                        <p className="text-gray-600 mb-4">
-                            This card uses shadows to create depth and visual hierarchy.
-                        </p>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-green-600">Published</span>
-                            <Star className="w-4 h-4 text-yellow-500" />
-                        </div>
-                    </Card>
-
-                    <Card variant="outlined" padding="lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Outlined Card</h3>
-                        <p className="text-gray-600 mb-4">
-                            A card with a prominent border for emphasis and structure.
-                        </p>
-                        <button
-                            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                            style={{ color: design.colors.primary }}
-                        >
-                            Read More →
-                        </button>
-                    </Card>
-
-                    <Card variant="filled">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Filled Card</h3>
-                        <p className="text-gray-600 mb-4">
-                            A card with a filled background for subtle differentiation.
-                        </p>
-                        <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <User className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <span className="text-sm text-gray-700">John Doe</span>
-                        </div>
-                    </Card>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-// Form Components Showcase
-function FormShowcase({ design }) {
-    const Input = ({ label, error, icon, ...props }) => {
-        const inputStyle = {
-            borderRadius: design.layout.borderRadius,
-            fontFamily: design.typography.bodyFont
-        }
-
-        return (
-            <div className="space-y-2">
-                {label && (
-                    <label className="block text-sm font-medium text-gray-700">
-                        {label}
-                    </label>
-                )}
-                <div className="relative">
-                    {icon && (
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            {icon}
-                        </div>
-                    )}
-                    <input
-                        className={`w-full px-3 py-2 border border-gray-300 focus:ring-2 focus:ring-offset-2 focus:border-transparent ${icon ? 'pl-10' : ''
-                            } ${error ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                        style={{
-                            ...inputStyle,
-                            focusRingColor: error ? '#EF4444' : design.colors.primary
-                        }}
-                        {...props}
-                    />
-                </div>
-                {error && (
-                    <p className="text-sm text-red-600 flex items-center">
-                        <AlertCircle className="w-4 h-4 mr-1" />
-                        {error}
-                    </p>
-                )}
-            </div>
-        )
-    }
-
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        message: ''
-    })
-
-    return (
-        <div className="space-y-8">
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Form Components</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-gray-900">Input Variations</h3>
-
-                        <Input
-                            label="Name"
-                            placeholder="Enter your name"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        />
-
-                        <Input
-                            label="Email"
-                            type="email"
-                            placeholder="Enter your email"
-                            icon={<Mail className="w-4 h-4 text-gray-400" />}
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        />
-
-                        <Input
-                            label="Phone"
-                            placeholder="Enter your phone"
-                            icon={<Phone className="w-4 h-4 text-gray-400" />}
-                        />
-
-                        <Input
-                            label="Error State"
-                            placeholder="This field has an error"
-                            error="This field is required"
-                        />
-
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Message
-                            </label>
-                            <textarea
-                                rows={4}
-                                className="w-full px-3 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                style={{
-                                    borderRadius: design.layout.borderRadius,
-                                    fontFamily: design.typography.bodyFont
-                                }}
-                                placeholder="Enter your message"
-                                value={formData.message}
-                                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-gray-900">Form Controls</h3>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Checkboxes
-                                </label>
-                                <div className="space-y-2">
-                                    <label className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                            defaultChecked
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">Option 1</span>
-                                    </label>
-                                    <label className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">Option 2</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Radio Buttons
-                                </label>
-                                <div className="space-y-2">
-                                    <label className="flex items-center">
-                                        <input
-                                            type="radio"
-                                            name="radio-group"
-                                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                                            defaultChecked
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">Choice A</span>
-                                    </label>
-                                    <label className="flex items-center">
-                                        <input
-                                            type="radio"
-                                            name="radio-group"
-                                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">Choice B</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Select Dropdown
-                                </label>
-                                <select
-                                    className="w-full px-3 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    style={{
-                                        borderRadius: design.layout.borderRadius,
-                                        fontFamily: design.typography.bodyFont
-                                    }}
-                                >
-                                    <option>Choose an option</option>
-                                    <option>Option 1</option>
-                                    <option>Option 2</option>
-                                    <option>Option 3</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-// Alert Components Showcase
-function AlertShowcase({ design }) {
-    const Alert = ({ type = 'info', title, children, dismissible = false, onDismiss }) => {
-        const types = {
-            info: {
-                bg: 'bg-blue-50',
-                border: 'border-blue-200',
-                text: 'text-blue-800',
-                icon: <Info className="w-5 h-5 text-blue-600" />
-            },
-            success: {
-                bg: 'bg-green-50',
-                border: 'border-green-200',
-                text: 'text-green-800',
-                icon: <CheckCircle className="w-5 h-5 text-green-600" />
-            },
-            warning: {
-                bg: 'bg-yellow-50',
-                border: 'border-yellow-200',
-                text: 'text-yellow-800',
-                icon: <AlertCircle className="w-5 h-5 text-yellow-600" />
-            },
-            error: {
-                bg: 'bg-red-50',
-                border: 'border-red-200',
-                text: 'text-red-800',
-                icon: <AlertCircle className="w-5 h-5 text-red-600" />
-            }
-        }
-
-        const alertType = types[type]
-
-        return (
-            <div
-                className={`${alertType.bg} ${alertType.border} border rounded-lg p-4`}
-                style={{ borderRadius: design.layout.borderRadius }}
-            >
-                <div className="flex items-start">
-                    <div className="flex-shrink-0">
-                        {alertType.icon}
-                    </div>
-                    <div className="ml-3 flex-1">
-                        {title && (
-                            <h3 className={`text-sm font-medium ${alertType.text} mb-1`}>
-                                {title}
-                            </h3>
-                        )}
-                        <div className={`text-sm ${alertType.text}`}>
-                            {children}
-                        </div>
-                    </div>
-                    {dismissible && (
-                        <div className="ml-auto pl-3">
-                            <button
-                                onClick={onDismiss}
-                                className={`${alertType.text} hover:opacity-75`}
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-        )
-    }
-
-    return (
-        <div className="space-y-8">
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Alert & Message Components</h2>
-
-                <div className="space-y-4">
-                    <Alert type="info" title="Information">
-                        This is an informational alert with additional context that might be helpful.
-                    </Alert>
-
-                    <Alert type="success" title="Success!" dismissible>
-                        Your changes have been saved successfully.
-                    </Alert>
-
-                    <Alert type="warning" title="Warning">
-                        Please review your information before submitting.
-                    </Alert>
-
-                    <Alert type="error" title="Error occurred">
-                        There was an error processing your request. Please try again.
-                    </Alert>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-// Logo Section Component
+// Integrated Logo Section Component
 function LogoSection({ businessName, industry = 'technology', logos, onLogoGenerated, designColors }) {
     const [generating, setGenerating] = useState(false)
     const [error, setError] = useState(null)
@@ -990,22 +390,37 @@ function LogoSection({ businessName, industry = 'technology', logos, onLogoGener
         setError(null)
 
         try {
-            // Simulate API call - replace with actual implementation
-            setTimeout(() => {
-                const mockLogos = {
-                    primary: {
-                        url: 'https://via.placeholder.com/300x300/3B82F6/FFFFFF?text=Primary+Logo'
-                    },
-                    simplified: {
-                        url: 'https://via.placeholder.com/300x300/8B5CF6/FFFFFF?text=Simple+Logo'
-                    }
-                }
-                onLogoGenerated?.(mockLogos)
-                setGenerating(false)
-            }, 2000)
+            // Use design system colors if available
+            let colorDescription = config.colors
+            if (designColors?.primary) {
+                colorDescription = `Use primary color ${designColors.primary} and complementary colors from the design system`
+            }
+
+            const response = await fetch('/api/generate-logo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    businessName: businessName.trim(),
+                    industry,
+                    ...config,
+                    colors: colorDescription
+                })
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                onLogoGenerated?.(data.logos)
+                console.log('✅ Logos generated successfully')
+            } else {
+                setError(data.error || 'Failed to generate logos')
+            }
         } catch (err) {
             console.error('Logo generation error:', err)
             setError('Failed to generate logos. Please try again.')
+        } finally {
             setGenerating(false)
         }
     }
@@ -1081,7 +496,71 @@ function LogoSection({ businessName, industry = 'technology', logos, onLogoGener
                             ))}
                         </select>
                     </div>
+
+                    {/* Business Description */}
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Business Description (optional)
+                        </label>
+                        <input
+                            type="text"
+                            value={config.description}
+                            onChange={(e) => setConfig(prev => ({ ...prev, description: e.target.value }))}
+                            placeholder="Brief description of your business"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
                 </div>
+
+                {/* Custom Requirements */}
+                <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Custom Requirements (optional)
+                    </label>
+                    <textarea
+                        value={config.customRequirements}
+                        onChange={(e) => setConfig(prev => ({ ...prev, customRequirements: e.target.value }))}
+                        placeholder="Any specific requirements or elements you want included..."
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                </div>
+
+                {/* Color System Integration */}
+                {designColors?.primary && (
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h5 className="font-medium text-blue-900 mb-2 flex items-center">
+                            <Palette className="w-4 h-4 mr-2" />
+                            Design System Integration
+                        </h5>
+                        <p className="text-sm text-blue-800 mb-3">
+                            Logo will use your design system colors for consistency
+                        </p>
+                        <div className="flex space-x-2">
+                            <div className="flex items-center space-x-2">
+                                <div
+                                    className="w-4 h-4 rounded border border-gray-300"
+                                    style={{ backgroundColor: designColors.primary }}
+                                />
+                                <span className="text-xs text-blue-700">Primary</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <div
+                                    className="w-4 h-4 rounded border border-gray-300"
+                                    style={{ backgroundColor: designColors.secondary }}
+                                />
+                                <span className="text-xs text-blue-700">Secondary</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <div
+                                    className="w-4 h-4 rounded border border-gray-300"
+                                    style={{ backgroundColor: designColors.accent }}
+                                />
+                                <span className="text-xs text-blue-700">Accent</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Generate Button */}
                 <div className="mt-6">
@@ -1162,6 +641,12 @@ function LogoSection({ businessName, industry = 'technology', logos, onLogoGener
                                     <Download className="w-4 h-4 mr-2" />
                                     Download
                                 </button>
+                                <button
+                                    onClick={() => window.open(logos.primary.url, '_blank')}
+                                    className="flex items-center justify-center bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                                >
+                                    <Eye className="w-4 h-4" />
+                                </button>
                             </div>
                         </div>
 
@@ -1186,7 +671,27 @@ function LogoSection({ businessName, industry = 'technology', logos, onLogoGener
                                     <Download className="w-4 h-4 mr-2" />
                                     Download
                                 </button>
+                                <button
+                                    onClick={() => window.open(logos.simplified.url, '_blank')}
+                                    className="flex items-center justify-center bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                                >
+                                    <Eye className="w-4 h-4" />
+                                </button>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Usage Tips */}
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <h5 className="font-medium text-blue-900 mb-2 flex items-center">
+                            <Palette className="w-4 h-4 mr-2" />
+                            Usage Recommendations
+                        </h5>
+                        <div className="text-sm text-blue-800 space-y-1">
+                            <p>• Logo colors are integrated with your design system</p>
+                            <p>• Convert to SVG format for perfect scalability</p>
+                            <p>• Test readability at small sizes (16x16, 32x32 pixels)</p>
+                            <p>• Ensure logos work on both light and dark backgrounds</p>
                         </div>
                     </div>
                 </div>
@@ -1194,6 +699,8 @@ function LogoSection({ businessName, industry = 'technology', logos, onLogoGener
         </div>
     )
 }
+
+// Keep all the existing tab components (ColorsSection, TypographySection, etc.)
 
 // Colors Section
 function ColorsSection({ colors, onUpdate }) {
@@ -1524,7 +1031,7 @@ function EffectsSection({ effects, onUpdate }) {
     )
 }
 
-// Navigation Tab Component - COMPLETED
+// Navigation Tab Component (keeping the existing one)
 function NavigationTab({ headerData, footerData, pages, onUpdateHeader, onUpdateFooter }) {
     const [editingItem, setEditingItem] = useState(null)
 
@@ -1748,7 +1255,7 @@ function NavigationTab({ headerData, footerData, pages, onUpdateHeader, onUpdate
                                             </div>
                                             <button
                                                 onClick={() => deleteDropdownItem(item.id, child.id)}
-                                                className="ml-3 p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded"
+                                                className="ml-3 p-1 text-red-600 hover:text-red-800"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -1756,10 +1263,10 @@ function NavigationTab({ headerData, footerData, pages, onUpdateHeader, onUpdate
                                     ))}
                                     <button
                                         onClick={() => addDropdownItem(item.id)}
-                                        className="w-full flex items-center justify-center p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:text-gray-800 hover:border-gray-400 transition-colors"
+                                        className="flex items-center space-x-2 text-sm text-blue-600 hover:text-blue-800"
                                     >
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Add Dropdown Item
+                                        <Plus className="w-4 h-4" />
+                                        <span>Add Dropdown Item</span>
                                     </button>
                                 </div>
                             )}
@@ -1769,13 +1276,13 @@ function NavigationTab({ headerData, footerData, pages, onUpdateHeader, onUpdate
             </div>
 
             {/* Footer Configuration */}
-            <div className="space-y-6">
+            <div className="space-y-6 pt-8 border-t border-gray-200">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-900">Footer Configuration</h3>
                     <p className="text-sm text-gray-600">Configure your footer layout and content</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Footer Style</label>
                         <select
@@ -1786,10 +1293,8 @@ function NavigationTab({ headerData, footerData, pages, onUpdateHeader, onUpdate
                             <option value="modern">Modern</option>
                             <option value="classic">Classic</option>
                             <option value="minimal">Minimal</option>
-                            <option value="bold">Bold</option>
                         </select>
                     </div>
-
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Columns</label>
                         <select
@@ -1797,34 +1302,33 @@ function NavigationTab({ headerData, footerData, pages, onUpdateHeader, onUpdate
                             onChange={(e) => onUpdateFooter({ columns: parseInt(e.target.value) })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
+                            <option value={1}>1 Column</option>
                             <option value={2}>2 Columns</option>
                             <option value={3}>3 Columns</option>
                             <option value={4}>4 Columns</option>
                         </select>
                     </div>
-
-                    <div className="space-y-3">
-                        <label className="block text-sm font-medium text-gray-700">Features</label>
-                        <div className="space-y-2">
-                            <label className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    checked={footerData.showSocial}
-                                    onChange={(e) => onUpdateFooter({ showSocial: e.target.checked })}
-                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                />
-                                <span className="ml-2 text-sm text-gray-700">Show Social Links</span>
-                            </label>
-                            <label className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    checked={footerData.showNewsletter}
-                                    onChange={(e) => onUpdateFooter({ showNewsletter: e.target.checked })}
-                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                />
-                                <span className="ml-2 text-sm text-gray-700">Show Newsletter Signup</span>
-                            </label>
-                        </div>
+                    <div>
+                        <label className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                checked={footerData.showSocial}
+                                onChange={(e) => onUpdateFooter({ showSocial: e.target.checked })}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">Show Social Links</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                checked={footerData.showNewsletter}
+                                onChange={(e) => onUpdateFooter({ showNewsletter: e.target.checked })}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">Show Newsletter</span>
+                        </label>
                     </div>
                 </div>
             </div>
