@@ -1,0 +1,174 @@
+{
+    "projectName": "Next.js Tailwind Firebase Project",
+    "description": "A modern web application using Next.js, Tailwind CSS, and Firebase.",
+    "theme": {
+        "primaryColor": "#1E40AF",
+        "secondaryColor": "#FBBF24",
+        "fontFamily": "Inter, sans-serif",
+        "iconLibrary": "Heroicons",
+        "layout": {
+            "header": "fixed",
+            "footer": "static",
+            "sidebar": "hidden"
+        },
+        "typography": {
+            "baseFontSize": "16px",
+            "headingFontSize": "2rem",
+            "bodyFontSize": "1rem",
+            "lineHeight": "1.5"
+        }
+    },
+    "header": {
+        "levels": 1,
+        "types": [
+            "marketing",
+            "ngo",
+            "ecommerce",
+            "webapp"
+        ],
+        "logo": "/images/logo.png",
+        "menuItems": [
+            {
+                "label": "Home",
+                "link": "/"
+            },
+            {
+                "label": "About",
+                "link": "/about"
+            },
+            {
+                "label": "Contact",
+                "link": "/contact"
+            }
+        ],
+        "showIcons": true
+    },
+    "footer": {
+        "text": "© 2025 Your Company",
+        "links": [
+            {
+                "label": "Privacy Policy",
+                "link": "/privacy"
+            },
+            {
+                "label": "Terms of Service",
+                "link": "/terms"
+            }
+        ]
+    },
+    "pages": {
+        "home": {
+            "title": "Home",
+            "enabled": true,
+            "blocks": [
+                "hero",
+                "features"
+            ]
+        },
+        "about": {
+            "title": "About Us",
+            "enabled": true,
+            "blocks": [
+                "missionStatement"
+            ]
+        },
+        "contact": {
+            "title": "Contact",
+            "enabled": true,
+            "blocks": [
+                "contactForm"
+            ]
+        },
+        "shop": {
+            "title": "Shop",
+            "enabled": false,
+            "blocks": [
+                "productList"
+            ]
+        }
+    },
+    "blocks": {
+        "marketing": {
+            "hero": {
+                "title": "Welcome to Our Project",
+                "subtitle": "Building modern web applications with Next.js and Tailwind CSS",
+                "buttonText": "Get Started",
+                "buttonLink": "/get-started"
+            },
+            "features": [
+                {
+                    "title": "Fast Performance",
+                    "description": "Optimized for speed and efficiency."
+                },
+                {
+                    "title": "Responsive Design",
+                    "description": "Looks great on all devices."
+                }
+            ]
+        },
+        "ecommerce": {
+            "productList": {
+                "title": "Featured Products"
+            },
+            "cartSummary": {
+                "text": "You have 0 items in your cart."
+            }
+        },
+        "webapp": {
+            "dashboard": {
+                "welcomeMessage": "Welcome back, User!"
+            }
+        },
+        "ngo": {
+            "missionStatement": {
+                "title": "Our Mission",
+                "description": "To make a difference in the world."
+            },
+            "donationButton": {
+                "text": "Donate Now",
+                "link": "/donate"
+            }
+        }
+    },
+    "components": {
+        "navbar": {
+            "backgroundColor": "#1E40AF",
+            "textColor": "#FFFFFF",
+            "hoverColor": "#2563EB"
+        },
+        "button": {
+            "primaryColor": "#2563EB",
+            "secondaryColor": "#FBBF24",
+            "textColor": "#FFFFFF",
+            "borderRadius": "0.5rem"
+        },
+        "card": {
+            "backgroundColor": "#FFFFFF",
+            "borderColor": "#E5E7EB",
+            "shadow": "md"
+        },
+        "form": {
+            "fieldRadius": "md",
+            "fieldPadding": "px-4 py-2",
+            "labelColor": "#374151"
+        }
+    },
+    "animations": {
+        "enabled": true,
+        "scrollReveal": true,
+        "hoverEffects": true,
+        "transition": "ease-in-out"
+    },
+    "meta": {
+        "title": "Next.js Tailwind Firebase Project",
+        "keywords": [
+            "Next.js",
+            "Tailwind",
+            "Firebase",
+            "webapp",
+            "template"
+        ],
+        "ogImage": "/images/og-image.png",
+        "themeColor": "#1E40AF"
+    }
+}
