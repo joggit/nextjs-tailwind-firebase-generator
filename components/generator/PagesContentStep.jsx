@@ -1,10 +1,7 @@
-// Enhanced Pages & Content Step Component
-// File: components/generator/PagesContentStep.jsx
-
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowRight, ArrowLeft, FileText, Plus, X, Eye, EyeOff, Settings, Zap, Palette, Code, Edit3 } from 'lucide-react'
+import { ArrowRight, ArrowLeft, FileText, Plus, X, Eye, EyeOff, Settings, Zap, Palette, Code, Edit3, Trash2 } from 'lucide-react'
 
 // UI Components available for pages
 const UI_COMPONENTS = {
@@ -175,80 +172,93 @@ const CONTENT_BLOCKS = {
 export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
     const [selectedPage, setSelectedPage] = useState(null)
     const [activeTab, setActiveTab] = useState('blocks') // 'blocks' or 'components'
-    const [showComponentDetails, setShowComponentDetails] = useState(false)
 
-    // Generate pages from menu items
+    // Generate pages from header menu items
     const getPagesFromMenu = () => {
-        // Try multiple possible locations for menu items
-        const menuItems = config?.navigation?.menuItems ||
-            config?.menu?.items ||
-            config?.menuItems ||
-            config?.header?.navigation ||
-            []
+        // Get menu items from header configuration
+        const headerMenuItems = config?.header?.menuItems || []
+        const existingPages = config?.pages || {}
 
-        // Debug: Log what we found
-        console.log('Config structure:', {
-            hasNavigation: !!config?.navigation,
-            hasMenu: !!config?.menu,
-            hasMenuItems: !!config?.menuItems,
+        console.log('Debug - Header menu items:', {
+            fullConfig: config,
             hasHeader: !!config?.header,
-            menuItemsLength: menuItems.length,
-            menuItems: menuItems
+            hasMenuItems: !!config?.header?.menuItems,
+            menuItemsLength: headerMenuItems.length,
+            menuItems: headerMenuItems,
+            existingPages: existingPages
         })
 
         const pages = {}
 
-        // Always include home page
-        pages.home = {
-            id: 'home',
-            title: 'Home',
-            path: '/',
-            enabled: true,
-            required: true,
-            description: 'Your main landing page',
-            blocks: ['hero', 'features'],
-            components: {},
-            content: {}
+        // Generate page ID from label or link
+        const generatePageId = (item) => {
+            if (item.link && item.link !== '/') {
+                // Remove leading slash and convert to lowercase
+                return item.link.replace(/^\//, '').toLowerCase() || 'page'
+            }
+            if (item.label) {
+                // Convert label to lowercase, replace spaces with hyphens
+                return item.label.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+            }
+            return 'page'
         }
 
-        // Add pages from menu items - be more flexible with the conditions
-        menuItems.forEach((item, index) => {
-            // More flexible checking - don't require specific type, just avoid home
-            if (item && item.id && item.id !== 'home') {
-                pages[item.id] = {
-                    id: item.id,
-                    title: item.name || item.title || item.label || `Page ${index + 1}`,
-                    path: item.path || item.href || `/${item.id}`,
-                    enabled: item.enabled !== false,
+        // Start with existing pages configuration
+        Object.keys(existingPages).forEach(pageId => {
+            pages[pageId] = {
+                id: pageId,
+                ...existingPages[pageId]
+            }
+        })
+
+        // Always ensure home page exists
+        const homeItem = headerMenuItems.find(item => item.link === '/' || item.label.toLowerCase() === 'home')
+        if (!pages.home) {
+            pages.home = {
+                id: 'home',
+                title: homeItem?.label || 'Home',
+                path: '/',
+                enabled: true,
+                required: true,
+                description: 'Your main landing page',
+                blocks: ['hero', 'features'],
+                components: {},
+                content: {}
+            }
+        } else {
+            // Ensure home page is marked as required
+            pages.home.required = true
+            pages.home.id = 'home'
+            if (!pages.home.path) pages.home.path = '/'
+        }
+
+        // Add/update pages from header menu items
+        headerMenuItems.forEach((item, index) => {
+            console.log('Processing menu item:', item)
+
+            if (item && item.link !== '/') { // Skip home page as it's already handled
+                const pageId = generatePageId(item)
+
+                // Merge with existing page config if it exists
+                pages[pageId] = {
+                    id: pageId,
+                    title: item.label || `Page ${index + 1}`,
+                    path: item.link || `/${pageId}`,
+                    enabled: true,
                     required: false,
-                    description: item.description || `${item.name || item.title || item.label} page`,
-                    blocks: item.blocks || [],
-                    components: item.components || {},
-                    content: item.content || {}
+                    description: `${item.label} page`,
+                    blocks: [],
+                    components: {},
+                    content: {},
+                    // Preserve existing configuration
+                    ...pages[pageId]
                 }
             }
         })
 
-        // If no menu items found, create some default pages
-        if (menuItems.length === 0) {
-            console.log('No menu items found, creating default pages')
-            const defaultPages = ['about', 'services', 'contact']
-            defaultPages.forEach(pageId => {
-                pages[pageId] = {
-                    id: pageId,
-                    title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
-                    path: `/${pageId}`,
-                    enabled: true,
-                    required: false,
-                    description: `${pageId.charAt(0).toUpperCase() + pageId.slice(1)} page`,
-                    blocks: [],
-                    components: {},
-                    content: {}
-                }
-            })
-        }
+        console.log('Generated pages:', pages)
 
-        // Set default selected page
+        // Set default selected page if none selected
         if (!selectedPage && Object.keys(pages).length > 0) {
             setSelectedPage(Object.keys(pages)[0])
         }
@@ -256,7 +266,15 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
         return pages
     }
 
+    // Initialize pages from menu
     const pages = getPagesFromMenu()
+
+    // Update effect to set selected page when pages change
+    useEffect(() => {
+        if (!selectedPage && Object.keys(pages).length > 0) {
+            setSelectedPage(Object.keys(pages)[0])
+        }
+    }, [Object.keys(pages).length])
 
     const updatePageConfig = (pageId, field, value) => {
         const updatedPages = { ...config.pages }
@@ -274,19 +292,21 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
         })
     }
 
-    const updatePageContent = (pageId, contentType, key, value) => {
+    const updatePageContent = (pageId, blockId, field, value) => {
         const updatedPages = { ...config.pages }
         if (!updatedPages[pageId]) {
             updatedPages[pageId] = { ...pages[pageId] }
         }
 
-        updatedPages[pageId] = {
-            ...updatedPages[pageId],
-            [contentType]: {
-                ...updatedPages[pageId][contentType],
-                [key]: value
-            }
+        if (!updatedPages[pageId].content) {
+            updatedPages[pageId].content = {}
         }
+
+        if (!updatedPages[pageId].content[blockId]) {
+            updatedPages[pageId].content[blockId] = {}
+        }
+
+        updatedPages[pageId].content[blockId][field] = value
 
         onChange({
             ...config,
@@ -299,6 +319,51 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
         if (!page.required) {
             updatePageConfig(pageId, 'enabled', !page.enabled)
         }
+    }
+
+    // NEW: Delete page functionality
+    const deletePage = (pageId) => {
+        const page = { ...pages[pageId], ...config.pages?.[pageId] }
+
+        // Don't allow deleting required pages
+        if (page.required) {
+            return
+        }
+
+        // Confirm deletion
+        if (!confirm(`Are you sure you want to delete the "${page.title}" page? This action cannot be undone.`)) {
+            return
+        }
+
+        // Remove from config.pages
+        const updatedPages = { ...config.pages }
+        delete updatedPages[pageId]
+
+        // Also remove from header menu items
+        const updatedHeader = { ...config.header }
+        if (updatedHeader.menuItems) {
+            updatedHeader.menuItems = updatedHeader.menuItems.filter(item => {
+                const itemPageId = item.link && item.link !== '/'
+                    ? item.link.replace(/^\//, '').toLowerCase()
+                    : item.label?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+                return itemPageId !== pageId
+            })
+        }
+
+        // If the deleted page was selected, select another page
+        const remainingPages = Object.keys(updatedPages)
+        const newSelectedPage = selectedPage === pageId
+            ? (remainingPages.length > 0 ? remainingPages[0] : 'home')
+            : selectedPage
+
+        setSelectedPage(newSelectedPage)
+
+        // Update config
+        onChange({
+            ...config,
+            pages: updatedPages,
+            header: updatedHeader
+        })
     }
 
     const addBlockToPage = (pageId, blockId) => {
@@ -318,13 +383,12 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
     const addComponentToPage = (pageId, componentType, componentId) => {
         const page = { ...pages[pageId], ...config.pages?.[pageId] }
         const currentComponents = page.components || {}
-        const componentKey = `${componentType}_${Date.now()}`
+        const componentKey = `${componentType}_${componentId}_${Date.now()}`
 
         updatePageConfig(pageId, 'components', {
             ...currentComponents,
             [componentKey]: {
-                type: componentType,
-                id: componentId,
+                type: `${componentType}.${componentId}`,
                 props: {}
             }
         })
@@ -335,6 +399,18 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
         const currentComponents = { ...page.components }
         delete currentComponents[componentKey]
         updatePageConfig(pageId, 'components', currentComponents)
+    }
+
+    const updateComponentProp = (pageId, componentKey, prop, value) => {
+        const page = { ...pages[pageId], ...config.pages?.[pageId] }
+        const updatedComponents = { ...page.components }
+
+        if (!updatedComponents[componentKey].props) {
+            updatedComponents[componentKey].props = {}
+        }
+
+        updatedComponents[componentKey].props[prop] = value
+        updatePageConfig(pageId, 'components', updatedComponents)
     }
 
     const getCurrentPageConfig = () => {
@@ -373,19 +449,42 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
     const currentPage = getCurrentPageConfig()
     const availableBlocks = getAvailableBlocks()
 
+    // Show error if no pages found
+    if (Object.keys(pages).length <= 1) { // Only home page
+        return (
+            <div className="bg-white rounded-xl shadow-sm border p-6">
+                <div className="text-center py-12">
+                    <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Header Menu Items Found</h3>
+                    <p className="text-gray-600 mb-4">
+                        This step needs menu items from your header configuration to create editable pages.
+                    </p>
+                    <div className="text-sm text-gray-500 mb-4 p-3 bg-gray-50 rounded">
+                        <div className="font-medium mb-2">Looking for:</div>
+                        <code>config.header.menuItems = [</code><br />
+                        <code>&nbsp;&nbsp;{`{ label: 'Home', link: '/' },`}</code><br />
+                        <code>&nbsp;&nbsp;{`{ label: 'About', link: '/about' },`}</code><br />
+                        <code>&nbsp;&nbsp;{`{ label: 'Services', link: '/services' },`}</code><br />
+                        <code>&nbsp;&nbsp;{`{ label: 'Contact', link: '/contact' }`}</code><br />
+                        <code>]</code>
+                    </div>
+                    <button
+                        onClick={onPrev}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Go Back to Header Configuration
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
     if (!selectedPage || !currentPage) {
         return (
             <div className="bg-white rounded-xl shadow-sm border p-6">
                 <div className="text-center py-12">
                     <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Pages Found</h3>
-                    <p className="text-gray-600">Please configure your navigation menu first.</p>
-                    <button
-                        onClick={onPrev}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        Go Back to Navigation
-                    </button>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Pages...</h3>
                 </div>
             </div>
         )
@@ -422,15 +521,16 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
                                 <div
                                     key={pageId}
                                     className={`p-3 border-2 rounded-lg transition-all cursor-pointer ${isSelected
-                                            ? 'border-blue-500 bg-blue-50'
-                                            : isEnabled
-                                                ? 'border-green-200 bg-green-50 hover:border-green-300'
-                                                : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                                        ? 'border-blue-500 bg-blue-50'
+                                        : isEnabled
+                                            ? 'border-green-200 bg-green-50 hover:border-green-300'
+                                            : 'border-gray-200 bg-gray-50 hover:border-gray-300'
                                         }`}
                                     onClick={() => setSelectedPage(pageId)}
                                 >
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-center space-x-3 flex-1">
+                                            {/* Enable/Disable Button */}
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation()
@@ -440,9 +540,10 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
                                                 }}
                                                 disabled={pageInfo.required}
                                                 className={`p-1 rounded ${pageInfo.required
-                                                        ? 'cursor-not-allowed opacity-50'
-                                                        : 'cursor-pointer'
+                                                    ? 'cursor-not-allowed opacity-50'
+                                                    : 'cursor-pointer'
                                                     }`}
+                                                title={pageInfo.required ? 'Required page cannot be disabled' : isEnabled ? 'Disable page' : 'Enable page'}
                                             >
                                                 {isEnabled ? (
                                                     <Eye className="w-4 h-4 text-green-600" />
@@ -450,6 +551,7 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
                                                     <EyeOff className="w-4 h-4 text-gray-400" />
                                                 )}
                                             </button>
+
                                             <div className="flex-1">
                                                 <div className="flex items-center space-x-2">
                                                     <h4 className={`font-medium ${isEnabled ? 'text-gray-900' : 'text-gray-500'}`}>
@@ -467,6 +569,20 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {/* Delete Button - NEW */}
+                                        {!pageInfo.required && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    deletePage(pageId)
+                                                }}
+                                                className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
+                                                title="Delete page"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
                                     </div>
 
                                     {isEnabled && (blockCount > 0 || componentCount > 0) && (
@@ -494,6 +610,7 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
                     </div>
                 </div>
 
+                {/* Rest of the component remains the same... */}
                 {/* Page Configuration */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="flex items-center justify-between">
@@ -505,8 +622,8 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
                                 <button
                                     onClick={() => setActiveTab('blocks')}
                                     className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${activeTab === 'blocks'
-                                            ? 'bg-white text-blue-600 shadow-sm'
-                                            : 'text-gray-600 hover:text-gray-900'
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
                                     <Zap className="w-4 h-4 mr-1 inline" />
@@ -515,8 +632,8 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
                                 <button
                                     onClick={() => setActiveTab('components')}
                                     className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${activeTab === 'components'
-                                            ? 'bg-white text-purple-600 shadow-sm'
-                                            : 'text-gray-600 hover:text-gray-900'
+                                        ? 'bg-white text-purple-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
                                     <Code className="w-4 h-4 mr-1 inline" />
@@ -595,7 +712,7 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
                                                                         type="text"
                                                                         placeholder={`Enter ${field}`}
                                                                         value={currentPage.content?.[blockId]?.[field] || ''}
-                                                                        onChange={(e) => updatePageContent(selectedPage, 'content', `${blockId}.${field}`, e.target.value)}
+                                                                        onChange={(e) => updatePageContent(selectedPage, blockId, field, e.target.value)}
                                                                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                                                     />
                                                                 </div>
@@ -649,8 +766,8 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
                                                         onClick={() => !isAdded && addBlockToPage(selectedPage, blockId)}
                                                         disabled={isAdded}
                                                         className={`p-3 border-2 rounded-lg text-left transition-all ${isAdded
-                                                                ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
-                                                                : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
+                                                            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                                                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
                                                             }`}
                                                     >
                                                         <div className="flex items-center justify-between">
@@ -715,17 +832,7 @@ export default function PagesContentStep({ config, onChange, onNext, onPrev }) {
                                                                         type="text"
                                                                         placeholder={`Enter ${prop}`}
                                                                         value={component.props?.[prop] || ''}
-                                                                        onChange={(e) => {
-                                                                            const updatedComponents = { ...currentPage.components }
-                                                                            updatedComponents[componentKey] = {
-                                                                                ...updatedComponents[componentKey],
-                                                                                props: {
-                                                                                    ...updatedComponents[componentKey].props,
-                                                                                    [prop]: e.target.value
-                                                                                }
-                                                                            }
-                                                                            updatePageConfig(selectedPage, 'components', updatedComponents)
-                                                                        }}
+                                                                        onChange={(e) => updateComponentProp(selectedPage, componentKey, prop, e.target.value)}
                                                                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                                                     />
                                                                 </div>
