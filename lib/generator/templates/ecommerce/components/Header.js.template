@@ -1,543 +1,134 @@
-// Header Template with Nested Menu Support
-// File: lib/generator/templates/ecommerce/components/Header.js.template
-
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { 
-  Search, 
-  ShoppingCart, 
-  User, 
-  Menu, 
-  X, 
-  Heart,
-  Phone,
-  Mail,
-  ChevronDown,
-  ChevronRight
-} from 'lucide-react'
+{{#if header.showIcons}}
+import { Menu, X, ShoppingCart } from 'lucide-react'
+{{/if}}
+{{#unless header.showIcons}}
+import { Menu, X } from 'lucide-react'
+{{/unless}}
 
-export default function Header({ 
-  cartItemCount = 0,
-  onCartClick,
-  onSearchSubmit,
-  onWishlistClick,
-  user = null,
-  onLoginClick,
-  onLogoutClick
-}) {
-  const router = useRouter()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [isSearchFocused, setIsSearchFocused] = useState(false)
-  const [showUserMenu, setShowUserMenu] = useState(false)
-  const [activeDropdown, setActiveDropdown] = useState(null)
-  const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState({})
+export default function Header() {
+  const [isOpen, setIsOpen] = useState(false)
 
-  // Business data from template processing
-  const businessName = "{{businessName}}"
-  const logoType = "{{logoType}}"
-  const logoImage = "{{logoImage}}"
-  const showHeaderCTA = {{showHeaderCTA}}
-  const headerCtaText = "{{headerCtaText}}"
-  const headerCtaLink = "{{headerCtaLink}}"
-  const companyPhone = "{{companyPhone}}"
-  const companyEmail = "{{companyEmail}}"
-
-  // Navigation items from template processing with nested support
-  const navigationItems = [
-    {{enhancedMenuItems}}
-  ]
-
-  // Handlers
-  const handleSearch = (e) => {
-    e.preventDefault()
-    if (searchTerm.trim()) {
-      onSearchSubmit?.(searchTerm.trim())
-      router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}`)
-      setSearchTerm('')
-      setIsSearchFocused(false)
-    }
-  }
-
-  const handleCartClick = () => {
-    onCartClick?.()
-    router.push('/cart')
-  }
-
-  const handleWishlistClick = () => {
-    onWishlistClick?.()
-    router.push('/wishlist')
-  }
-
-  const handleUserAction = () => {
-    if (user) {
-      setShowUserMenu(!showUserMenu)
-    } else {
-      onLoginClick?.()
-      router.push('/login')
-    }
-  }
-
-  const handleDropdownEnter = (itemName) => {
-    setActiveDropdown(itemName)
-  }
-
-  const handleDropdownLeave = () => {
-    setActiveDropdown(null)
-  }
-
-  const toggleMobileSubmenu = (itemName) => {
-    setMobileSubmenuOpen(prev => ({
-      ...prev,
-      [itemName]: !prev[itemName]
-    }))
-  }
-
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setIsMenuOpen(false)
-    setMobileSubmenuOpen({})
-  }, [router])
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showUserMenu && !event.target.closest('.user-menu-container')) {
-        setShowUserMenu(false)
-      }
-      if (activeDropdown && !event.target.closest('.dropdown-container')) {
-        setActiveDropdown(null)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showUserMenu, activeDropdown])
-
-  // Render desktop navigation item with nested support
-  const renderDesktopNavItem = (item) => {
-    const hasChildren = item.children && item.children.length > 0
-    const isActive = activeDropdown === item.name
-
-    if (hasChildren) {
-      return (
-        <div
-          key={item.name}
-          className="relative dropdown-container"
-          onMouseEnter={() => handleDropdownEnter(item.name)}
-          onMouseLeave={handleDropdownLeave}
-        >
-          <Link
-            href={item.href}
-            className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative group py-2"
-          >
-            <span>{item.name}</span>
-            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isActive ? 'rotate-180' : ''}`} />
-            <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
-          </Link>
-
-          {/* Dropdown Menu */}
-          {isActive && (
-            <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 animate-in fade-in duration-200">
-              {item.children.map((child) => (
-                <Link
-                  key={child.name}
-                  href={child.href}
-                  className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
-                >
-                  <div className="font-medium">{child.name}</div>
-                  {child.description && (
-                    <div className="text-xs text-gray-500 mt-1">{child.description}</div>
-                  )}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    return (
-      <Link
-        key={item.name}
-        href={item.href}
-        className="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 relative group py-2"
-      >
-        {item.name}
-        <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
-      </Link>
-    )
-  }
-
-  // Render mobile navigation item with nested support
-  const renderMobileNavItem = (item) => {
-    const hasChildren = item.children && item.children.length > 0
-    const isSubmenuOpen = mobileSubmenuOpen[item.name]
-
-    if (hasChildren) {
-      return (
-        <div key={item.name} className="space-y-1">
-          <div className="flex items-center justify-between">
-            <Link
-              href={item.href}
-              className="flex-1 px-3 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {item.name}
-            </Link>
-            <button
-              onClick={() => toggleMobileSubmenu(item.name)}
-              className="px-3 py-3 text-gray-500 hover:text-blue-600 transition-colors"
-            >
-              <ChevronRight className={`w-5 h-5 transition-transform duration-200 ${isSubmenuOpen ? 'rotate-90' : ''}`} />
-            </button>
-          </div>
-
-          {/* Mobile Submenu */}
-          {isSubmenuOpen && (
-            <div className="pl-4 space-y-1 animate-in slide-in-from-left duration-200">
-              {item.children.map((child) => (
-                <Link
-                  key={child.name}
-                  href={child.href}
-                  className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <div className="font-medium">{child.name}</div>
-                  {child.description && (
-                    <div className="text-xs text-gray-500 mt-1">{child.description}</div>
-                  )}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    return (
-      <Link
-        key={item.name}
-        href={item.href}
-        className="block px-3 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-        onClick={() => setIsMenuOpen(false)}
-      >
-        {item.name}
-      </Link>
-    )
-  }
+  const toggleMenu = () => setIsOpen(!isOpen)
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
-      {/* Top Bar - Contact Info & Account Links */}
-      <div className="hidden lg:block bg-gray-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-10 text-sm">
-            {/* Contact Info */}
-            <div className="flex items-center space-x-6 text-gray-600">
-              {companyPhone && (
-                <div className="flex items-center space-x-1">
-                  <Phone className="w-3 h-3" />
-                  <span>{companyPhone}</span>
-                </div>
-              )}
-              {companyEmail && (
-                <div className="flex items-center space-x-1">
-                  <Mail className="w-3 h-3" />
-                  <span>{companyEmail}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Account Links */}
-            <div className="flex items-center space-x-4 text-gray-600">
-              <Link href="/track-order" className="hover:text-blue-600 transition-colors">
-                Track Order
-              </Link>
-              <Link href="/help" className="hover:text-blue-600 transition-colors">
-                Help
-              </Link>
-              {!user && (
-                <>
-                  <Link href="/login" className="hover:text-blue-600 transition-colors">
-                    Sign In
-                  </Link>
-                  <span className="text-gray-300">|</span>
-                  <Link href="/register" className="hover:text-blue-600 transition-colors">
-                    Register
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-            {logoType === "image" && logoImage ? (
-              <img 
-                src={logoImage} 
-                alt={businessName}
-                className="h-8 w-auto lg:h-10"
-              />
-            ) : (
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-                  <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
-                </div>
-                <span className="text-xl lg:text-2xl font-bold text-gray-900 tracking-tight">
-                  {businessName}
-                </span>
-              </div>
-            )}
+    <header 
+      className="{{#if theme.layout.header}}{{theme.layout.header}}{{/if}} shadow"
+      style={{ backgroundColor: '{{components.navbar.backgroundColor}}' }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+        {/* Logo */}
+        <div className="flex items-center space-x-2">
+          {{#if header.logo}}
+          <img 
+            src="{{header.logo}}" 
+            alt="{{businessName}} Logo" 
+            className="h-8 w-8 object-contain"
+          />
+          {{/if}}
+          <Link 
+            href="/" 
+            className="text-xl font-bold"
+            style={{ color: '{{components.navbar.textColor}}' }}
+          >
+            {{businessName}}
           </Link>
-
-          {/* Desktop Navigation with Nested Menu Support */}
-          <nav className="hidden lg:flex items-center space-x-8">
-            {navigationItems.map(renderDesktopNavItem)}
-          </nav>
-
-          {/* Desktop Search */}
-          <div className="hidden lg:block flex-1 max-w-lg mx-8">
-            <form onSubmit={handleSearch} className="relative">
-              <div className={`relative transition-all duration-200 ${
-                isSearchFocused ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
-              }`}>
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setIsSearchFocused(false)}
-                  placeholder="Search products..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                />
-              </div>
-            </form>
-          </div>
-
-          {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {/* Wishlist */}
-            <button
-              onClick={handleWishlistClick}
-              className="relative p-2 text-gray-600 hover:text-red-500 transition-colors group"
-              title="Wishlist"
-            >
-              <Heart className="w-6 h-6 group-hover:scale-110 transition-transform" />
-            </button>
-
-            {/* Cart */}
-            <button
-              onClick={handleCartClick}
-              className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors group"
-              title="Shopping Cart"
-            >
-              <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-pulse">
-                  {cartItemCount > 9 ? '9+' : cartItemCount}
-                </span>
-              )}
-            </button>
-
-            {/* User Account */}
-            <div className="relative user-menu-container">
-              <button
-                onClick={handleUserAction}
-                className="flex items-center space-x-2 p-2 text-gray-600 hover:text-blue-600 transition-colors group"
-                title={user ? 'Account' : 'Sign In'}
-              >
-                <User className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                {user && (
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
-                )}
-              </button>
-
-              {/* User Dropdown Menu */}
-              {user && showUserMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 animate-in fade-in duration-200">
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">Hello, {user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
-                  <Link href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    My Account
-                  </Link>
-                  <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    My Orders
-                  </Link>
-                  <Link href="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    Wishlist
-                  </Link>
-                  <Link href="/addresses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    Addresses
-                  </Link>
-                  <div className="border-t border-gray-100 mt-2 pt-2">
-                    <button
-                      onClick={() => {
-                        onLogoutClick?.()
-                        setShowUserMenu(false)
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* CTA Button */}
-            {showHeaderCTA && !user && (
-              <Link 
-                href={headerCtaLink}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl font-medium"
-              >
-                {headerCtaText}
-              </Link>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center space-x-2">
-            {/* Mobile Cart */}
-            <button
-              onClick={handleCartClick}
-              className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors"
-            >
-              <ShoppingCart className="w-6 h-6" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                  {cartItemCount > 9 ? '9+' : cartItemCount}
-                </span>
-              )}
-            </button>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
         </div>
 
-        {/* Mobile Menu with Nested Support */}
-        {isMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-200 py-4 shadow-lg">
-            {/* Mobile Search */}
-            <div className="px-4 mb-4">
-              <form onSubmit={handleSearch} className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search products..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </form>
-            </div>
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex space-x-6 font-medium">
+          {{#each header.menuItems}}
+          <Link 
+            href="{{link}}" 
+            className="transition-colors duration-200"
+            style={{ 
+              color: '{{../components.navbar.textColor}}',
+            }}
+            onMouseEnter={(e) => e.target.style.color = '{{../components.navbar.hoverColor}}'}
+            onMouseLeave={(e) => e.target.style.color = '{{../components.navbar.textColor}}'}
+          >
+            {{label}}
+          </Link>
+          {{/each}}
+        </nav>
 
-            {/* Mobile Navigation with Nested Menu Support */}
-            <nav className="space-y-2 px-4 mb-4">
-              {navigationItems.map(renderMobileNavItem)}
-            </nav>
+        {{#if header.showIcons}}
+        {/* Action Icons */}
+        <div className="hidden md:flex items-center space-x-4">
+          {{#if template}}
+          {{#if (eq template "ecommerce")}}
+          <button className="relative p-2 rounded-full hover:bg-opacity-20 hover:bg-white transition-colors">
+            <ShoppingCart 
+              className="w-5 h-5" 
+              style={{ color: '{{components.navbar.textColor}}' }} 
+            />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              0
+            </span>
+          </button>
+          {{/if}}
+          {{/if}}
+        </div>
+        {{/if}}
 
-            {/* Mobile Actions */}
-            <div className="px-4 space-y-2 border-t border-gray-200 pt-4">
-              <button
-                onClick={() => {
-                  handleWishlistClick()
-                  setIsMenuOpen(false)
-                }}
-                className="flex items-center space-x-3 w-full px-3 py-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-              >
-                <Heart className="w-5 h-5" />
-                <span>Wishlist</span>
-              </button>
-
-              {user ? (
-                <>
-                  <Link
-                    href="/account"
-                    className="flex items-center space-x-3 w-full px-3 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User className="w-5 h-5" />
-                    <span>My Account</span>
-                  </Link>
-                  <Link
-                    href="/orders"
-                    className="flex items-center space-x-3 w-full px-3 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span>My Orders</span>
-                  </Link>
-                  <button
-                    onClick={() => {
-                      onLogoutClick?.()
-                      setIsMenuOpen(false)
-                    }}
-                    className="flex items-center space-x-3 w-full px-3 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <span>Sign Out</span>
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="flex items-center space-x-3 w-full px-3 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User className="w-5 h-5" />
-                    <span>Sign In</span>
-                  </Link>
-                  {showHeaderCTA && (
-                    <Link
-                      href={headerCtaLink}
-                      className="block w-full text-center px-3 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-medium"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {headerCtaText}
-                    </Link>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* Mobile Contact Info */}
-            <div className="px-4 mt-4 pt-4 border-t border-gray-200">
-              <div className="space-y-2 text-sm text-gray-600">
-                {companyPhone && (
-                  <div className="flex items-center space-x-2">
-                    <Phone className="w-4 h-4" />
-                    <span>{companyPhone}</span>
-                  </div>
-                )}
-                {companyEmail && (
-                  <div className="flex items-center space-x-2">
-                    <Mail className="w-4 h-4" />
-                    <span>{companyEmail}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Mobile Menu Button */}
+        <div className="md:hidden">
+          <button 
+            onClick={toggleMenu} 
+            className="p-2 rounded-md hover:bg-opacity-20 hover:bg-white transition-colors"
+            style={{ color: '{{components.navbar.textColor}}' }}
+          >
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Navigation */}
+      {isOpen && (
+        <nav 
+          className="md:hidden border-t px-4 py-4 space-y-2 font-medium"
+          style={{ 
+            backgroundColor: '{{components.navbar.backgroundColor}}',
+            borderTopColor: '{{components.navbar.hoverColor}}'
+          }}
+        >
+          {{#each header.menuItems}}
+          <Link 
+            href="{{link}}" 
+            onClick={() => setIsOpen(false)}
+            className="block px-3 py-2 rounded-lg transition-colors duration-200"
+            style={{ 
+              color: '{{../components.navbar.textColor}}',
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '{{../components.navbar.hoverColor}}20'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+          >
+            {{label}}
+          </Link>
+          {{/each}}
+          
+          {{#if ../header.showIcons}}
+          {{#if ../template}}
+          {{#if (eq ../template "ecommerce")}}
+          <div className="pt-4 border-t" style={{ borderTopColor: '{{../components.navbar.hoverColor}}' }}>
+            <button 
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg w-full transition-colors duration-200"
+              style={{ color: '{{../components.navbar.textColor}}' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '{{../components.navbar.hoverColor}}20'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              <ShoppingCart className="w-5 h-5" />
+              <span>Cart (0)</span>
+            </button>
+          </div>
+          {{/if}}
+          {{/if}}
+          {{/if}}
+        </nav>
+      )}
     </header>
   )
 }

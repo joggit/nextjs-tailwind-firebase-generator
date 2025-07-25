@@ -1,394 +1,134 @@
-// Updated Header Template with Config Structure Support
-// File: lib/generator/templates/base/components/Header.js.template
-
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X, ChevronDown } from 'lucide-react'
+{{#if header.showIcons}}
+import { Menu, X, ShoppingCart } from 'lucide-react'
+{{/if}}
+{{#unless header.showIcons}}
+import { Menu, X } from 'lucide-react'
+{{/unless}}
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [activeDropdown, setActiveDropdown] = useState(null)
-  const dropdownRefs = useRef({})
+  const [isOpen, setIsOpen] = useState(false)
 
-  // Navigation items generated from config
-  const navigationItems = [
-    {{menuItems}}
-  ]
-
-  // Design system colors
-  const colors = {
-    primary: '{{design.colors.primary}}',
-    secondary: '{{design.colors.secondary}}',
-    text: '{{design.colors.text}}',
-    surface: '{{design.colors.surface}}',
-    primaryHover: '{{design.colors.primaryHover}}'
-  }
-
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
-  
-  const toggleDropdown = (itemName) => {
-    setActiveDropdown(activeDropdown === itemName ? null : itemName)
-  }
-
-  const closeDropdown = () => {
-    setActiveDropdown(null)
-  }
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (activeDropdown && dropdownRefs.current[activeDropdown] && 
-          !dropdownRefs.current[activeDropdown].contains(event.target)) {
-        closeDropdown()
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [activeDropdown])
-
-  // Configuration variables
-  const config = {
-    logoType: '{{header.logoType}}',
-    logoImage: '{{header.logoImage}}',
-    logoText: '{{header.logoText}}',
-    style: '{{header.style}}',
-    showCta: {{header.showCta}},
-    ctaText: '{{header.ctaText}}',
-    ctaLink: '{{header.ctaLink}}'
-  }
-
-  // Logo component
-  const renderLogo = () => {
-    if (config.logoType === 'image' && config.logoImage) {
-      return (
-        <img 
-          src={config.logoImage} 
-          alt={config.logoText}
-          className="h-8 w-auto"
-        />
-      )
-    }
-    
-    return (
-      <span 
-        className="text-xl font-bold font-heading"
-        style={{ color: colors.primary }}
-      >
-        {config.logoText}
-      </span>
-    )
-  }
-
-  // Get text color classes based on header style
-  const getTextColorClasses = () => {
-    switch (config.style) {
-      case 'gradient':
-      case 'dark':
-        return 'text-white hover:text-gray-200'
-      case 'transparent':
-        return 'text-gray-900 hover:text-gray-700'
-      default:
-        return 'text-gray-600 hover:text-gray-900'
-    }
-  }
-
-  // Get CTA button classes based on header style and design system
-  const getCtaClasses = () => {
-    const baseClasses = 'inline-flex items-center px-4 py-2 rounded-lg font-medium transition-all duration-200'
-    
-    switch (config.style) {
-      case 'gradient':
-        return `${baseClasses} bg-white text-gray-900 hover:bg-gray-100 shadow-lg hover:shadow-xl`
-      case 'dark':
-        return `${baseClasses} bg-white text-gray-900 hover:bg-gray-100`
-      default:
-        return `${baseClasses} text-white hover:scale-105 shadow-md hover:shadow-lg`
-    }
-  }
-
-  // Render desktop menu item
-  const renderDesktopMenuItem = (item) => {
-    const textColorClasses = getTextColorClasses()
-    
-    if (item.children && item.children.length > 0) {
-      return (
-        <div
-          key={item.name}
-          className="relative"
-          ref={(el) => dropdownRefs.current[item.name] = el}
-        >
-          <button
-            onClick={() => toggleDropdown(item.name)}
-            className={`flex items-center space-x-1 px-3 py-2 transition-colors font-medium ${textColorClasses} ${
-              activeDropdown === item.name ? 'opacity-75' : ''
-            }`}
-          >
-            <span>{item.name}</span>
-            <ChevronDown 
-              className={`w-4 h-4 transition-transform ${
-                activeDropdown === item.name ? 'rotate-180' : ''
-              }`} 
-            />
-          </button>
-          
-          {/* Desktop Dropdown */}
-          {activeDropdown === item.name && (
-            <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
-              {item.children.map((child, index) => (
-                <Link
-                  key={index}
-                  href={child.href}
-                  onClick={() => closeDropdown()}
-                  className="block px-4 py-3 text-gray-600 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 group"
-                  style={{ '--hover-color': colors.primary }}
-                >
-                  <div className="font-medium group-hover:text-[var(--hover-color)]">{child.name}</div>
-                  {child.description && (
-                    <div className="text-xs text-gray-500 mt-1">{child.description}</div>
-                  )}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    return (
-      <Link
-        key={item.name}
-        href={item.href}
-        className={`px-3 py-2 transition-colors font-medium relative group ${textColorClasses}`}
-      >
-        {item.name}
-        <span 
-          className="absolute inset-x-0 bottom-0 h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"
-          style={{ backgroundColor: colors.primary }}
-        ></span>
-      </Link>
-    )
-  }
-
-  // Render mobile menu item
-  const renderMobileMenuItem = (item) => {
-    if (item.children && item.children.length > 0) {
-      return (
-        <div key={item.name} className="w-full">
-          <button
-            onClick={() => toggleDropdown(item.name)}
-            className="flex items-center justify-between w-full px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors font-medium text-left group"
-          >
-            <span className="group-hover:text-[var(--primary-color)]" style={{'--primary-color': colors.primary}}>{item.name}</span>
-            <ChevronDown 
-              className={`w-4 h-4 transition-transform ${
-                activeDropdown === item.name ? 'rotate-180' : ''
-              }`} 
-            />
-          </button>
-          
-          {/* Mobile Dropdown */}
-          {activeDropdown === item.name && (
-            <div className="mt-2 ml-4 space-y-2">
-              {item.children.map((child, index) => (
-                <Link
-                  key={index}
-                  href={child.href}
-                  onClick={() => {
-                    closeDropdown()
-                    setIsMenuOpen(false)
-                  }}
-                  className="block px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors rounded-lg group"
-                >
-                  <span className="group-hover:text-[var(--primary-color)]" style={{'--primary-color': colors.primary}}>
-                    {child.name}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    return (
-      <Link
-        key={item.name}
-        href={item.href}
-        onClick={() => setIsMenuOpen(false)}
-        className="block w-full text-left px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors font-medium group"
-      >
-        <span className="group-hover:text-[var(--primary-color)]" style={{'--primary-color': colors.primary}}>
-          {item.name}
-        </span>
-      </Link>
-    )
-  }
-
-  // Header style classes based on configuration and design system
-  const getHeaderClasses = () => {
-    const baseClasses = 'sticky top-0 z-50 border-b'
-    
-    switch (config.style) {
-      case 'transparent':
-        return `${baseClasses} bg-transparent border-transparent absolute top-0 left-0 right-0`
-      case 'solid':
-        return `${baseClasses} bg-white shadow-sm border-gray-100`
-      case 'blur':
-        return `${baseClasses} bg-white/95 backdrop-blur-sm border-white/10`
-      case 'gradient':
-        return `${baseClasses} bg-gradient-to-r border-transparent text-white shadow-lg`
-      case 'dark':
-        return `${baseClasses} bg-gray-900 border-gray-800 text-white shadow-lg`
-      case 'ecommerce':
-        return `${baseClasses} bg-white shadow-md border-gray-200`
-      case 'nonprofit':
-        return `${baseClasses} bg-white shadow-sm border-gray-100`
-      case 'marketing':
-        return `${baseClasses} bg-white/95 backdrop-blur-sm border-gray-100/50`
-      case 'dashboard':
-        return `${baseClasses} bg-white border-gray-200 shadow-sm`
-      default:
-        return `${baseClasses} bg-white shadow-sm border-gray-100`
-    }
-  }
-
-  // Dynamic gradient style for gradient header
-  const getGradientStyle = () => {
-    if (config.style === 'gradient') {
-      return {
-        background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`
-      }
-    }
-    return {}
-  }
+  const toggleMenu = () => setIsOpen(!isOpen)
 
   return (
-    <header className={getHeaderClasses()} style={getGradientStyle()}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="transition-transform duration-200 group-hover:scale-105">
-              {renderLogo()}
-            </div>
+    <header 
+      className="{{#if theme.layout.header}}{{theme.layout.header}}{{/if}} shadow"
+      style={{ backgroundColor: '{{components.navbar.backgroundColor}}' }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+        {/* Logo */}
+        <div className="flex items-center space-x-2">
+          {{#if header.logo}}
+          <img 
+            src="{{header.logo}}" 
+            alt="{{businessName}} Logo" 
+            className="h-8 w-8 object-contain"
+          />
+          {{/if}}
+          <Link 
+            href="/" 
+            className="text-xl font-bold"
+            style={{ color: '{{components.navbar.textColor}}' }}
+          >
+            {{businessName}}
           </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
-            {navigationItems.map((item) => renderDesktopMenuItem(item))}
-          </nav>
-
-          {/* Desktop CTA and Mobile Menu Button */}
-          <div className="flex items-center space-x-4">
-            {/* Desktop CTA */}
-            {config.showCta && (
-              <Link
-                href={config.ctaLink}
-                className={`hidden md:inline-flex ${getCtaClasses()}`}
-                style={
-                  config.style === 'gradient' || config.style === 'dark' 
-                    ? {} 
-                    : { backgroundColor: colors.primary }
-                }
-              >
-                {config.ctaText}
-              </Link>
-            )}
-            
-            {/* Mobile Menu Button */}
-            <button
-              onClick={toggleMenu}
-              className={`md:hidden p-2 rounded-lg transition-colors ${
-                config.style === 'gradient' || config.style === 'dark'
-                  ? 'hover:bg-white/10 text-white'
-                  : 'hover:bg-gray-100 text-gray-600'
-              }`}
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className={`md:hidden py-4 ${
-            config.style === 'gradient' || config.style === 'dark'
-              ? 'bg-black/10 backdrop-blur-sm border-t border-white/10'
-              : 'bg-white border-t border-gray-100'
-          }`}>
-            <div className="space-y-2">
-              {navigationItems.map((item) => renderMobileMenuItem(item))}
-              
-              {/* Mobile CTA */}
-              {config.showCta && (
-                <div className="pt-4 border-t border-gray-100 mt-4">
-                  <Link
-                    href={config.ctaLink}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block w-full text-center px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
-                    style={{ 
-                      backgroundColor: colors.primary,
-                      color: 'white'
-                    }}
-                  >
-                    {config.ctaText}
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex space-x-6 font-medium">
+          {{#each header.menuItems}}
+          <Link 
+            href="{{link}}" 
+            className="transition-colors duration-200"
+            style={{ 
+              color: '{{../components.navbar.textColor}}',
+            }}
+            onMouseEnter={(e) => e.target.style.color = '{{../components.navbar.hoverColor}}'}
+            onMouseLeave={(e) => e.target.style.color = '{{../components.navbar.textColor}}'}
+          >
+            {{label}}
+          </Link>
+          {{/each}}
+        </nav>
+
+        {{#if header.showIcons}}
+        {/* Action Icons */}
+        <div className="hidden md:flex items-center space-x-4">
+          {{#if template}}
+          {{#if (eq template "ecommerce")}}
+          <button className="relative p-2 rounded-full hover:bg-opacity-20 hover:bg-white transition-colors">
+            <ShoppingCart 
+              className="w-5 h-5" 
+              style={{ color: '{{components.navbar.textColor}}' }} 
+            />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              0
+            </span>
+          </button>
+          {{/if}}
+          {{/if}}
+        </div>
+        {{/if}}
+
+        {/* Mobile Menu Button */}
+        <div className="md:hidden">
+          <button 
+            onClick={toggleMenu} 
+            className="p-2 rounded-md hover:bg-opacity-20 hover:bg-white transition-colors"
+            style={{ color: '{{components.navbar.textColor}}' }}
+          >
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
-      {/* Overlay for dropdown menus on desktop */}
-      {activeDropdown && (
-        <div 
-          className="hidden md:block fixed inset-0 z-40" 
-          onClick={closeDropdown}
-        />
+      {/* Mobile Navigation */}
+      {isOpen && (
+        <nav 
+          className="md:hidden border-t px-4 py-4 space-y-2 font-medium"
+          style={{ 
+            backgroundColor: '{{components.navbar.backgroundColor}}',
+            borderTopColor: '{{components.navbar.hoverColor}}'
+          }}
+        >
+          {{#each header.menuItems}}
+          <Link 
+            href="{{link}}" 
+            onClick={() => setIsOpen(false)}
+            className="block px-3 py-2 rounded-lg transition-colors duration-200"
+            style={{ 
+              color: '{{../components.navbar.textColor}}',
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '{{../components.navbar.hoverColor}}20'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+          >
+            {{label}}
+          </Link>
+          {{/each}}
+          
+          {{#if ../header.showIcons}}
+          {{#if ../template}}
+          {{#if (eq ../template "ecommerce")}}
+          <div className="pt-4 border-t" style={{ borderTopColor: '{{../components.navbar.hoverColor}}' }}>
+            <button 
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg w-full transition-colors duration-200"
+              style={{ color: '{{../components.navbar.textColor}}' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '{{../components.navbar.hoverColor}}20'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              <ShoppingCart className="w-5 h-5" />
+              <span>Cart (0)</span>
+            </button>
+          </div>
+          {{/if}}
+          {{/if}}
+          {{/if}}
+        </nav>
       )}
     </header>
   )
 }
-
-// Page-specific header configurations (commented examples for template reference)
-/*
-// Example configurations that can be used in templates:
-
-// For ecommerce sites:
-const ecommerceConfig = {
-  style: 'ecommerce',
-  showSearch: true,
-  showCart: true,
-  showUserAccount: true
-}
-
-// For SaaS/webapp sites:
-const saasConfig = {
-  style: 'dashboard', 
-  showCta: true,
-  ctaText: 'Sign Up Free',
-  ctaLink: '/signup'
-}
-
-// For marketing sites:
-const marketingConfig = {
-  style: 'gradient',
-  showCta: true,
-  ctaText: 'Get Started',
-  ctaLink: '/contact'
-}
-
-// For nonprofit sites:
-const nonprofitConfig = {
-  style: 'nonprofit',
-  showCta: true,
-  ctaText: 'Donate Now',
-  ctaLink: '/donate'
-}
-*/
