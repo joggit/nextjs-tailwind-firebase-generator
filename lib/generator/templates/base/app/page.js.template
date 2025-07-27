@@ -1,85 +1,99 @@
-// Home Page Template
-// File: lib/generator/templates/base/app/page.js.template
-
+// lib/generator/templates/base/app/page.js.template
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
-import Link from 'next/link'
+
+export const metadata = {
+  title: '{{businessName}}',
+  description: '{{businessDescription}}',
+  keywords: ['{{industry}}', 'business', 'services'],
+  themeColor: '{{theme.primaryColor}}',
+}
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main>
+      <main className="flex-grow">
         {/* Hero Section */}
-        HERO_SECTION_PLACEHOLDER
-        
-        {/* Features Section */}
-        FEATURES_SECTION_PLACEHOLDER
-        
-        {/* Additional Content Based on Template */}
-        IF_ecommerce_START
-        <section className="py-16 px-4 bg-white">
-          <div className="max-w-6xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-8" style={{ color: '{{primaryColor}}' }}>
-              Featured Products
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card className="p-6">
-                <h3 className="text-xl font-semibold mb-3">Product 1</h3>
-                <p className="text-gray-600 mb-4">Amazing product description</p>
-                <Button>Shop Now</Button>
-              </Card>
-              <Card className="p-6">
-                <h3 className="text-xl font-semibold mb-3">Product 2</h3>
-                <p className="text-gray-600 mb-4">Another great product</p>
-                <Button>Shop Now</Button>
-              </Card>
-              <Card className="p-6">
-                <h3 className="text-xl font-semibold mb-3">Product 3</h3>
-                <p className="text-gray-600 mb-4">Best selling item</p>
-                <Button>Shop Now</Button>
-              </Card>
-            </div>
-          </div>
-        </section>
-        IF_ecommerce_END
-
-        IF_blog_START
-        <section className="py-16 px-4 bg-white">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold mb-8 text-center" style={{ color: '{{primaryColor}}' }}>
-              Latest Posts
-            </h2>
-            <div className="space-y-8">
-              <Card className="p-6">
-                <h3 className="text-xl font-semibold mb-3">Blog Post Title</h3>
-                <p className="text-gray-600 mb-4">Post excerpt goes here...</p>
-                <Button variant="outline">Read More</Button>
-              </Card>
-            </div>
-          </div>
-        </section>
-        IF_blog_END
-
-        {/* Contact CTA */}
-        <section className="py-16 px-4" style={{ backgroundColor: '{{primaryColor}}' }}>
+        <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-purple-50">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6 text-white">
-              Ready to Get Started?
-            </h2>
-            <p className="text-xl mb-8 text-white/90">
-              Contact us today to learn more about {{businessName}}
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+              {{blocks.marketing.hero.title}}
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+              {{blocks.marketing.hero.subtitle}}
             </p>
-            <Link 
+            <a 
+              href="{{blocks.marketing.hero.buttonLink}}"
+              className="inline-flex items-center px-8 py-4 text-white rounded-lg font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl"
+              style={{ backgroundColor: '{{theme.primaryColor}}' }}
+            >
+              {{blocks.marketing.hero.buttonText}}
+            </a>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Why Choose {{businessName}}
+              </h2>
+              <p className="text-gray-600">
+                Discover what makes us different
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {{#each blocks.marketing.features}}
+              <div className="p-6 bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  {{title}}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {{description}}
+                </p>
+              </div>
+              {{/each}}
+            </div>
+          </div>
+        </section>
+
+        {/* About Section */}
+        <section className="py-16 px-4 bg-gray-50">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              About {{businessName}}
+            </h2>
+            <p className="text-lg text-gray-600 leading-relaxed">
+              {{businessDescription}}
+            </p>
+            <div className="mt-8">
+              <span className="inline-block px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                {{industry}} • {{targetAudience}}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              Get In Touch
+            </h2>
+            <p className="text-lg text-gray-600 mb-8">
+              Ready to work with us? Contact us today!
+            </p>
+            <a 
               href="/contact"
-              className="inline-block px-8 py-4 bg-white rounded-lg font-semibold transition-transform hover:scale-105"
-              style={{ color: '{{primaryColor}}' }}
+              className="inline-flex items-center px-8 py-4 text-white rounded-lg font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl"
+              style={{ backgroundColor: '{{theme.primaryColor}}' }}
             >
               Contact Us
-            </Link>
+            </a>
           </div>
         </section>
       </main>

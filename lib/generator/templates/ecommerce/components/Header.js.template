@@ -2,133 +2,119 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-{{#if header.showIcons}}
-import { Menu, X, ShoppingCart } from 'lucide-react'
-{{/if}}
-{{#unless header.showIcons}}
 import { Menu, X } from 'lucide-react'
-{{/unless}}
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false)
-
-  const toggleMenu = () => setIsOpen(!isOpen)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
     <header 
-      className="{{#if theme.layout.header}}{{theme.layout.header}}{{/if}} shadow"
-      style={{ backgroundColor: '{{components.navbar.backgroundColor}}' }}
+      className="w-full shadow-sm border-b border-gray-200 top-0 z-50 {{theme.layout.header}}"
+      style={{
+        backgroundColor: '{{components.navbar.backgroundColor}}',
+        color: '{{components.navbar.textColor}}'
+      }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        {/* Logo */}
-        <div className="flex items-center space-x-2">
-          {{#if header.logo}}
-          <img 
-            src="{{header.logo}}" 
-            alt="{{businessName}} Logo" 
-            className="h-8 w-8 object-contain"
-          />
-          {{/if}}
-          <Link 
-            href="/" 
-            className="text-xl font-bold"
-            style={{ color: '{{components.navbar.textColor}}' }}
-          >
-            {{businessName}}
-          </Link>
-        </div>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex space-x-6 font-medium">
-          {{#each header.menuItems}}
-          <Link 
-            href="{{link}}" 
-            className="transition-colors duration-200"
-            style={{ 
-              color: '{{../components.navbar.textColor}}',
-            }}
-            onMouseEnter={(e) => e.target.style.color = '{{../components.navbar.hoverColor}}'}
-            onMouseLeave={(e) => e.target.style.color = '{{../components.navbar.textColor}}'}
-          >
-            {{label}}
-          </Link>
-          {{/each}}
-        </nav>
-
-        {{#if header.showIcons}}
-        {/* Action Icons */}
-        <div className="hidden md:flex items-center space-x-4">
-          {{#if template}}
-          {{#if (eq template "ecommerce")}}
-          <button className="relative p-2 rounded-full hover:bg-opacity-20 hover:bg-white transition-colors">
-            <ShoppingCart 
-              className="w-5 h-5" 
-              style={{ color: '{{components.navbar.textColor}}' }} 
-            />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-              0
-            </span>
-          </button>
-          {{/if}}
-          {{/if}}
-        </div>
-        {{/if}}
-
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <button 
-            onClick={toggleMenu} 
-            className="p-2 rounded-md hover:bg-opacity-20 hover:bg-white transition-colors"
-            style={{ color: '{{components.navbar.textColor}}' }}
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Navigation */}
-      {isOpen && (
-        <nav 
-          className="md:hidden border-t px-4 py-4 space-y-2 font-medium"
-          style={{ 
-            backgroundColor: '{{components.navbar.backgroundColor}}',
-            borderTopColor: '{{components.navbar.hoverColor}}'
-          }}
-        >
-          {{#each header.menuItems}}
-          <Link 
-            href="{{link}}" 
-            onClick={() => setIsOpen(false)}
-            className="block px-3 py-2 rounded-lg transition-colors duration-200"
-            style={{ 
-              color: '{{../components.navbar.textColor}}',
-            }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '{{../components.navbar.hoverColor}}20'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-          >
-            {{label}}
-          </Link>
-          {{/each}}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
           
-          {{#if ../header.showIcons}}
-          {{#if ../template}}
-          {{#if (eq ../template "ecommerce")}}
-          <div className="pt-4 border-t" style={{ borderTopColor: '{{../components.navbar.hoverColor}}' }}>
-            <button 
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg w-full transition-colors duration-200"
-              style={{ color: '{{../components.navbar.textColor}}' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '{{../components.navbar.hoverColor}}20'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+          {/* Logo/Brand */}
+          <Link href="/" className="flex items-center space-x-3">
+            <div 
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
+              style={{ backgroundColor: '{{theme.secondaryColor}}' }}
             >
-              <ShoppingCart className="w-5 h-5" />
-              <span>Cart (0)</span>
-            </button>
+              {{projectName}}
+            </div>
+            <span 
+              className="text-xl font-bold"
+              style={{ 
+                color: '{{components.navbar.textColor}}',
+                fontFamily: '{{theme.fontFamily}}'
+              }}
+            >
+              {{projectName}}
+            </span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {{#each header.menuItems}}
+            <Link
+              href="{{link}}"
+              className="px-3 py-2 text-sm font-medium transition-colors duration-200 hover:opacity-80"
+              style={{ color: '{{../components.navbar.textColor}}' }}
+            >
+              {{label}}
+            </Link>
+            {{/each}}
+          </nav>
+
+          {/* CTA Button */}
+          <div className="hidden md:block">
+            <Link
+              href="{{blocks.marketing.hero.buttonLink}}"
+              className="px-4 py-2 font-medium transition-all duration-200 hover:scale-105"
+              style={{ 
+                backgroundColor: '{{components.button.secondaryColor}}',
+                color: '{{components.button.textColor}}',
+                borderRadius: '{{components.button.borderRadius}}'
+              }}
+            >
+              {{blocks.marketing.hero.buttonText}}
+            </Link>
           </div>
-          {{/if}}
-          {{/if}}
-          {{/if}}
-        </nav>
-      )}
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 rounded-md transition-colors duration-200"
+            style={{ color: '{{components.navbar.textColor}}' }}
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div 
+            className="md:hidden border-t border-opacity-20 mt-2"
+            style={{ 
+              backgroundColor: '{{components.navbar.backgroundColor}}',
+              borderColor: '{{components.navbar.hoverColor}}'
+            }}
+          >
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {{#each header.menuItems}}
+              <Link
+                href="{{link}}"
+                className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                style={{ color: '{{../components.navbar.textColor}}' }}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {{label}}
+              </Link>
+              {{/each}}
+              
+              {/* Mobile CTA */}
+              <div className="pt-4 border-t border-opacity-20">
+                <Link
+                  href="{{blocks.marketing.hero.buttonLink}}"
+                  className="block w-full text-center px-3 py-2 font-medium transition-all duration-200"
+                  style={{ 
+                    backgroundColor: '{{components.button.secondaryColor}}',
+                    color: '{{components.button.textColor}}',
+                    borderRadius: '{{components.button.borderRadius}}'
+                  }}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {{blocks.marketing.hero.buttonText}}
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   )
 }
