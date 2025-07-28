@@ -1,4 +1,4 @@
-// Enhanced Project Generator with Clean Component Imports
+// Enhanced Project Generator without Preview Step
 // File: components/generator/ProjectGenerator.js
 
 'use client'
@@ -22,24 +22,26 @@ import {
   Info
 } from 'lucide-react'
 
-// Import existing components
-import TemplatePreview from './TemplatePreview'
-
 // Import new step components
 import BasicInfoThemeStep from './BasicInfoThemeStep'
 import DetailedDesignStep from './DetailedDesignStep'
 import PagesContentStep from './PagesContentStep'
 
-// Initial form data with new structure
+// Initial form data with FIXED structure - blocks organized by page ID
 const initialFormData = {
   // === STEP 1: Basic Site Info & Theme ===
   projectName: '',
+  businessName: '', // Added for backward compatibility
   description: '',
+  industry: 'technology',
+  targetAudience: 'professionals',
+  template: 'modern', // Added for compatibility
 
   // Theme Configuration (Step 1)
   theme: {
     primaryColor: '#1E40AF',
     secondaryColor: '#FBBF24',
+    accentColor: '#10B981', // Added accent color
     fontFamily: 'Inter, sans-serif',
     iconLibrary: 'Heroicons',
     layout: {
@@ -86,12 +88,12 @@ const initialFormData = {
     about: {
       title: 'About Us',
       enabled: true,
-      blocks: ['missionStatement']
+      blocks: ['team'] // Changed from 'missionStatement' to 'team'
     },
     contact: {
       title: 'Contact',
       enabled: true,
-      blocks: ['contactForm']
+      blocks: ['contactInfo']
     },
     shop: {
       title: 'Shop',
@@ -100,25 +102,69 @@ const initialFormData = {
     }
   },
 
-  // Content Blocks
+  // FIXED: Content Blocks organized by PAGE ID, not category
   blocks: {
-    marketing: {
+    home: {
       hero: {
         title: 'Welcome to Our Project',
         subtitle: 'Building modern web applications with Next.js and Tailwind CSS',
         buttonText: 'Get Started',
         buttonLink: '/get-started'
       },
-      features: [
-        {
-          title: 'Fast Performance',
-          description: 'Optimized for speed and efficiency.'
-        },
-        {
-          title: 'Responsive Design',
-          description: 'Looks great on all devices.'
-        }
-      ]
+      features: {
+        title: 'Why Choose Us',
+        subtitle: 'What makes us different',
+        items: [
+          {
+            title: 'Fast Performance',
+            description: 'Optimized for speed and efficiency.',
+            icon: 'Zap'
+          },
+          {
+            title: 'Responsive Design',
+            description: 'Looks great on all devices.',
+            icon: 'Monitor'
+          },
+          {
+            title: 'Secure & Reliable',
+            description: 'Built with security best practices.',
+            icon: 'Shield'
+          }
+        ]
+      }
+    },
+    about: {
+      team: {
+        title: 'Meet Our Team',
+        subtitle: 'The people behind our success',
+        members: [
+          {
+            name: 'Jason',
+            role: 'CEO',
+            bio: 'Visionary leader with 10+ years of experience in technology.',
+            image: '',
+            linkedin: '',
+            email: ''
+          },
+          {
+            name: 'James',
+            role: 'Developer',
+            bio: 'Full-stack developer passionate about creating amazing user experiences.',
+            image: '',
+            linkedin: '',
+            email: ''
+          }
+        ]
+      }
+    },
+    contact: {
+      contactInfo: {
+        title: 'Get In Touch',
+        address: '123 Business Street\nCity, State 12345',
+        phone: '(555) 123-4567',
+        email: 'info@company.com',
+        businessHours: 'Mon-Fri: 9AM-5PM\nSat-Sun: Closed'
+      }
     }
   },
 
@@ -164,7 +210,7 @@ function ProjectGenerator() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
 
-  // Updated steps array
+  // Updated steps array - REMOVED PREVIEW STEP
   const steps = [
     {
       id: 'basic-theme',
@@ -188,13 +234,6 @@ function ProjectGenerator() {
       component: 'pages-content'
     },
     {
-      id: 'preview',
-      title: 'Preview',
-      description: 'Review your configuration',
-      icon: Eye,
-      component: 'preview'
-    },
-    {
       id: 'generate',
       title: 'Generate',
       description: 'Create your website',
@@ -213,9 +252,11 @@ function ProjectGenerator() {
         secondary: formData.theme?.secondaryColor
       },
       headerItems: formData.header?.menuItems?.length || 0,
-      enabledPages: Object.values(formData.pages || {}).filter(p => p.enabled).length
+      enabledPages: Object.values(formData.pages || {}).filter(p => p.enabled).length,
+      blocksStructure: Object.keys(formData.blocks || {}),
+      aboutTeamMembers: formData.blocks?.about?.team?.members?.length || 0
     })
-  }, [formData.projectName, formData.theme, formData.header, formData.pages])
+  }, [formData])
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -235,61 +276,141 @@ function ProjectGenerator() {
     }
   }
 
-  const handleGenerateOnly = async () => {
+  // Updated handleGenerate function that expects JSON response
+  // Replace your existing handleGenerate function with this:
+
+  const handleGenerate = async () => {
     setLoading(true)
     setError(null)
     setResult(null)
 
     try {
-      const response = await fetch('/api/generator', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      console.log('🚀 Starting generation with data:', {
+        projectName: formData.projectName,
+        theme: formData.theme?.primaryColor,
+        pages: Object.keys(formData.pages || {}).filter(key => formData.pages[key].enabled)
       })
 
+      const response = await fetch('/api/generator', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          // Ensure compatibility
+          businessName: formData.projectName || formData.businessName,
+          designConfig: formData.design,
+          customRequirements: formData.description,
+          pages: formData.pages || {},
+          useDesignSystem: true
+        }),
+      })
+
+      console.log('📥 Response status:', response.status)
+      console.log('📥 Response content-type:', response.headers.get('content-type'))
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        let errorData
+        try {
+          errorData = JSON.parse(errorText)
+          throw new Error(errorData.error || errorData.details || `HTTP ${response.status}`)
+        } catch (parseError) {
+          throw new Error(`HTTP ${response.status}: ${errorText}`)
+        }
+      }
+
+      // Parse JSON response
       const data = await response.json()
+      console.log('✅ Generation response:', data)
 
       if (data.success) {
         setResult(data.data)
-        console.log('✅ Preview generated:', data.data)
+        console.log('✅ Generation successful:', {
+          projectId: data.data.projectId,
+          fileCount: data.data.metadata?.fileCount,
+          processingTime: data.data.metadata?.processingTime,
+          downloadUrl: data.data.metadata?.download?.downloadUrl
+        })
       } else {
         setError(data.error || 'Failed to generate project')
       }
+
     } catch (err) {
+      console.error('🔥 Generation error:', err)
       setError(`Generation failed: ${err.message}`)
     } finally {
       setLoading(false)
     }
   }
+
+  // Updated downloadProject function to use the download API
   const downloadProject = async () => {
-    if (!result) return
+    if (!result?.projectId) {
+      setError('No project available for download')
+      return
+    }
 
     try {
-      const response = await fetch('/api/generator?download=true', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
+      console.log('📥 Starting download for project:', result.projectId)
 
-      if (!response.ok) throw new Error('Download failed')
+      const response = await fetch(`/api/download?id=${result.projectId}`)
 
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Download failed')
+      }
+
+      // Handle ZIP download
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${formData.projectName || 'website'}.zip`
+
+      // Get filename from response headers
+      const contentDisposition = response.headers.get('content-disposition')
+      let filename = `${formData.projectName || 'website'}.zip`
+      if (contentDisposition) {
+        const matches = contentDisposition.match(/filename="([^"]+)"/)
+        if (matches) filename = matches[1]
+      }
+
+      a.download = filename
       document.body.appendChild(a)
       a.click()
       a.remove()
       window.URL.revokeObjectURL(url)
+
+      console.log('✅ Download completed:', filename)
+
     } catch (err) {
+      console.error('🔥 Download error:', err)
       setError(`Download failed: ${err.message}`)
     }
   }
 
+  // New deploy function (placeholder for deployment functionality)
+  const deployProject = async () => {
+    if (!result?.projectId) {
+      setError('No project available for deployment')
+      return
+    }
 
+    try {
+      console.log('🚀 Starting deployment for project:', result.projectId)
+
+      // TODO: Implement deployment logic
+      // This could integrate with Vercel, Netlify, or other deployment services
+
+      // For now, show a placeholder
+      alert(`Deployment feature coming soon!\n\nProject ID: ${result.projectId}\n\nFor now, please download and deploy manually.`)
+
+    } catch (err) {
+      console.error('🔥 Deployment error:', err)
+      setError(`Deployment failed: ${err.message}`)
+    }
+  }
   const isStepComplete = (stepIndex) => {
     switch (stepIndex) {
       case 0: // Basic Info & Theme
@@ -303,8 +424,6 @@ function ProjectGenerator() {
           formData.footer?.text
       case 2: // Pages & Content
         return Object.values(formData.pages || {}).some(page => page.enabled)
-      case 3: // Preview
-        return true
       default:
         return false
     }
@@ -344,26 +463,17 @@ function ProjectGenerator() {
         )
 
       case 'pages-content':
+        console.log('📄 Rendering PagesContentStep with:', {
+          pages: Object.keys(formData.pages || {}),
+          enabledPages: Object.values(formData.pages || {}).filter(p => p.enabled).length,
+          blocks: Object.keys(formData.blocks || {}),
+          teamMembers: formData.blocks?.about?.team?.members?.length || 0
+        })
         return (
           <PagesContentStep
             config={formData}
             onChange={setFormData}
             onNext={handleNext}
-            onPrev={handlePrev}
-          />
-        )
-
-      case 'preview':
-        console.log('👁️ Rendering TemplatePreview with config:', {
-          projectName: formData.projectName,
-          enabledPages: Object.values(formData.pages || {}).filter(p => p.enabled).length,
-          totalBlocks: Object.values(formData.pages || {}).reduce((sum, page) => sum + (page.blocks?.length || 0), 0),
-          theme: formData.theme
-        })
-        return (
-          <TemplatePreview
-            config={formData}
-            onGenerate={() => setCurrentStep(4)}
             onPrev={handlePrev}
           />
         )
@@ -376,8 +486,9 @@ function ProjectGenerator() {
             loading={loading}
             result={result}
             error={error}
-            onGenerate={handleGenerateOnly}
+            onGenerate={handleGenerate}
             onDownload={downloadProject}
+            onDeploy={deployProject}  // Add this
             onPrev={handlePrev}
           />
         )
@@ -514,6 +625,8 @@ function ProjectGenerator() {
               <div>Footer Links: {formData.footer?.links?.length || 0}</div>
               <div>Enabled Pages: {Object.values(formData.pages || {}).filter(p => p.enabled).length}</div>
               <div>Total Blocks: {Object.values(formData.pages || {}).reduce((sum, page) => sum + (page.blocks?.length || 0), 0)}</div>
+              <div>Blocks Structure: {JSON.stringify(Object.keys(formData.blocks || {}))}</div>
+              <div>About Team Members: {formData.blocks?.about?.team?.members?.length || 0}</div>
               <div>Animations Enabled: {formData.animations?.enabled ? 'Yes' : 'No'}</div>
             </div>
           </details>
@@ -523,8 +636,20 @@ function ProjectGenerator() {
   )
 }
 
-// Generate Step Component (kept as function since it's not imported)
+// Replace your existing GenerateStep function with this:
+
 function GenerateStep({ config, loading, result, error, onGenerate, onDownload, onPrev }) {
+  // New deploy handler
+  const handleDeploy = async () => {
+    if (!result?.projectId) {
+      alert('No project available for deployment')
+      return
+    }
+
+    // TODO: Implement actual deployment
+    alert(`🚀 Deployment Feature Coming Soon!\n\nProject ID: ${result.projectId}\n\nFor now, please download and deploy manually to:\n• Vercel\n• Netlify\n• GitHub Pages\n• Your hosting provider`)
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-sm border p-6">
       <div className="text-center mb-8">
@@ -532,7 +657,7 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
           Generate Your Website
         </h2>
         <p className="text-gray-600">
-          Ready to create your professionally designed website with enhanced theming
+          Create your professionally designed website, then choose to download or deploy
         </p>
       </div>
 
@@ -587,7 +712,7 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
         </div>
       </div>
 
-      {/* Generation Controls */}
+      {/* Generation Button */}
       {!result && !error && (
         <div className="text-center">
           <button
@@ -598,12 +723,12 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
             {loading ? (
               <>
                 <Loader className="w-5 h-5 mr-2 animate-spin" />
-                Generating with Enhanced Theme...
+                Generating Website...
               </>
             ) : (
               <>
                 <Brain className="w-5 h-5 mr-2" />
-                Generate Website with Custom Theme
+                Generate Website
               </>
             )}
           </button>
@@ -636,63 +761,124 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
         </div>
       )}
 
-      {/* Success Display */}
+      {/* Success Display - NEW: Download & Deploy Options */}
       {result && (
         <div className="space-y-6">
           <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                <span className="font-medium text-green-800">Enhanced Website Generated Successfully!</span>
+            <div className="flex items-center mb-6">
+              <CheckCircle className="w-6 h-6 text-green-600 mr-3" />
+              <div>
+                <h3 className="text-lg font-semibold text-green-800">Website Generated Successfully!</h3>
+                <p className="text-green-700 text-sm">Your custom website is ready. Choose an option below.</p>
               </div>
-              <button
-                onClick={onDownload}
-                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download Project
-                <div className="mt-6 flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={onGenerate}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-                    disabled={loading}
-                  >
-                    {loading ? 'Generating...' : 'Generate Preview'}
-                  </button>
+            </div>
 
-                  {result && (
-                    <button
-                      onClick={onDownload}
-                      className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
-                    >
-                      Download ZIP
-                    </button>
+            {/* Download & Deploy Action Buttons */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {/* Download Option */}
+              <div className="border border-blue-200 bg-blue-50 rounded-lg p-6">
+                <div className="text-center">
+                  <Download className="w-12 h-12 text-blue-600 mx-auto mb-3" />
+                  <h4 className="text-lg font-semibold text-blue-900 mb-2">Download Project</h4>
+                  <p className="text-blue-700 text-sm mb-4">
+                    Get the complete source code as a ZIP file. Perfect for custom hosting or further development.
+                  </p>
+                  <button
+                    onClick={onDownload}
+                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                  >
+                    <Download className="w-4 h-4 mr-2 inline" />
+                    Download ZIP
+                  </button>
+                </div>
+              </div>
+
+              {/* Deploy Option */}
+              <div className="border border-purple-200 bg-purple-50 rounded-lg p-6">
+                <div className="text-center">
+                  <Zap className="w-12 h-12 text-purple-600 mx-auto mb-3" />
+                  <h4 className="text-lg font-semibold text-purple-900 mb-2">Deploy Online</h4>
+                  <p className="text-purple-700 text-sm mb-4">
+                    Deploy your website instantly to the web. Get a live URL in seconds.
+                  </p>
+                  <button
+                    onClick={handleDeploy}
+                    className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+                  >
+                    <Zap className="w-4 h-4 mr-2 inline" />
+                    Deploy Now
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Project Statistics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-white p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-gray-900">{result.metadata?.fileCount || 0}</div>
+                <div className="text-sm text-gray-600">Files Generated</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-gray-900">{result.metadata?.pages?.enabled || 0}</div>
+                <div className="text-sm text-gray-600">Pages Created</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-gray-900">{result.metadata?.content?.teamMembers || 0}</div>
+                <div className="text-sm text-gray-600">Team Members</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-gray-900">{result.metadata?.processingTime || 'N/A'}</div>
+                <div className="text-sm text-gray-600">Processing Time</div>
+              </div>
+            </div>
+
+            {/* What's Included */}
+            <div className="bg-white rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-3">✨ What's Included:</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                <div className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <span>Complete Next.js 14 project</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <span>Custom theme with your colors</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <span>Responsive mobile design</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <span>SEO optimized structure</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <span>Professional UI components</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <span>Team & contact pages</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Project Details */}
+            {result.metadata && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2">📋 Project Details:</h4>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p><strong>Project ID:</strong> {result.projectId}</p>
+                  <p><strong>Generated:</strong> {new Date(result.metadata.generatedAt).toLocaleString()}</p>
+                  <p><strong>Theme:</strong> {result.metadata.theme?.primaryColor} primary, {result.metadata.theme?.secondaryColor} secondary</p>
+                  <p><strong>Pages:</strong> {result.metadata.pages?.list?.map(p => p.title).join(', ')}</p>
+                  {result.metadata.download?.expiresIn && (
+                    <p><strong>Download expires:</strong> {result.metadata.download.expiresIn}</p>
                   )}
                 </div>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-              <div className="bg-white p-4 rounded-lg">
-                <div className="font-medium text-gray-900">Files Generated</div>
-                <div className="text-gray-600">{result.metadata?.fileCount || 0} files</div>
               </div>
-              <div className="bg-white p-4 rounded-lg">
-                <div className="font-medium text-gray-900">Custom Theme</div>
-                <div className="text-gray-600">Applied</div>
-              </div>
-              <div className="bg-white p-4 rounded-lg">
-                <div className="font-medium text-gray-900">Pages Created</div>
-                <div className="text-gray-600">{Object.values(config.pages || {}).filter(p => p.enabled).length} pages</div>
-              </div>
-              <div className="bg-white p-4 rounded-lg">
-                <div className="font-medium text-gray-900">Processing Time</div>
-                <div className="text-gray-600">{result.metadata?.processingTime || 'N/A'}</div>
-              </div>
-            </div>
+            )}
           </div>
-
-
         </div>
       )}
 
@@ -719,5 +905,4 @@ function GenerateStep({ config, loading, result, error, onGenerate, onDownload, 
     </div>
   )
 }
-
 export default ProjectGenerator

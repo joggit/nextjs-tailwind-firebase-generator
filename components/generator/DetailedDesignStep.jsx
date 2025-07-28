@@ -27,6 +27,7 @@ import {
     Phone,
     MapPin
 } from 'lucide-react'
+import WebsitePreview from './WebsitePreview'
 
 const HEADER_LAYOUTS = [
     {
@@ -340,8 +341,8 @@ export default function DetailedDesignStep({ config, onChange, onNext, onPrev })
                                         updateHeader('layout', layout.id)
                                     }}
                                     className={`p-4 border-2 rounded-lg text-left transition-all hover:shadow-md ${selectedHeaderLayout === layout.id
-                                            ? 'border-blue-500 bg-blue-50 shadow-md'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                        ? 'border-blue-500 bg-blue-50 shadow-md'
+                                        : 'border-gray-200 hover:border-gray-300'
                                         }`}
                                 >
                                     <h4 className="font-semibold text-gray-900 mb-1">{layout.name}</h4>
@@ -477,8 +478,8 @@ export default function DetailedDesignStep({ config, onChange, onNext, onPrev })
                                         updateFooter('layout', layout.id)
                                     }}
                                     className={`p-4 border-2 rounded-lg text-left transition-all hover:shadow-md ${selectedFooterLayout === layout.id
-                                            ? 'border-purple-500 bg-purple-50 shadow-md'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                        ? 'border-purple-500 bg-purple-50 shadow-md'
+                                        : 'border-gray-200 hover:border-gray-300'
                                         }`}
                                 >
                                     <h4 className="font-semibold text-gray-900 mb-1">{layout.name}</h4>
@@ -587,126 +588,8 @@ export default function DetailedDesignStep({ config, onChange, onNext, onPrev })
 
                 {/* Live Preview */}
                 <div className="p-6 bg-gray-50 rounded-lg">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                        <Eye className="w-5 h-5 mr-2" />
-                        Live Preview
-                    </h3>
+                    <WebsitePreview config={config} currentStep={2} />
 
-                    {/* Header Preview */}
-                    <div className="bg-white rounded-lg shadow-sm border mb-6 overflow-hidden">
-                        <div className={`px-6 py-4 border-b ${selectedHeaderLayout === 'stacked' ? 'space-y-3' : ''
-                            }`}>
-                            <div className={`flex items-center ${selectedHeaderLayout === 'centered' ? 'justify-center' :
-                                    selectedHeaderLayout === 'split' ? 'justify-between' :
-                                        'justify-between'
-                                }`}>
-                                {/* Logo Section */}
-                                {selectedHeaderLayout !== 'centered' && (
-                                    <div className="flex items-center space-x-3">
-                                        {config.generatedLogo ? (
-                                            <img
-                                                src={config.generatedLogo.simplifiedUrl}
-                                                alt="Logo"
-                                                className="w-8 h-8 object-contain"
-                                            />
-                                        ) : (
-                                            <div
-                                                className="w-8 h-8 rounded flex items-center justify-center text-white font-bold text-sm"
-                                                style={{ backgroundColor: config.theme?.primaryColor || '#3B82F6' }}
-                                            >
-                                                {config.projectName?.[0]?.toUpperCase() || 'L'}
-                                            </div>
-                                        )}
-                                        <span className="font-bold text-gray-900">
-                                            {config.projectName || 'Your Project'}
-                                        </span>
-                                    </div>
-                                )}
-
-                                {/* Centered Logo */}
-                                {selectedHeaderLayout === 'centered' && (
-                                    <div className="flex items-center space-x-3">
-                                        {config.generatedLogo ? (
-                                            <img
-                                                src={config.generatedLogo.simplifiedUrl}
-                                                alt="Logo"
-                                                className="w-8 h-8 object-contain"
-                                            />
-                                        ) : (
-                                            <div
-                                                className="w-8 h-8 rounded flex items-center justify-center text-white font-bold text-sm"
-                                                style={{ backgroundColor: config.theme?.primaryColor || '#3B82F6' }}
-                                            >
-                                                {config.projectName?.[0]?.toUpperCase() || 'L'}
-                                            </div>
-                                        )}
-                                        <span className="font-bold text-gray-900">
-                                            {config.projectName || 'Your Project'}
-                                        </span>
-                                    </div>
-                                )}
-
-                                {/* Navigation and Actions */}
-                                {selectedHeaderLayout !== 'stacked' && (
-                                    <div className="flex items-center space-x-6">
-                                        <nav className="hidden lg:flex space-x-6 text-sm text-gray-600">
-                                            {menuItems.slice(0, 4).map((item, index) => (
-                                                <span key={index}>{item.label}</span>
-                                            ))}
-                                        </nav>
-                                        <div className="flex items-center space-x-2">
-                                            {actionIcons.slice(0, 3).map((icon, index) => (
-                                                <div key={index} className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                                                    <span className="text-xs">
-                                                        {icon.icon === 'ShoppingCart' ? '🛒' :
-                                                            icon.icon === 'User' ? '👤' :
-                                                                icon.icon === 'Search' ? '🔍' :
-                                                                    icon.icon === 'Bell' ? '🔔' : '⚡'}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Stacked Navigation */}
-                            {selectedHeaderLayout === 'stacked' && (
-                                <nav className="flex justify-center space-x-6 text-sm text-gray-600">
-                                    {menuItems.slice(0, 6).map((item, index) => (
-                                        <span key={index}>{item.label}</span>
-                                    ))}
-                                </nav>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Footer Preview */}
-                    <div className="bg-gray-900 text-white rounded-lg p-6">
-                        {selectedFooterLayout === 'simple' ? (
-                            <div className="flex justify-between items-center text-sm">
-                                <span>{config.footer?.copyright || `© ${new Date().getFullYear()} ${config.projectName}. All rights reserved.`}</span>
-                                <div className="flex space-x-4">
-                                    {footerSections.main?.links?.slice(0, 2).map((link, index) => (
-                                        <span key={index} className="text-gray-300 hover:text-white">{link.label}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                                {Object.entries(footerSections).map(([sectionKey, section]) => (
-                                    <div key={sectionKey}>
-                                        <h4 className="font-semibold mb-3">{section.title}</h4>
-                                        <div className="space-y-2 text-sm text-gray-300">
-                                            {section.links?.slice(0, 4).map((link, index) => (
-                                                <div key={index}>{link.label}</div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
                 </div>
 
                 {/* Navigation */}

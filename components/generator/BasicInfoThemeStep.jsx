@@ -20,8 +20,13 @@ import {
     Menu,
     Heart,
     Square,
-    MousePointer
+    MousePointer,
+    Image
 } from 'lucide-react'
+import HeroImageGenerator from './HeroImageGenerator'
+import LogoGenerator from './LogoGenerator'
+import WebsitePreview from './WebsitePreview'
+
 
 // Color Palette Options
 const COLOR_PALETTES = {
@@ -180,7 +185,8 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
     const [selectedPalette, setSelectedPalette] = useState('corporate')
     const [customColors, setCustomColors] = useState(false)
     const [logoLoading, setLogoLoading] = useState(false)
-    const [activeTab, setActiveTab] = useState('colors') // colors, typography, components, layout
+    const [activeTab, setActiveTab] = useState('colors')
+    const [graphicsSubTab, setGraphicsSubTab] = useState('logo')
 
     // Load Google Fonts dynamically
     useEffect(() => {
@@ -191,6 +197,32 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
             loadGoogleFont(fontOption.googleFont)
         }
     }, [config.theme?.fontFamily])
+
+    const handleLogoGenerated = (logos) => {
+        onChange({
+            ...config,
+            graphics: {
+                ...config.graphics,
+                logos: logos,
+                currentLogo: logos.primary?.url
+            },
+            header: {
+                ...config.header,
+                logo: logos.primary?.url
+            }
+        })
+    }
+
+    const handleHeroImageGenerated = (imageData) => {
+        onChange({
+            ...config,
+            graphics: {
+                ...config.graphics,
+                heroImage: imageData.url,
+                heroImageData: imageData
+            }
+        })
+    }
 
     const loadGoogleFont = (fontFamily) => {
         // Remove existing font link if any
@@ -298,12 +330,20 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
     const headerIcons = getHeaderIcons()
 
     const updateBasicInfo = (field, value) => {
-        onChange({
+        const newConfig = {
             ...config,
-            [field]: value,
-            ...(field === 'projectName' && { businessName: value }),
-            ...(field === 'description' && { businessDescription: value })
-        })
+            [field]: value
+        }
+
+        // Sync projectName and businessName
+        if (field === 'projectName') {
+            newConfig.businessName = value
+        }
+        if (field === 'description') {
+            newConfig.businessDescription = value
+        }
+
+        onChange(newConfig)
     }
 
     const updateTheme = (field, value) => {
@@ -463,6 +503,7 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
         { id: 'colors', name: 'Colors & Palette', icon: Palette },
         { id: 'typography', name: 'Typography', icon: Type },
         { id: 'components', name: 'Components', icon: Square },
+        { id: 'graphics', name: 'Graphics', icon: Image },
         { id: 'effects', name: 'Effects & Animations', icon: Zap },
         { id: 'layout', name: 'Layout', icon: Layout }
     ]
@@ -591,8 +632,8 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
-                                                ? 'border-blue-500 text-blue-600'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                            ? 'border-blue-500 text-blue-600'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                             }`}
                                     >
                                         <Icon className="w-4 h-4" />
@@ -615,8 +656,8 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                             key={key}
                                             onClick={() => applyColorPalette(key)}
                                             className={`p-4 border-2 rounded-lg text-left transition-all hover:shadow-md ${selectedPalette === key
-                                                    ? 'border-blue-500 bg-blue-50 shadow-md'
-                                                    : 'border-gray-200 hover:border-gray-300'
+                                                ? 'border-blue-500 bg-blue-50 shadow-md'
+                                                : 'border-gray-200 hover:border-gray-300'
                                                 }`}
                                         >
                                             <div className="w-full h-16 rounded-lg mb-3 flex items-center justify-center relative overflow-hidden">
@@ -778,8 +819,8 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                                         key={style.id}
                                                         onClick={() => updateComponents('button', 'borderRadius', style.value)}
                                                         className={`p-2 border-2 rounded text-center text-sm transition-all ${buttonRadius === style.value
-                                                                ? 'border-blue-500 bg-blue-50'
-                                                                : 'border-gray-200 hover:border-gray-300'
+                                                            ? 'border-blue-500 bg-blue-50'
+                                                            : 'border-gray-200 hover:border-gray-300'
                                                             }`}
                                                     >
                                                         <div
@@ -840,8 +881,8 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                                         key={shadow.id}
                                                         onClick={() => updateComponents('card', 'shadow', shadow.value)}
                                                         className={`p-3 border-2 rounded text-center text-sm transition-all ${cardShadow === shadow.value
-                                                                ? 'border-blue-500 bg-blue-50'
-                                                                : 'border-gray-200 hover:border-gray-300'
+                                                            ? 'border-blue-500 bg-blue-50'
+                                                            : 'border-gray-200 hover:border-gray-300'
                                                             }`}
                                                     >
                                                         <div className={`w-full h-12 bg-white rounded border ${getShadowClass(shadow.value)} mb-1`}></div>
@@ -892,8 +933,8 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                                 key={speed.id}
                                                 onClick={() => updateAnimations('transition', speed.value)}
                                                 className={`p-3 border-2 rounded-lg text-left transition-all ${animationSpeed === speed.value
-                                                        ? 'border-blue-500 bg-blue-50'
-                                                        : 'border-gray-200 hover:border-gray-300'
+                                                    ? 'border-blue-500 bg-blue-50'
+                                                    : 'border-gray-200 hover:border-gray-300'
                                                     }`}
                                             >
                                                 <div className="font-medium text-gray-900">{speed.name}</div>
@@ -917,8 +958,8 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                                 key={effect.id}
                                                 onClick={() => updateAnimations('hoverEffects', effect.id)}
                                                 className={`p-3 border-2 rounded-lg text-left transition-all ${hoverEffects === effect.id
-                                                        ? 'border-purple-500 bg-purple-50'
-                                                        : 'border-gray-200 hover:border-gray-300'
+                                                    ? 'border-purple-500 bg-purple-50'
+                                                    : 'border-gray-200 hover:border-gray-300'
                                                     }`}
                                             >
                                                 <div className="font-medium text-gray-900">{effect.name}</div>
@@ -933,9 +974,9 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                         <div className="flex space-x-3">
                                             <button
                                                 className={`px-4 py-2 bg-white border-2 rounded-lg transition-all ${hoverEffects === 'none' ? '' :
-                                                        hoverEffects === 'subtle' ? 'hover:scale-105 hover:shadow-md' :
-                                                            hoverEffects === 'moderate' ? 'hover:scale-110 hover:shadow-lg hover:bg-blue-50' :
-                                                                'hover:scale-115 hover:shadow-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
+                                                    hoverEffects === 'subtle' ? 'hover:scale-105 hover:shadow-md' :
+                                                        hoverEffects === 'moderate' ? 'hover:scale-110 hover:shadow-lg hover:bg-blue-50' :
+                                                            'hover:scale-115 hover:shadow-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
                                                     }`}
                                                 style={{
                                                     transitionDuration: animationSpeed,
@@ -946,9 +987,9 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                             </button>
                                             <div
                                                 className={`w-16 h-10 rounded-lg transition-all ${hoverEffects === 'none' ? '' :
-                                                        hoverEffects === 'subtle' ? 'hover:scale-105 hover:shadow-md' :
-                                                            hoverEffects === 'moderate' ? 'hover:scale-110 hover:shadow-lg' :
-                                                                'hover:scale-115 hover:shadow-xl hover:rotate-3'
+                                                    hoverEffects === 'subtle' ? 'hover:scale-105 hover:shadow-md' :
+                                                        hoverEffects === 'moderate' ? 'hover:scale-110 hover:shadow-lg' :
+                                                            'hover:scale-115 hover:shadow-xl hover:rotate-3'
                                                     }`}
                                                 style={{
                                                     backgroundColor: currentColors.primary,
@@ -972,8 +1013,8 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                                 key={effect.id}
                                                 onClick={() => updateAnimations('scrollReveal', effect.id)}
                                                 className={`p-3 border-2 rounded-lg text-left transition-all ${scrollReveal === effect.id
-                                                        ? 'border-green-500 bg-green-50'
-                                                        : 'border-gray-200 hover:border-gray-300'
+                                                    ? 'border-green-500 bg-green-50'
+                                                    : 'border-gray-200 hover:border-gray-300'
                                                     }`}
                                             >
                                                 <div className="font-medium text-gray-900">{effect.name}</div>
@@ -1018,11 +1059,11 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                             <div
                                                 key={index}
                                                 className={`p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border transition-all ${animationsEnabled ? (
-                                                        hoverEffects === 'none' ? '' :
-                                                            hoverEffects === 'subtle' ? 'hover:scale-105 hover:shadow-md' :
-                                                                hoverEffects === 'moderate' ? 'hover:scale-110 hover:shadow-lg' :
-                                                                    'hover:scale-115 hover:shadow-xl hover:rotate-1'
-                                                    ) : ''
+                                                    hoverEffects === 'none' ? '' :
+                                                        hoverEffects === 'subtle' ? 'hover:scale-105 hover:shadow-md' :
+                                                            hoverEffects === 'moderate' ? 'hover:scale-110 hover:shadow-lg' :
+                                                                'hover:scale-115 hover:shadow-xl hover:rotate-1'
+                                                ) : ''
                                                     }`}
                                                 style={{
                                                     transitionDuration: animationsEnabled ? animationSpeed : '0ms',
@@ -1042,11 +1083,11 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                                 </p>
                                                 <button
                                                     className={`mt-2 px-3 py-1 text-sm text-white rounded transition-all ${animationsEnabled ? (
-                                                            hoverEffects === 'none' ? '' :
-                                                                hoverEffects === 'subtle' ? 'hover:scale-105' :
-                                                                    hoverEffects === 'moderate' ? 'hover:scale-110' :
-                                                                        'hover:scale-115 hover:shadow-md'
-                                                        ) : ''
+                                                        hoverEffects === 'none' ? '' :
+                                                            hoverEffects === 'subtle' ? 'hover:scale-105' :
+                                                                hoverEffects === 'moderate' ? 'hover:scale-110' :
+                                                                    'hover:scale-115 hover:shadow-md'
+                                                    ) : ''
                                                         }`}
                                                     style={{
                                                         backgroundColor: currentColors.primary,
@@ -1077,8 +1118,8 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                             key={option.id}
                                             onClick={() => updateThemeLayout('header', option.id)}
                                             className={`p-4 border-2 rounded-lg text-center transition-all hover:shadow-md ${config.theme?.layout?.header === option.id
-                                                    ? 'border-orange-500 bg-orange-50 shadow-md'
-                                                    : 'border-gray-200 hover:border-gray-300'
+                                                ? 'border-orange-500 bg-orange-50 shadow-md'
+                                                : 'border-gray-200 hover:border-gray-300'
                                                 }`}
                                         >
                                             <div className="text-2xl mb-2">{option.icon}</div>
@@ -1089,6 +1130,59 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                 </div>
                             </div>
                         )}
+
+                        {activeTab === 'graphics' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="font-medium text-gray-900">Graphics & Visual Assets</h4>
+
+                                    {/* Sub-tabs */}
+                                    <div className="flex bg-gray-100 rounded-lg p-1">
+                                        <button
+                                            onClick={() => setGraphicsSubTab('logo')}
+                                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${graphicsSubTab === 'logo'
+                                                ? 'bg-white text-blue-600 shadow-sm'
+                                                : 'text-gray-600 hover:text-gray-800'
+                                                }`}
+                                        >
+                                            Logo
+                                        </button>
+                                        <button
+                                            onClick={() => setGraphicsSubTab('hero')}
+                                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${graphicsSubTab === 'hero'
+                                                ? 'bg-white text-blue-600 shadow-sm'
+                                                : 'text-gray-600 hover:text-gray-800'
+                                                }`}
+                                        >
+                                            Hero Image
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Logo Generator */}
+                                {graphicsSubTab === 'logo' && (
+                                    <LogoGenerator
+                                        businessName={config.projectName || config.businessName}
+                                        industry={config.industry}
+                                        onLogoGenerated={handleLogoGenerated}
+                                    />
+                                )}
+
+                                {/* Hero Image Generator */}
+                                {graphicsSubTab === 'hero' && (
+                                    <HeroImageGenerator
+                                        businessContext={{
+                                            businessName: config.projectName || config.businessName,
+                                            industry: config.industry,
+                                            businessDescription: config.description
+                                        }}
+                                        currentImageUrl={config.graphics?.heroImage}
+                                        onImageGenerated={handleHeroImageGenerated}
+                                        onError={(error) => console.error('Image generation error:', error)}
+                                    />
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -1097,225 +1191,7 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Live Preview</h3>
 
                     {/* Full Website Preview */}
-                    <div className="bg-white rounded-lg shadow-lg border overflow-hidden">
-                        {/* Header Preview */}
-                        <div
-                            className="flex items-center justify-between px-6 py-3 border-b transition-all duration-500"
-                            style={{
-                                backgroundColor: currentColors.primary,
-                                fontFamily: currentFont,
-                                fontSize: currentFontSize
-                            }}
-                        >
-                            <div className="flex items-center space-x-3">
-                                <div
-                                    className="w-8 h-8 rounded flex items-center justify-center text-white font-bold text-sm transition-all duration-500"
-                                    style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-                                >
-                                    {config.projectName?.[0]?.toUpperCase() || 'L'}
-                                </div>
-
-                                <span
-                                    className="font-bold transition-all duration-500"
-                                    style={{
-                                        fontFamily: currentFont,
-                                        color: currentColors.text
-                                    }}
-                                >
-                                    {config.projectName || 'Your Project'}
-                                </span>
-                            </div>
-
-                            <nav className="hidden lg:flex space-x-6 text-sm">
-                                {navigationItems.map((item, index) => (
-                                    <span
-                                        key={index}
-                                        className="hover:opacity-75 cursor-pointer transition-all duration-200"
-                                        style={{
-                                            fontFamily: currentFont,
-                                            color: currentColors.text
-                                        }}
-                                    >
-                                        {item}
-                                    </span>
-                                ))}
-                            </nav>
-
-                            <div className="flex items-center space-x-3">
-                                {headerIcons.map((iconItem, index) => {
-                                    const IconComponent = iconItem.icon
-                                    return (
-                                        <button
-                                            key={index}
-                                            className="relative p-2 rounded-lg transition-all duration-300 hover:scale-110"
-                                            style={{
-                                                color: currentColors.text,
-                                                backgroundColor: 'rgba(255,255,255,0.1)'
-                                            }}
-                                            title={iconItem.label}
-                                        >
-                                            <IconComponent className="w-5 h-5" />
-                                            {iconItem.badge && (
-                                                <span
-                                                    className="absolute -top-1 -right-1 text-xs text-white rounded-full w-5 h-5 flex items-center justify-center font-bold transition-all duration-500"
-                                                    style={{ backgroundColor: currentColors.secondary }}
-                                                >
-                                                    {iconItem.badge}
-                                                </span>
-                                            )}
-                                        </button>
-                                    )
-                                })}
-
-                                <button
-                                    className="lg:hidden p-2 rounded-lg transition-all duration-300"
-                                    style={{
-                                        color: currentColors.text,
-                                        backgroundColor: 'rgba(255,255,255,0.1)'
-                                    }}
-                                >
-                                    <Menu className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Hero Section Preview */}
-                        <div
-                            className="px-6 py-12 text-center transition-all duration-500"
-                            style={{
-                                background: `linear-gradient(135deg, ${currentColors.primary}, ${currentColors.secondary})`,
-                                fontFamily: currentFont
-                            }}
-                        >
-                            <h1
-                                className="text-3xl font-bold text-white mb-4 transition-all duration-500"
-                                style={{ fontFamily: currentFont }}
-                            >
-                                {config.projectName || 'Your Project'}
-                            </h1>
-                            <p
-                                className="text-white text-opacity-90 mb-6 transition-all duration-500"
-                                style={{
-                                    fontFamily: currentFont,
-                                    fontSize: currentFontSize
-                                }}
-                            >
-                                {config.description || 'Your project description will appear here'}
-                            </p>
-                            <button
-                                className={`px-6 py-3 bg-white font-semibold transition-all ${animationsEnabled ? (
-                                        hoverEffects === 'none' ? '' :
-                                            hoverEffects === 'subtle' ? 'hover:scale-105' :
-                                                hoverEffects === 'moderate' ? 'hover:scale-110 hover:shadow-lg' :
-                                                    'hover:scale-115 hover:shadow-xl'
-                                    ) : ''
-                                    }`}
-                                style={{
-                                    color: currentColors.primary,
-                                    fontFamily: currentFont,
-                                    borderRadius: buttonRadius,
-                                    transitionDuration: animationsEnabled ? animationSpeed : '0ms'
-                                }}
-                            >
-                                Get Started
-                            </button>
-                        </div>
-
-                        {/* Content Section Preview */}
-                        <div
-                            className="px-6 py-8 bg-white transition-all duration-500"
-                            style={{ fontFamily: currentFont }}
-                        >
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {['Feature 1', 'Feature 2', 'Feature 3'].map((feature, index) => (
-                                    <div
-                                        key={index}
-                                        className={`p-4 rounded-lg border transition-all ${getShadowClass(cardShadow)} ${animationsEnabled ? (
-                                                hoverEffects === 'none' ? '' :
-                                                    hoverEffects === 'subtle' ? 'hover:scale-105 hover:shadow-md' :
-                                                        hoverEffects === 'moderate' ? 'hover:scale-110 hover:shadow-lg' :
-                                                            'hover:scale-115 hover:shadow-xl hover:-rotate-1'
-                                            ) : ''
-                                            }`}
-                                        style={{
-                                            borderColor: currentColors.primary + '20',
-                                            fontFamily: currentFont,
-                                            transitionDuration: animationsEnabled ? animationSpeed : '0ms'
-                                        }}
-                                    >
-                                        <div
-                                            className="w-8 h-8 rounded mb-3 flex items-center justify-center text-white font-bold text-sm transition-all duration-500"
-                                            style={{ backgroundColor: currentColors.primary }}
-                                        >
-                                            {index + 1}
-                                        </div>
-                                        <h3
-                                            className="font-semibold mb-2 transition-all duration-500"
-                                            style={{
-                                                color: currentColors.primary,
-                                                fontFamily: currentFont
-                                            }}
-                                        >
-                                            {feature}
-                                        </h3>
-                                        <p
-                                            className="text-gray-600 text-sm transition-all duration-500"
-                                            style={{
-                                                fontFamily: currentFont,
-                                                fontSize: `calc(${currentFontSize} - 2px)`
-                                            }}
-                                        >
-                                            Sample feature description
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Button Samples */}
-                        <div
-                            className="px-6 py-4 bg-gray-50 border-t flex items-center justify-center space-x-4"
-                            style={{ fontFamily: currentFont }}
-                        >
-                            <button
-                                className={`px-4 py-2 font-medium transition-all ${animationsEnabled ? (
-                                        hoverEffects === 'none' ? '' :
-                                            hoverEffects === 'subtle' ? 'hover:scale-105' :
-                                                hoverEffects === 'moderate' ? 'hover:scale-110 hover:shadow-lg' :
-                                                    'hover:scale-115 hover:shadow-xl'
-                                    ) : ''
-                                    }`}
-                                style={{
-                                    backgroundColor: currentColors.primary,
-                                    color: 'white',
-                                    fontFamily: currentFont,
-                                    borderRadius: buttonRadius,
-                                    transitionDuration: animationsEnabled ? animationSpeed : '0ms'
-                                }}
-                            >
-                                Primary Button
-                            </button>
-                            <button
-                                className={`px-4 py-2 font-medium border-2 transition-all ${animationsEnabled ? (
-                                        hoverEffects === 'none' ? '' :
-                                            hoverEffects === 'subtle' ? 'hover:scale-105' :
-                                                hoverEffects === 'moderate' ? 'hover:scale-110 hover:shadow-lg' :
-                                                    'hover:scale-115 hover:shadow-xl'
-                                    ) : ''
-                                    }`}
-                                style={{
-                                    borderColor: currentColors.primary,
-                                    color: currentColors.primary,
-                                    fontFamily: currentFont,
-                                    borderRadius: buttonRadius,
-                                    backgroundColor: 'transparent',
-                                    transitionDuration: animationsEnabled ? animationSpeed : '0ms'
-                                }}
-                            >
-                                Secondary Button
-                            </button>
-                        </div>
-                    </div>
+                    <WebsitePreview config={config} currentStep={1} />
 
                     {/* Style Information */}
                     <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
