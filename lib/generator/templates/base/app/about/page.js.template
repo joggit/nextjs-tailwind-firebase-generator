@@ -1,122 +1,253 @@
-// About Us Page Template - Simple Version
-// File: lib/generator/templates/base/app/about/page.js.template
-
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import { Mail, Linkedin, Calendar, User } from 'lucide-react'
+import { Users, Target, Award, Heart, CheckCircle, Star, ArrowRight } from 'lucide-react'
+
+export const metadata = {
+  title: `About Us - ${businessName}`,
+  description: blocks?.about?.description || businessDescription,
+}
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
+
       <main>
         {/* Hero Section */}
-        <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-purple-50">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              {{aboutHeroTitle}}
+        <section
+          className="py-20 px-4"
+          style={{
+            background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})`,
+            fontFamily: theme.fontFamily,
+          }}
+        >
+          <div className="max-w-4xl mx-auto text-center text-white">
+            <h1
+              className="text-4xl md:text-6xl font-bold mb-6"
+              style={{ fontSize: theme.typography.headingFontSize }}
+            >
+              {blocks?.about?.title || `About ${businessName}`}
             </h1>
-            <p className="text-xl text-gray-600 leading-relaxed">
-              {{aboutHeroSubtitle}}
+            <p
+              className="text-xl md:text-2xl leading-relaxed"
+              style={{ fontSize: theme.typography.bodyFontSize }}
+            >
+              {blocks?.about?.subtitle ||
+                `Learn more about our mission, values, and the team behind ${businessName}.`}
             </p>
           </div>
         </section>
 
-        {/* Company Story Section */}
+        {/* Mission Section */}
         <section className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  {{aboutStoryTitle}}
+                <h2
+                  className="text-3xl md:text-4xl font-bold mb-6"
+                  style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}
+                >
+                  {blocks?.about?.mission?.title || 'Our Mission'}
                 </h2>
-                
-                <div className="flex items-center mb-4 text-gray-600">
-                  <Calendar className="w-5 h-5 mr-2" />
-                  <span>{{aboutFoundedInfo}}</span>
-                </div>
-                
-                <div className="prose prose-lg text-gray-700">
-                  <p>{{aboutCompanyStory}}</p>
-                </div>
+                <p
+                  className="text-lg text-gray-600 mb-6 leading-relaxed"
+                  style={{ fontFamily: theme.fontFamily }}
+                >
+                  {blocks?.about?.mission?.description ||
+                    `We are dedicated to providing exceptional ${industry} services that help our clients achieve their goals and grow their businesses.`}
+                </p>
+
+                {/* Mission Points */}
+                {blocks?.about?.mission?.points?.length > 0 && (
+                  <div className="space-y-4">
+                    {blocks.about.mission.points.map((item, idx) => (
+                      <div key={idx} className="flex items-start space-x-3">
+                        <CheckCircle
+                          className="w-6 h-6 mt-1 flex-shrink-0"
+                          style={{ color: theme.primaryColor }}
+                        />
+                        <span className="text-gray-700">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              
+
               <div className="relative">
-                <div className="w-full h-96 bg-gray-200 rounded-lg shadow-lg flex items-center justify-center">
-                  <span className="text-gray-500">{{aboutStoryImagePlaceholder}}</span>
-                </div>
+                {blocks?.about?.mission?.image ? (
+                  <img
+                    src={blocks.about.mission.image}
+                    alt="Our Mission"
+                    className="rounded-lg shadow-xl w-full"
+                  />
+                ) : (
+                  <div className="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center">
+                    <Target className="w-16 h-16 text-gray-400" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </section>
 
-        {/* Mission & Vision Section */}
-        <section className="py-16 px-4 bg-gray-50">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
-              <div className="bg-white p-8 rounded-lg shadow-sm">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {{aboutMission}}
+        {/* Values Section */}
+        {blocks?.about?.values && (
+          <section className="py-16 px-4 bg-gray-50">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-12">
+                <h2
+                  className="text-3xl md:text-4xl font-bold mb-4"
+                  style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}
+                >
+                  {blocks.about.values.title || 'Our Values'}
+                </h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  {blocks.about.values.description ||
+                    `These core values guide everything we do at ${businessName}.`}
                 </p>
               </div>
-              
-              <div className="bg-white p-8 rounded-lg shadow-sm">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {{aboutVision}}
-                </p>
-              </div>
-            </div>
 
-            {/* Company Values */}
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Our Values</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {{aboutValuesCards}}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {blocks.about.values.items?.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                  >
+                    <div
+                      className="w-16 h-16 rounded-lg flex items-center justify-center mb-6"
+                      style={{ backgroundColor: `${theme.primaryColor}20` }}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-full"
+                        style={{ backgroundColor: theme.primaryColor }}
+                      ></div>
+                    </div>
+                    <h3
+                      className="text-xl font-semibold mb-4"
+                      style={{ color: theme.primaryColor }}
+                    >
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">{item.description}</p>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Team Section */}
-        <section className="py-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                {{aboutTeamTitle}}
-              </h2>
-              <p className="text-xl text-gray-600">
-                The talented people behind {{businessName}}
-              </p>
-            </div>
+        {blocks?.about?.team && (
+          <section className="py-16 px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-12">
+                <h2
+                  className="text-3xl md:text-4xl font-bold mb-4"
+                  style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}
+                >
+                  {blocks.about.team.title || 'Meet Our Team'}
+                </h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  {blocks.about.team.description ||
+                    'Our experienced team is dedicated to delivering exceptional results.'}
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {{aboutTeamCards}}
-            </div>
-          </div>
-        </section>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {blocks.about.team.members?.map((item, idx) => (
+                  <div key={idx} className="text-center">
+                    <div className="relative mb-6">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-32 h-32 rounded-full mx-auto object-cover shadow-lg"
+                        />
+                      ) : (
+                        <div
+                          className="w-32 h-32 rounded-full mx-auto flex items-center justify-center text-white text-2xl font-bold shadow-lg"
+                          style={{ backgroundColor: theme.primaryColor }}
+                        >
+                          {item.name?.charAt(0)}
+                        </div>
+                      )}
+                    </div>
 
-        {/* Contact CTA Section */}
-        <section className="py-16 px-4 bg-blue-600 text-white">
+                    <h3
+                      className="text-xl font-semibold mb-2"
+                      style={{ color: theme.primaryColor }}
+                    >
+                      {item.name}
+                    </h3>
+                    <p className="text-blue-600 font-medium mb-3">{item.role}</p>
+                    <p className="text-gray-600 text-sm leading-relaxed">{item.bio}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Stats Section */}
+        {blocks?.about?.stats && (
+          <section
+            className="py-16 px-4 text-white"
+            style={{ backgroundColor: theme.primaryColor }}
+          >
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  {blocks.about.stats.title || 'Our Impact'}
+                </h2>
+                <p className="text-white/80 max-w-2xl mx-auto">
+                  {blocks.about.stats.description || 'Numbers that showcase our commitment to excellence.'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {blocks.about.stats.items?.map((item, idx) => (
+                  <div key={idx} className="text-center">
+                    <div className="text-4xl md:text-5xl font-bold mb-2">{item.value}</div>
+                    <div className="text-white/80 text-lg">{item.label}</div>
+                    {item.description && (
+                      <div className="text-white/60 text-sm mt-2">{item.description}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Call to Action */}
+        <section className="py-16 px-4 bg-gray-50">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-4">
-              Ready to Work with {{businessName}}?
+            <h2
+              className="text-3xl md:text-4xl font-bold mb-6"
+              style={{ color: theme.primaryColor }}
+            >
+              {blocks?.about?.cta?.title || 'Ready to Work With Us?'}
             </h2>
-            <p className="text-xl mb-8 text-blue-100">
-              Let's discuss how we can help you achieve your goals
+            <p className="text-lg text-gray-600 mb-8">
+              {blocks?.about?.cta?.description ||
+                'Get in touch today to learn how we can help you achieve your goals.'}
             </p>
             <a
               href="/contact"
-              className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              className="inline-flex items-center px-8 py-4 font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl"
+              style={{
+                backgroundColor: theme.primaryColor,
+                color: '#FFFFFF',
+                borderRadius: components.button.borderRadius,
+              }}
             >
-              Get In Touch
+              {blocks?.about?.cta?.buttonText || 'Contact Us'}
+              <ArrowRight className="ml-2 w-5 h-5" />
             </a>
           </div>
         </section>
       </main>
-      
+
       <Footer />
     </div>
   )

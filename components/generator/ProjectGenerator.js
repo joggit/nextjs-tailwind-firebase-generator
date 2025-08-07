@@ -351,12 +351,9 @@ function ProjectGenerator() {
       setError('No project available for download')
       return
     }
-
     try {
       console.log('📥 Starting download for project:', result.projectId)
-
       const response = await fetch(`/api/download?id=${result.projectId}`)
-
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Download failed')

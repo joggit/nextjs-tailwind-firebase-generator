@@ -1,17 +1,23 @@
 // lib/generator/templates/base/components/Footer.js.template
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-200 py-8 mt-12">
+    <footer 
+      className="bg-gray-900 text-gray-200 py-8 mt-12"
+      style={{ fontFamily: '${theme.fontFamily}' }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
           {/* Company Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4" style={{ color: '{{theme.primaryColor}}' }}>
-              {{businessName}}
+            <h3 
+              className="text-lg font-semibold mb-4" 
+              style={{ color: '${theme.primaryColor}' }}
+            >
+              ${businessName}
             </h3>
             <p className="text-gray-400 leading-relaxed">
-              {{businessDescription}}
+              ${businessDescription}
             </p>
           </div>
 
@@ -19,16 +25,16 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              {{#each header.menuItems}}
+              {/* FOREACH header.menuItems */}
               <li>
                 <a 
-                  href="{{link}}" 
+                  href="${item.link}" 
                   className="text-gray-400 hover:text-white transition-colors duration-200"
                 >
-                  {{label}}
+                  ${item.label}
                 </a>
               </li>
-              {{/each}}
+              {/* ENDFOREACH */}
             </ul>
           </div>
 
@@ -36,16 +42,16 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Legal</h4>
             <ul className="space-y-2">
-              {{#each footer.links}}
+              {/* FOREACH footer.links */}
               <li>
                 <a 
-                  href="{{link}}" 
+                  href="${item.link}" 
                   className="text-gray-400 hover:text-white transition-colors duration-200"
                 >
-                  {{label}}
+                  ${item.label}
                 </a>
               </li>
-              {{/each}}
+              {/* ENDFOREACH */}
             </ul>
           </div>
         </div>
@@ -53,7 +59,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-            {{footer.text}}
+            ${footer.text}
           </p>
         </div>
       </div>

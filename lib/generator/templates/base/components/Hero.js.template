@@ -1,188 +1,21 @@
 // lib/generator/templates/base/components/Hero.js.template
 'use client'
 
-import { ArrowRight } from 'lucide-react'
-import Image from 'next/image'
+import { ArrowRight, Play, Star, CheckCircle } from 'lucide-react'
 
 export default function Hero() {
-  const heroType = '{{heroType}}'
-  const headline = '{{heroHeadline}}'
-  const description = '{{heroDescription}}'
-  const ctaPrimary = '{{heroCTAPrimary}}'
-  const ctaPrimaryHref = '{{heroCTAPrimaryHref}}'
-  const ctaSecondary = '{{heroCTASecondary}}'
-  const ctaSecondaryHref = '{{heroCTASecondaryHref}}'
-  const heroImage = '{{heroImage}}'
-  const backgroundImage = '{{heroBackgroundImage}}'
-
-  const renderCenteredHero = () => (
-    <div className="text-center">
-      <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-        {headline}
-      </h1>
-      <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-        {description}
-      </p>
-      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <a
-          href={ctaPrimaryHref}
-          className="inline-flex items-center px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
-        >
-          {ctaPrimary}
-          <ArrowRight className="ml-2 w-5 h-5" />
-        </a>
-        <a
-          href={ctaSecondaryHref}
-          className="inline-flex items-center px-8 py-4 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
-        >
-          {ctaSecondary}
-        </a>
-      </div>
-    </div>
-  )
-
-  const renderSplitHero = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-      <div>
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-          {headline}
-        </h1>
-        <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-          {description}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <a
-            href={ctaPrimaryHref}
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-          >
-            {ctaPrimary}
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </a>
-          <a
-            href={ctaSecondaryHref}
-            className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
-          >
-            {ctaSecondary}
-          </a>
-        </div>
-      </div>
-      <div className="relative">
-        {heroImage && heroImage !== '/placeholder.svg' ? (
-          <div className="relative w-full h-96 rounded-lg overflow-hidden shadow-xl">
-            <Image
-              src={heroImage}
-              alt="Hero"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        ) : (
-          <div className="w-full h-96 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center">
-            <span className="text-gray-500">Hero Image</span>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
-  const renderFullscreenHero = () => (
-    <div className="relative min-h-screen flex items-center justify-center text-center text-white">
-      {/* Background Image */}
-      {backgroundImage && backgroundImage !== '/background.jpg' && (
-        <div className="absolute inset-0">
-          <Image
-            src={backgroundImage}
-            alt="Background"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-        </div>
-      )}
-      
-      <div className="relative z-10 max-w-4xl mx-auto">
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-          {headline}
-        </h1>
-        <p className="text-xl md:text-2xl mb-8 leading-relaxed opacity-90">
-          {description}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <a
-            href={ctaPrimaryHref}
-            className="inline-flex items-center px-8 py-4 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
-          >
-            {ctaPrimary}
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </a>
-          <a
-            href={ctaSecondaryHref}
-            className="inline-flex items-center px-8 py-4 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors"
-          >
-            {ctaSecondary}
-          </a>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderMinimalHero = () => (
-    <div className="max-w-3xl">
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-        {headline}
-      </h1>
-      <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-        {description}
-      </p>
-      <div className="flex gap-4">
-        <a
-          href={ctaPrimaryHref}
-          className="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded font-medium hover:bg-gray-800 transition-colors"
-        >
-          {ctaPrimary}
-        </a>
-        <a
-          href={ctaSecondaryHref}
-          className="inline-flex items-center px-6 py-3 text-gray-700 font-medium hover:text-gray-900 transition-colors"
-        >
-          {ctaSecondary}
-        </a>
-      </div>
-    </div>
-  )
-
-  const getHeroStyle = () => {
-    switch (heroType) {
-      case 'split':
-        return renderSplitHero()
-      case 'fullscreen':
-        return renderFullscreenHero()
-      case 'minimal':
-        return renderMinimalHero()
-      case 'video':
-        // For video background, fall back to fullscreen with background
-        return renderFullscreenHero()
-      case 'animated':
-        // For animated, use centered with extra animations
-        return renderCenteredHero()
-      default:
-        return renderCenteredHero()
-    }
-  }
-
-  // Don't render container for fullscreen hero
-  if (heroType === 'fullscreen' || heroType === 'video') {
-    return (
-      <section className="relative overflow-hidden">
-        {getHeroStyle()}
-      </section>
-    )
-  }
-
   return (
-    <section className="relative py-20 px-4 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <section 
+      className="relative py-20 px-4 overflow-hidden"
+      style={{
+        background: '${graphics.heroImage}' ? 
+          `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${graphics.heroImage})` : 
+          `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        fontFamily: '${theme.fontFamily}'
+      }}
+    >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-40">
         <div className="absolute top-20 left-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
@@ -190,8 +23,111 @@ export default function Hero() {
         <div className="absolute bottom-20 left-40 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto">
-        {getHeroStyle()}
+      <div className="relative max-w-7xl mx-auto text-center">
+        {/* Trust Badge */}
+        {/* IF meta.trustBadge */}
+        <div className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-medium mb-8">
+          <Star className="w-4 h-4 mr-2" />
+          ${meta.trustBadge}
+        </div>
+        {/* ENDIF */}
+
+        {/* Main Headline */}
+        <h1
+          className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+          style={{
+            fontFamily: '${theme.fontFamily}',
+            fontSize: '${theme.typography.headingFontSize}',
+            color: '#FFFFFF'
+          }}
+        >
+          ${blocks.marketing.hero.title}
+        </h1>
+
+        {/* Subheadline */}
+        <p
+          className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed"
+          style={{
+            fontFamily: '${theme.fontFamily}',
+            fontSize: '${theme.typography.bodyFontSize}',
+            color: 'rgba(255,255,255,0.9)'
+          }}
+        >
+          ${blocks.marketing.hero.subtitle}
+        </p>
+
+        {/* Feature Highlights */}
+        {/* IF blocks.marketing.features */}
+        <div className="flex flex-wrap justify-center items-center gap-6 mb-8">
+          {/* FOREACH blocks.marketing.features */}
+          <div className="flex items-center space-x-2 text-white/80">
+            <CheckCircle className="w-5 h-5 text-green-400" />
+            <span className="font-medium">${item.title}</span>
+          </div>
+          {/* ENDFOREACH */}
+        </div>
+        {/* ENDIF */}
+        
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4 mb-16">
+          {/* IF blocks.marketing.hero.buttonText */}
+          
+            href="${blocks.marketing.hero.buttonLink}"
+            className="inline-flex items-center px-8 py-4 font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl"
+            style={{
+              backgroundColor: '#FFFFFF',
+              color: '${theme.primaryColor}',
+              fontFamily: '${theme.fontFamily}',
+              borderRadius: '${components.button.borderRadius}'
+            }}
+          >
+            ${blocks.marketing.hero.buttonText}
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </a>
+          {/* ENDIF */}
+          
+          {/* IF blocks.marketing.hero.secondaryButtonText */}
+          <button
+            className="inline-flex items-center px-8 py-4 font-semibold transition-all border-2 border-white/30 text-white hover:bg-white/10"
+            style={{
+              fontFamily: '${theme.fontFamily}',
+              borderRadius: '${components.button.borderRadius}'
+            }}
+          >
+            <Play className="mr-2 w-5 h-5" />
+            ${blocks.marketing.hero.secondaryButtonText}
+          </button>
+          {/* ENDIF */}
+        </div>
+
+        {/* Social Proof */}
+        {/* IF blocks.marketing.hero.socialProof */}
+        <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-white/80">
+          <div className="flex items-center">
+            <div className="flex -space-x-2">
+              {/* Generate avatar placeholders */}
+              <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white"></div>
+              <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white"></div>
+              <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white"></div>
+              <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white"></div>
+            </div>
+            <span className="ml-3 text-sm">${blocks.marketing.hero.socialProof}</span>
+          </div>
+          
+          {/* IF blocks.marketing.hero.rating */}
+          <div className="flex items-center">
+            <div className="flex text-yellow-400">
+              <Star className="w-5 h-5 fill-current" />
+              <Star className="w-5 h-5 fill-current" />
+              <Star className="w-5 h-5 fill-current" />
+              <Star className="w-5 h-5 fill-current" />
+              <Star className="w-5 h-5 fill-current" />
+            </div>
+            <span className="ml-2 text-sm">${blocks.marketing.hero.rating}</span>
+          </div>
+          {/* ENDIF */}
+        </div>
+        {/* ENDIF */}
       </div>
     </section>
   )

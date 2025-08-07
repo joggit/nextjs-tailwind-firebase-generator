@@ -19,17 +19,17 @@ export default function HomePage() {
         <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-purple-50">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              {{blocks.marketing.hero.title}}
+              {{blocks.home.hero.title}}
             </h1>
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              {{blocks.marketing.hero.subtitle}}
+              {{blocks.home.hero.subtitle}}
             </p>
             <a 
-              href="{{blocks.marketing.hero.buttonLink}}"
+              href="{{blocks.home.hero.buttonLink}}"
               className="inline-flex items-center px-8 py-4 text-white rounded-lg font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl"
               style={{ backgroundColor: '{{theme.primaryColor}}' }}
             >
-              {{blocks.marketing.hero.buttonText}}
+              {{blocks.home.hero.buttonText}}
             </a>
           </div>
         </section>
@@ -47,7 +47,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {{#each blocks.marketing.features}}
+              {{#each blocks.home.features}}
               <div className="p-6 bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
                   {{title}}
