@@ -553,10 +553,8 @@ export default function BasicInfoThemeStep({ config, onChange, onNext }) {
                                 <option value="">Select project type...</option>
                                 <option value="modern">Modern Website</option>
                                 <option value="ecommerce">E-commerce Store</option>
-                                <option value="saas">SaaS Platform</option>
-                                <option value="blog">Blog/Content Site</option>
-                                <option value="portfolio">Portfolio Site</option>
-                                <option value="crm">CRM System</option>
+                                <option value="web">Web Platform</option>
+                                <option value="ngo">NGO Site</option>
                             </select>
                         </div>
                     </div>

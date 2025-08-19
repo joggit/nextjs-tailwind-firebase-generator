@@ -1,39 +1,23 @@
+// lib/generator/templates/base/app/about/page.js.template
+'use client'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { Users, Target, Award, Heart, CheckCircle, Star, ArrowRight } from 'lucide-react'
 
-export const metadata = {
-  title: `About Us - ${businessName}`,
-  description: blocks?.about?.description || businessDescription,
-}
-
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen flex flex-col">
       <Header />
-
-      <main>
+      
+      <main className="flex-grow">
         {/* Hero Section */}
-        <section
-          className="py-20 px-4"
-          style={{
-            background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})`,
-            fontFamily: theme.fontFamily,
-          }}
-        >
-          <div className="max-w-4xl mx-auto text-center text-white">
-            <h1
-              className="text-4xl md:text-6xl font-bold mb-6"
-              style={{ fontSize: theme.typography.headingFontSize }}
-            >
-              {blocks?.about?.title || `About ${businessName}`}
+        <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-purple-50">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+              About Us
             </h1>
-            <p
-              className="text-xl md:text-2xl leading-relaxed"
-              style={{ fontSize: theme.typography.bodyFontSize }}
-            >
-              {blocks?.about?.subtitle ||
-                `Learn more about our mission, values, and the team behind ${businessName}.`}
+            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+              Learn about our story, our mission, and the passionate team behind ${businessName}.
             </p>
           </div>
         </section>
@@ -43,211 +27,158 @@ export default function AboutPage() {
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h2
-                  className="text-3xl md:text-4xl font-bold mb-6"
-                  style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}
-                >
-                  {blocks?.about?.mission?.title || 'Our Mission'}
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                  Our Mission
                 </h2>
-                <p
-                  className="text-lg text-gray-600 mb-6 leading-relaxed"
-                  style={{ fontFamily: theme.fontFamily }}
-                >
-                  {blocks?.about?.mission?.description ||
-                    `We are dedicated to providing exceptional ${industry} services that help our clients achieve their goals and grow their businesses.`}
+                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                  At ${businessName}, we are committed to delivering outstanding ${industry} solutions that exceed our clients' expectations. We believe in innovation, quality, and building lasting partnerships in the ${industry} industry.
                 </p>
-
-                {/* Mission Points */}
-                {blocks?.about?.mission?.points?.length > 0 && (
-                  <div className="space-y-4">
-                    {blocks.about.mission.points.map((item, idx) => (
-                      <div key={idx} className="flex items-start space-x-3">
-                        <CheckCircle
-                          className="w-6 h-6 mt-1 flex-shrink-0"
-                          style={{ color: theme.primaryColor }}
-                        />
-                        <span className="text-gray-700">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  ${businessDescription}
+                </p>
               </div>
 
               <div className="relative">
-                {blocks?.about?.mission?.image ? (
-                  <img
-                    src={blocks.about.mission.image}
-                    alt="Our Mission"
-                    className="rounded-lg shadow-xl w-full"
-                  />
-                ) : (
-                  <div className="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center">
-                    <Target className="w-16 h-16 text-gray-400" />
-                  </div>
-                )}
+                <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
+                  <Target className="w-16 h-16 text-gray-400" />
+                </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Team Section */}
+        <section className="py-16 px-4 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                ${blocks.about.team.title}
+              </h2>
+              <p className="text-gray-600">
+                ${blocks.about.team.subtitle}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {/* FOREACH blocks.about.team.members */}
+              <div className="text-center bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <div className="relative mb-6">
+                  <div
+                    className="w-32 h-32 rounded-full mx-auto flex items-center justify-center text-white text-2xl font-bold shadow-lg"
+                    style={{ backgroundColor: '${theme.primaryColor}' }}
+                  >
+                    ${item.name.charAt(0).toUpperCase()}
+                  </div>
+                </div>
+
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  ${item.name}
+                </h3>
+
+                <p 
+                  className="font-medium mb-3 text-lg"
+                  style={{ color: '${theme.secondaryColor}' }}
+                >
+                  ${item.role}
+                </p>
+
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  ${item.bio}
+                </p>
+
+                <div className="flex justify-center space-x-4 text-sm">
+                  <span className="text-gray-500">
+                    LinkedIn | Email
+                  </span>
+                </div>
+              </div>
+              {/* ENDFOREACH */}
             </div>
           </div>
         </section>
 
         {/* Values Section */}
-        {blocks?.about?.values && (
-          <section className="py-16 px-4 bg-gray-50">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-12">
-                <h2
-                  className="text-3xl md:text-4xl font-bold mb-4"
-                  style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Our Values
+              </h2>
+              <p className="text-gray-600">
+                The principles that guide everything we do at ${businessName}.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div 
+                  className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+                  style={{ backgroundColor: '${theme.primaryColor}' }}
                 >
-                  {blocks.about.values.title || 'Our Values'}
-                </h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  {blocks.about.values.description ||
-                    `These core values guide everything we do at ${businessName}.`}
+                  <Award className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  Excellence
+                </h3>
+                <p className="text-gray-600">
+                  We strive for excellence in every project and deliver quality ${industry} solutions.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {blocks.about.values.items?.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                  >
-                    <div
-                      className="w-16 h-16 rounded-lg flex items-center justify-center mb-6"
-                      style={{ backgroundColor: `${theme.primaryColor}20` }}
-                    >
-                      <div
-                        className="w-8 h-8 rounded-full"
-                        style={{ backgroundColor: theme.primaryColor }}
-                      ></div>
-                    </div>
-                    <h3
-                      className="text-xl font-semibold mb-4"
-                      style={{ color: theme.primaryColor }}
-                    >
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">{item.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Team Section */}
-        {blocks?.about?.team && (
-          <section className="py-16 px-4">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-12">
-                <h2
-                  className="text-3xl md:text-4xl font-bold mb-4"
-                  style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}
+              <div className="text-center">
+                <div 
+                  className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+                  style={{ backgroundColor: '${theme.secondaryColor}' }}
                 >
-                  {blocks.about.team.title || 'Meet Our Team'}
-                </h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  {blocks.about.team.description ||
-                    'Our experienced team is dedicated to delivering exceptional results.'}
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  Collaboration
+                </h3>
+                <p className="text-gray-600">
+                  We work closely with our clients to understand their needs and exceed expectations.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {blocks.about.team.members?.map((item, idx) => (
-                  <div key={idx} className="text-center">
-                    <div className="relative mb-6">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-32 h-32 rounded-full mx-auto object-cover shadow-lg"
-                        />
-                      ) : (
-                        <div
-                          className="w-32 h-32 rounded-full mx-auto flex items-center justify-center text-white text-2xl font-bold shadow-lg"
-                          style={{ backgroundColor: theme.primaryColor }}
-                        >
-                          {item.name?.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-
-                    <h3
-                      className="text-xl font-semibold mb-2"
-                      style={{ color: theme.primaryColor }}
-                    >
-                      {item.name}
-                    </h3>
-                    <p className="text-blue-600 font-medium mb-3">{item.role}</p>
-                    <p className="text-gray-600 text-sm leading-relaxed">{item.bio}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Stats Section */}
-        {blocks?.about?.stats && (
-          <section
-            className="py-16 px-4 text-white"
-            style={{ backgroundColor: theme.primaryColor }}
-          >
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  {blocks.about.stats.title || 'Our Impact'}
-                </h2>
-                <p className="text-white/80 max-w-2xl mx-auto">
-                  {blocks.about.stats.description || 'Numbers that showcase our commitment to excellence.'}
+              <div className="text-center">
+                <div 
+                  className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+                  style={{ backgroundColor: '${theme.primaryColor}' }}
+                >
+                  <Heart className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  Passion
+                </h3>
+                <p className="text-gray-600">
+                  We're passionate about ${industry} and love helping ${targetAudience} succeed.
                 </p>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {blocks.about.stats.items?.map((item, idx) => (
-                  <div key={idx} className="text-center">
-                    <div className="text-4xl md:text-5xl font-bold mb-2">{item.value}</div>
-                    <div className="text-white/80 text-lg">{item.label}</div>
-                    {item.description && (
-                      <div className="text-white/60 text-sm mt-2">{item.description}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
         {/* Call to Action */}
         <section className="py-16 px-4 bg-gray-50">
           <div className="max-w-4xl mx-auto text-center">
-            <h2
-              className="text-3xl md:text-4xl font-bold mb-6"
-              style={{ color: theme.primaryColor }}
-            >
-              {blocks?.about?.cta?.title || 'Ready to Work With Us?'}
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              Ready to Work With Us?
             </h2>
             <p className="text-lg text-gray-600 mb-8">
-              {blocks?.about?.cta?.description ||
-                'Get in touch today to learn how we can help you achieve your goals.'}
+              We would love to hear about your project and discuss how we can help you achieve your goals.
             </p>
-            <a
+            <a 
               href="/contact"
-              className="inline-flex items-center px-8 py-4 font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl"
-              style={{
-                backgroundColor: theme.primaryColor,
-                color: '#FFFFFF',
-                borderRadius: components.button.borderRadius,
-              }}
+              className="inline-flex items-center px-8 py-4 text-white rounded-lg font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl"
+              style={{ backgroundColor: '${theme.primaryColor}' }}
             >
-              {blocks?.about?.cta?.buttonText || 'Contact Us'}
+              Get In Touch
               <ArrowRight className="ml-2 w-5 h-5" />
             </a>
           </div>
         </section>
       </main>
-
+      
       <Footer />
     </div>
   )

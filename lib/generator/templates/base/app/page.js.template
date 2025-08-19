@@ -3,10 +3,10 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 
 export const metadata = {
-  title: '{{businessName}}',
-  description: '{{businessDescription}}',
-  keywords: ['{{industry}}', 'business', 'services'],
-  themeColor: '{{theme.primaryColor}}',
+  title: '${businessName}',
+  description: '${businessDescription}',
+  keywords: ['${industry}', 'business', 'services'],
+  themeColor: '${theme.primaryColor}',
 }
 
 export default function HomePage() {
@@ -19,17 +19,17 @@ export default function HomePage() {
         <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-purple-50">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              {{blocks.home.hero.title}}
+              ${blocks.home.hero.title}
             </h1>
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              {{blocks.home.hero.subtitle}}
+              ${blocks.home.hero.subtitle}
             </p>
             <a 
-              href="{{blocks.home.hero.buttonLink}}"
+              href="${blocks.home.hero.buttonLink}"
               className="inline-flex items-center px-8 py-4 text-white rounded-lg font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl"
-              style={{ backgroundColor: '{{theme.primaryColor}}' }}
+              style={{ backgroundColor: '${theme.primaryColor}' }}
             >
-              {{blocks.home.hero.buttonText}}
+              ${blocks.home.hero.buttonText}
             </a>
           </div>
         </section>
@@ -39,7 +39,7 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Why Choose {{businessName}}
+                Why Choose ${businessName}
               </h2>
               <p className="text-gray-600">
                 Discover what makes us different
@@ -47,16 +47,16 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {{#each blocks.home.features}}
+              ${#each blocks.home.features}
               <div className="p-6 bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                  {{title}}
+                  ${title}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  {{description}}
+                  ${description}
                 </p>
               </div>
-              {{/each}}
+              ${/each}
             </div>
           </div>
         </section>
@@ -65,14 +65,14 @@ export default function HomePage() {
         <section className="py-16 px-4 bg-gray-50">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">
-              About {{businessName}}
+              About ${businessName}
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed">
-              {{businessDescription}}
+              ${businessDescription}
             </p>
             <div className="mt-8">
               <span className="inline-block px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                {{industry}} • {{targetAudience}}
+                ${industry} • ${targetAudience}
               </span>
             </div>
           </div>
@@ -90,7 +90,7 @@ export default function HomePage() {
             <a 
               href="/contact"
               className="inline-flex items-center px-8 py-4 text-white rounded-lg font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl"
-              style={{ backgroundColor: '{{theme.primaryColor}}' }}
+              style={{ backgroundColor: '${theme.primaryColor}' }}
             >
               Contact Us
             </a>
